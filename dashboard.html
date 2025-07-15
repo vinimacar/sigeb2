@@ -344,6 +344,7 @@
 
   <div class="sidebar">
     <div class="sidebar-header">
+      <img src="logo.bias.png" alt="Logo da Escola" style="width:90px; height:90px; object-fit:contain; border-radius:50%; margin-bottom:10px; box-shadow:0 2px 12px #0002;">
       <h3>SIGEB</h3>
     </div>
     <div class="menu-items">
@@ -382,7 +383,7 @@
     <div class="dashboard-header" data-aos="fade-down">
       <h2>Bem-vindo ao SIGEB</h2>
       <p>Sistema de Gestão de Biblioteca</p>
-      <p id="nomeEscola" style="font-weight:600;color:#4facfe"></p>
+      <p id="nomeEscola" style="font-weight:600;color:#4facfe">Escola Estadual Governador Bias Fortes</p>
     </div>
 
     <div class="stats-container">
@@ -573,27 +574,17 @@
       const userLogInfo = document.getElementById('userLogInfo');
       if (user) {
         let nome = '';
-        let escolaNome = '';
         try {
           const snap = await db.collection('usuarios').doc(user.uid).get();
           nome = snap.exists && snap.data().nome ? snap.data().nome : '';
-          // Busca o ID da escola do usuário (ex: campo escolaId)
-          const escolaId = snap.exists && snap.data().escolaId ? snap.data().escolaId : null;
-          if (escolaId) {
-            const escolaSnap = await db.collection('escolas').doc(escolaId).get();
-            escolaNome = escolaSnap.exists && escolaSnap.data().nome ? escolaSnap.data().nome : '';
-          }
         } catch {}
 
         userLogInfo.textContent =
-          (escolaNome ? `[${escolaNome}] ` : '') +
-          (nome ? `Logado como: ${nome} (${user.email})` : `Logado como: ${user.email}`);
+          `Logado como: ${nome ? nome + ' (' + user.email + ')' : user.email}`;
 
         // Atualiza dashboard e atividades sempre que logar
         atualizarDashboard();
         carregarAtividadesRecentes();
-        
-        // Inicializa os gráficos após carregar os dados
         setTimeout(inicializarGraficos, 1000);
       } else {
         window.location.href = "index.html";

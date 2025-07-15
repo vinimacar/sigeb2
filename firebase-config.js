@@ -1,13 +1,12 @@
 const firebaseConfig = {
-  apiKey: "AIzaSyCkttFoV_FoPn91ClE7xFiknFvs9pXaCoQ",
-  authDomain: "sigeb-ccd3f.firebaseapp.com",
-  databaseURL: "https://sigeb-ccd3f-default-rtdb.firebaseio.com",
-  projectId: "sigeb-ccd3f",
-  storageBucket: "sigeb-ccd3f.appspot.com",
-  messagingSenderId: "209689711066",
-  appId: "1:209689711066:web:5a99505e60bd34f29b70e3",
-  measurementId: "G-VJBDW2B7HZ"
-};
+    apiKey: "AIzaSyC558ddNk5dGkB-GgTxbnNVfcciiCwEQP8",
+    authDomain: "biblitech-35d1c.firebaseapp.com",
+    projectId: "biblitech-35d1c",
+    storageBucket: "biblitech-35d1c.firebasestorage.app",
+    messagingSenderId: "972405171947",
+    appId: "1:972405171947:web:acbc479d1410dff21480ae",
+    measurementId: "G-4WQTEHF4DS"
+  };
 
 // Antes de usar 'firebase', garanta que o SDK foi carregado
 if (typeof firebase === "undefined") {

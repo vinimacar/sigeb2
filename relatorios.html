@@ -150,14 +150,13 @@
 <script>
   // Firebase config
   const firebaseConfig = {
-    apiKey: "AIzaSyCkttFoV_FoPn91ClE7xFiknFvs9pXaCoQ",
-    authDomain: "sigeb-ccd3f.firebaseapp.com",
-    databaseURL: "https://sigeb-ccd3f-default-rtdb.firebaseio.com",
-    projectId: "sigeb-ccd3f",
-    storageBucket: "sigeb-ccd3f.appspot.com",
-    messagingSenderId: "209689711066",
-    appId: "1:209689711066:web:5a99505e60bd34f29b70e3",
-    measurementId: "G-VJBDW2B7HZ"
+    apiKey: "AIzaSyC558ddNk5dGkB-GgTxbnNVfcciiCwEQP8",
+    authDomain: "biblitech-35d1c.firebaseapp.com",
+    projectId: "biblitech-35d1c",
+    storageBucket: "biblitech-35d1c.firebasestorage.app",
+    messagingSenderId: "972405171947",
+    appId: "1:972405171947:web:acbc479d1410dff21480ae",
+    measurementId: "G-4WQTEHF4DS"
   };
 
   // Initialize Firebase
@@ -572,7 +571,7 @@
             // Adicionar informações da escola
             doc.setFontSize(16);
             doc.setFont('helvetica', 'bold');
-            doc.text('Escola Estadual Professor Álvaro Brandão de Andrade', 50, 20);
+            doc.text('Escola Estadual Governador Bias Fortes', 50, 20);
             
             doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
@@ -622,7 +621,7 @@
             gerarPDFSemLogo();
           };
           
-          logoImg.src = 'logoaba.png';
+          logoImg.src = 'logobias.png';
         } catch (error) {
           console.warn('Erro ao processar logo:', error);
           gerarPDFSemLogo();
@@ -634,7 +633,7 @@
         // Adicionar informações da escola
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
-        doc.text('Escola Estadual Professor Álvaro Brandão de Andrade', 14, 20);
+        doc.text('Escola Estadual Governador Bias Fortes', 14, 20);
         
         doc.setFontSize(12);
         doc.setFont('helvetica', 'normal');

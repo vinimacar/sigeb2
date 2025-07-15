@@ -2016,72 +2016,80 @@
 
     // Função para criar um cartão individual
     function criarCartaoUsuario(doc, usuario, x, y, width, height) {
-      // Fundo do cartão com gradiente (simulado com retângulos)
-      doc.setFillColor(26, 26, 46); // Cor azul escura
+      // Fundo do cartão com cor clean (branco com borda azul clara)
+      doc.setFillColor(255, 255, 255); // Fundo branco
       doc.rect(x, y, width, height, 'F');
-      
-      // Borda do cartão
-      doc.setDrawColor(79, 172, 254);
-      doc.setLineWidth(0.5);
+      doc.setDrawColor(79, 172, 254); // Azul SIGEB
+      doc.setLineWidth(1);
       doc.rect(x, y, width, height);
-      
-      // Logo/Título da biblioteca
+
+      // Adiciona logo SIGEB (SVG desenhado) no topo esquerdo
+      doc.setFillColor(79, 172, 254); // Azul SIGEB
+      doc.circle(x + 10, y + 12, 8, 'F');
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(12);
-      doc.setFont(undefined, 'bold');
-      doc.text('SIGEB', x + 5, y + 8);
+      doc.setFont('helvetica', 'bold');
+      doc.text('S', x + 7, y + 16);
+
+      // Adiciona logo da escola (logobias.png) no topo direito
+      // ATENÇÃO: logobias.png precisa estar disponível via URL absoluta ou base64
+      // Exemplo usando base64 (substitua pelo seu base64 real):
+      const logoBiasBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...'; // <--- coloque seu base64 aqui
+      doc.addImage(logoBiasBase64, 'PNG', x + width - 24, y + 6, 18, 18);
+
+      // Título SIGEB
+      doc.setTextColor(79, 172, 254);
+      doc.setFontSize(13);
+      doc.setFont('helvetica', 'bold');
+      doc.text('SIGEB', x + 28, y + 15);
+
+      // Nome da escola abaixo do título
       doc.setFontSize(8);
-      doc.setFont(undefined, 'normal');
-      doc.text('Sistema de Gerenciamento de Biblioteca', x + 5, y + 12);
-      
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(60, 60, 60);
+      doc.text('Escola Estadual Governador Bias Fortes', x + 28, y + 20);
+
       // Linha separadora
-      doc.setDrawColor(79, 172, 254);
-      doc.line(x + 5, y + 15, x + width - 5, y + 15);
-      
+      doc.setDrawColor(220, 220, 220);
+      doc.line(x + 5, y + 23, x + width - 5, y + 23);
+
       // Informações do usuário
-      doc.setTextColor(255, 255, 255);
+      doc.setTextColor(40, 40, 40);
       doc.setFontSize(10);
-      doc.setFont(undefined, 'bold');
-      
-      // Nome (limitado para caber no cartão)
+      doc.setFont('helvetica', 'bold');
       const nomeMaxLength = 25;
-      const nomeDisplay = usuario.nome.length > nomeMaxLength ? 
-        usuario.nome.substring(0, nomeMaxLength) + '...' : usuario.nome;
-      doc.text(nomeDisplay, x + 5, y + 22);
-      
-      // Matrícula
+      const nomeDisplay = usuario.nome.length > nomeMaxLength ? usuario.nome.substring(0, nomeMaxLength) + '...' : usuario.nome;
+      doc.text(nomeDisplay, x + 8, y + 30);
+
       doc.setFontSize(9);
-      doc.setFont(undefined, 'normal');
-      doc.text(`Matrícula: ${usuario.matricula || 'N/A'}`, x + 5, y + 27);
-      
-      // Função
-      doc.text(`Função: ${usuario.funcao || 'USUÁRIO'}`, x + 5, y + 31);
-      
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Matrícula: ${usuario.matricula || 'N/A'}`, x + 8, y + 36);
+      doc.text(`Função: ${usuario.funcao || 'USUÁRIO'}`, x + 8, y + 41);
+
       // Email (truncado se muito longo)
       const emailMaxLength = 30;
-      const emailDisplay = usuario.email && usuario.email.length > emailMaxLength ? 
-        usuario.email.substring(0, emailMaxLength) + '...' : (usuario.email || '');
+      const emailDisplay = usuario.email && usuario.email.length > emailMaxLength ? usuario.email.substring(0, emailMaxLength) + '...' : (usuario.email || '');
       if (emailDisplay) {
         doc.setFontSize(7);
-        doc.text(emailDisplay, x + 5, y + 35);
+        doc.text(emailDisplay, x + 8, y + 46);
       }
-      
-      // Código de barras simulado (apenas visual)
-      doc.setFillColor(255, 255, 255);
+
+      // Código de barras visual clean
+      doc.setFillColor(79, 172, 254);
       for (let i = 0; i < 15; i++) {
         const barWidth = Math.random() > 0.5 ? 1 : 0.5;
-        doc.rect(x + 5 + (i * 2), y + height - 12, barWidth, 8, 'F');
+        doc.rect(x + 8 + (i * 2), y + height - 10, barWidth, 6, 'F');
       }
-      
+
       // Data de validade
       const dataValidade = new Date();
       dataValidade.setFullYear(dataValidade.getFullYear() + 1);
-      doc.setTextColor(200, 200, 200);
+      doc.setTextColor(120, 120, 120);
       doc.setFontSize(6);
-      doc.text(`Válido até: ${dataValidade.toLocaleDateString('pt-BR')}`, x + 5, y + height - 2);
-      
+      doc.text(`Válido até: ${dataValidade.toLocaleDateString('pt-BR')}`, x + 8, y + height - 2);
+
       // Número do cartão (baseado na matrícula)
-      doc.text(`Card: ${usuario.matricula || '000000'}`, x + width - 25, y + height - 2);
+      doc.text(`Card: ${usuario.matricula || '000000'}`, x + width - 30, y + height - 2);
     }
 
     // Event listener para o botão de gerar cartão
@@ -2090,4 +2098,4 @@
     document.addEventListener('DOMContentLoaded', loadUsers);
   </script>
 </body>
-</html>                                                                                                                          
+</html>

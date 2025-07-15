@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SIGEB - Relatórios</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+  <style>
+    body { font-family: 'Poppins', sans-serif; background: #f0f2f5; }
+    .main-content { margin-left: 250px; padding: 20px; }
+    .sidebar {
+      position: fixed; top: 0; left: 0; height: 100%; width: 250px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: white; padding: 20px; z-index: 1000;
+    }
+    .sidebar-header { padding: 20px 0; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1);}
+    .sidebar-header h3 { background: linear-gradient(90deg, #00f2fe, #4facfe); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin: 0; font-weight: 600;}
+    .menu-items { padding: 20px 0; }
+    .menu-item { padding: 12px 20px; color: white; text-decoration: none; display: flex; align-items: center; border-radius: 8px; margin-bottom: 5px; }
+    .menu-item.active, .menu-item:hover { background: rgba(255,255,255,0.1); color: #4facfe; }
+    .menu-item i { margin-right: 10px; font-size: 1.2rem; }
+    .report-filters { background: white; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); padding: 24px; margin-bottom: 24px; }
+    .report-section { background: white; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); padding: 24px; }
+    .btn-gradient { background: linear-gradient(90deg, #00f2fe, #4facfe); color: white; border: none; }
+    @media (max-width: 768px) {
+      .sidebar { position: static; width: 100%; }
+      .main-content { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h3>SIGEB</h3>
+    </div>
+    <div class="menu-items">
+      <a href="dashboard.html" class="menu-item"><i class='bx bxs-dashboard'></i>Dashboard</a>
+      <a href="livros.html" class="menu-item"><i class='bx bxs-book'></i>Livros</a>
+      <a href="usuarios.html" class="menu-item"><i class='bx bxs-user'></i>Usuários</a>
+      <a href="emprestimos.html" class="menu-item"><i class='bx bxs-bookmark'></i>Empréstimos</a>
+      <a href="relatorios.html" class="menu-item active" style="position:sticky;top:0;z-index:1100;"><i class='bx bxs-report'></i>Relatórios</a>
+      <a href="configuracoes.html" class="menu-item"><i class='bx bxs-cog'></i>Configurações</a>
+      <a href="index.html" class="menu-item"><i class='bx bxs-log-out'></i>Sair</a>
+    </div>
+  </div>
+  <div class="main-content">
+    <h2 class="mb-4">Relatórios</h2>
+    <div class="report-filters mb-4">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label" for="reportType">Tipo de Relatório</label>
+          <select class="form-select" id="reportType" name="reportType">
+            <option value="livros">Livros</option>
+            <option value="usuarios">Usuários</option>
+            <option value="emprestimos">Empréstimos</option>
+            <option value="advertencias">Advertências</option>
+          </select>
+        </div>
+        <div class="col-md-3" id="livrosFilters">
+          <label class="form-label" for="livrosGenero">Gênero</label>
+          <select class="form-select" id="livrosGenero" name="livrosGenero">
+            <option value="">Todos</option>
+            <option value="AVENTURA">Aventura</option>
+            <option value="AUTOAJUDA">Autoajuda</option>
+            <option value="BIOGRAFIA">Biografia</option>
+            <option value="CIENCIAS">Ciências</option>
+            <option value="DRAMA">Drama</option>
+            <option value="EDUCACAO">Educação</option>
+            <option value="FANTASIA">Fantasia</option>
+            <option value="FICCAO_CIENTIFICA">Ficção Científica</option>
+            <option value="HISTORIA">História</option>
+            <option value="INFANTIL">Infantil</option>
+            <option value="MISTERIO">Mistério</option>
+            <option value="OUTROS">Outros</option>
+            <option value="POESIA">Poesia</option>
+            <option value="ROMANCE">Romance</option>
+            <option value="TECNOLOGIA">Tecnologia</option>
+            <option value="TERROR">Terror</option>
+          </select>
+        </div>
+        <div class="col-md-3 d-none" id="usuariosFilters">
+          <label class="form-label" for="usuariosStatus">Status</label>
+          <select class="form-select" id="usuariosStatus" name="usuariosStatus">
+            <option value="">Todos</option>
+            <option value="Ativo">Ativo</option>
+            <option value="Inativo">Inativo</option>
+          </select>
+        </div>
+        <div class="col-md-3 d-none" id="emprestimosFilters">
+          <label class="form-label" for="emprestimosSituacao">Situação</label>
+          <select class="form-select" id="emprestimosSituacao" name="emprestimosSituacao">
+            <option value="">Todos</option>
+            <option value="Ativo">Ativo</option>
+            <option value="Finalizado">Finalizado</option>
+            <option value="Atrasado">Atrasado</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <button class="btn btn-gradient w-100" id="btnGerarRelatorio"><i class='bx bx-printer'></i> Gerar Relatório</button>
+        </div>
+      </div>
+      <!-- Segunda linha para filtros de data dos empréstimos -->
+      <div class="row g-3 align-items-end mt-2" id="emprestimosDateFilters" style="display: none;">
+        <div class="col-md-3" id="emprestimosDataInicioFilter">
+          <label class="form-label" for="dataInicio">Data Início</label>
+          <input type="date" class="form-control" id="dataInicio" name="dataInicio">
+          <small class="text-muted">Empréstimos a partir desta data</small>
+        </div>
+        <div class="col-md-3" id="emprestimosDataFimFilter">
+          <label class="form-label" for="dataFim">Data Fim</label>
+          <input type="date" class="form-control" id="dataFim" name="dataFim">
+          <small class="text-muted">Empréstimos até esta data</small>
+        </div>
+        <div class="col-md-3">
+          <button class="btn btn-secondary w-100" id="btnBaixarPDF"><i class='bx bx-download'></i> Baixar PDF</button>
+        </div>
+        <div class="col-md-3">
+          <button class="btn btn-outline-secondary w-100" onclick="document.getElementById('dataInicio').value=''; document.getElementById('dataFim').value='';">
+            <i class='bx bx-refresh'></i> Limpar Datas
+          </button>
+        </div>
+      </div>
+      <!-- Botão PDF para outros relatórios -->
+      <div class="row g-3 align-items-end mt-2" id="otherReportsActions">
+        <div class="col-md-3">
+          <button class="btn btn-secondary w-100" id="btnBaixarPDF2"><i class='bx bx-download'></i> Baixar PDF</button>
+        </div>
+      </div>
+    </div>
+    <div class="report-section" id="reportResult">
+      <p>Selecione o tipo de relatório e filtros desejados para visualizar e imprimir.</p>
+    </div>
+    <span id="quantidadeLivros" style="display:none;"></span>
+    </tbody>
+    </table> 
+  </div>
+
+<script>
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCkttFoV_FoPn91ClE7xFiknFvs9pXaCoQ",
+    authDomain: "sigeb-ccd3f.firebaseapp.com",
+    databaseURL: "https://sigeb-ccd3f-default-rtdb.firebaseio.com",
+    projectId: "sigeb-ccd3f",
+    storageBucket: "sigeb-ccd3f.appspot.com",
+    messagingSenderId: "209689711066",
+    appId: "1:209689711066:web:5a99505e60bd34f29b70e3",
+    measurementId: "G-VJBDW2B7HZ"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  const storage = firebase.storage();
+  const analytics = firebase.analytics();
+
+  let nomeEscola = 'Escola Exemplo';
+
+  async function buscarEscolaUsuario() {
+    if (auth.currentUser) {
+      const userDoc = await db.collection('usuarios').doc(auth.currentUser.uid).get();
+      if (userDoc.exists && userDoc.data().escolaId) {
+        const escolaDoc = await db.collection('escolas').doc(userDoc.data().escolaId).get();
+        if (escolaDoc.exists && escolaDoc.data().nome) {
+          nomeEscola = escolaDoc.data().nome;
+        }
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const btnGerarRelatorio = document.getElementById('btnGerarRelatorio');
+    const reportType = document.getElementById('reportType');
+    const reportResult = document.getElementById('reportResult');
+    const btnBaixarPDF = document.getElementById('btnBaixarPDF');
+
+    // Inicializa os filtros visíveis com base no tipo de relatório padrão (Livros)
+    reportType.dispatchEvent(new Event('change'));
+
+    btnGerarRelatorio.addEventListener('click', async function () {
+      reportResult.innerHTML = '<p>Carregando dados...</p>';
+      let html = '';
+
+      if (reportType.value === 'livros') {
+        const genero = document.getElementById('livrosGenero').value;
+        let query = db.collection('livros');
+        if (genero) {
+          query = query.where('genero', '==', genero);
+        }
+
+        try {
+          const snapshot = await query.get();
+          if (snapshot.empty) {
+            html = '<p>Nenhum livro encontrado com os filtros selecionados.</p>';
+          } else {
+            // Ordena os livros por título (alfabético)
+            const livrosOrdenados = snapshot.docs
+              .map(doc => doc.data())
+              .sort((a, b) => (a.titulo || '').localeCompare(b.titulo || '', 'pt-BR', { sensitivity: 'base' }));
+
+            html = `
+              <table class="table table-bordered table-sm">
+                <thead>
+                  <tr><th>Título</th><th>Autor</th><th>Gênero</th><th>Qtd Total</th><th>Disponível</th><th>Emprestados</th></tr>
+                </thead>
+                <tbody>
+            `;
+            livrosOrdenados.forEach(l => {
+              const quantidade = l.quantidade || 0;
+              const disponivel = l.quantidadeDisponivel || 0;
+              const emprestados = l.emprestados || 0;
+              const autores = Array.isArray(l.autores) ? l.autores.join(', ') : (l.autores || l.autor || 'Autor não informado');
+
+              html += `
+                <tr>
+                  <td>${l.titulo || 'Sem título'}</td>
+                  <td>${autores}</td>
+                  <td>${l.genero || 'Não informado'}</td>
+                  <td>${quantidade}</td>
+                  <td>${disponivel}</td>
+                  <td>${emprestados}</td>
+                </tr>
+              `;
+            });
+            html += '</tbody></table>';
+            
+            // Adiciona estatísticas resumidas
+            html += `
+              <div class="mt-3">
+                <h5>Resumo:</h5>
+                <p><strong>Total de livros cadastrados:</strong> ${snapshot.size}</p>
+              </div>
+            `;
+          }
+        } catch (error) {
+          html = `<p class="text-danger">Erro ao carregar livros: ${error.message}</p>`;
+          console.error('Erro ao buscar livros:', error);
+        }
+      }
+
+      if (reportType.value === 'usuarios') {
+        const status = document.getElementById('usuariosStatus').value;
+        let query = db.collection('usuarios');
+        if (status) {
+          query = query.where('status', '==', status);
+        }
+
+        try {
+          const snapshot = await query.get();
+          if (snapshot.empty) {
+            html = '<p>Nenhum usuário encontrado com os filtros selecionados.</p>';
+          } else {
+            html = `
+              <table class="table table-bordered table-sm">
+                <thead>
+                  <tr><th>Nome</th><th>Email</th><th>Matrícula</th><th>Função</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+            `;
+            snapshot.forEach(doc => {
+              const u = doc.data();
+              html += `
+                <tr>
+                  <td>${u.nome || 'Nome não informado'}</td>
+                  <td>${u.email || 'Email não informado'}</td>
+                  <td>${u.matricula || 'Não informado'}</td>
+                  <td>${u.funcao || u.papel || 'Não informado'}</td>
+                  <td><span class="badge ${(u.status === 'Ativo' || !u.status) ? 'bg-success' : 'bg-secondary'}">${u.status || 'Ativo'}</span></td>
+                </tr>
+              `;
+            });
+            html += '</tbody></table>';
+            
+            // Adiciona estatísticas resumidas
+            html += `
+              <div class="mt-3">
+                <h5>Resumo:</h5>
+                <p><strong>Total de usuários:</strong> ${snapshot.size}</p>
+              </div>
+            `;
+          }
+        } catch (error) {
+          html = `<p class="text-danger">Erro ao carregar usuários: ${error.message}</p>`;
+          console.error('Erro ao buscar usuários:', error);
+        }
+      }
+
+      if (reportType.value === 'emprestimos') {
+        const situacaoFiltro = document.getElementById('emprestimosSituacao').value;
+        const dataInicio = document.getElementById('dataInicio').value;
+        const dataFim = document.getElementById('dataFim').value;
+        let query = db.collection('emprestimos');
+
+        try {
+          const snapshot = await query.get();
+          if (snapshot.empty) {
+            html = '<p>Nenhum empréstimo encontrado com os filtros selecionados.</p>';
+          } else {
+            html = `
+              <table class="table table-bordered table-sm">
+                <thead>
+                  <tr><th>Usuário</th><th>Livro(s)</th><th>Data Empréstimo</th><th>Data Devolução</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+            `;
+            
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            
+            // Converter datas do filtro para objetos Date para comparação
+            let dataInicioObj = null;
+            let dataFimObj = null;
+            
+            if (dataInicio) {
+              dataInicioObj = new Date(dataInicio);
+              dataInicioObj.setHours(0, 0, 0, 0);
+            }
+            
+            if (dataFim) {
+              dataFimObj = new Date(dataFim);
+              dataFimObj.setHours(23, 59, 59, 999);
+            }
+            
+            let emprestimosExibidos = 0;
+            
+            for (const doc of snapshot.docs) {
+              const e = doc.data();
+              
+              // Filtro por data
+              let passaFiltroPorData = true;
+              if (dataInicioObj || dataFimObj) {
+                // Converter data do empréstimo para Date
+                let dataEmprestimoObj = null;
+                if (e.loanDate) {
+                  const dateParts = e.loanDate.split('/');
+                  if (dateParts.length === 3) {
+                    dataEmprestimoObj = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                    dataEmprestimoObj.setHours(0, 0, 0, 0);
+                  }
+                }
+                
+                if (dataEmprestimoObj) {
+                  if (dataInicioObj && dataEmprestimoObj < dataInicioObj) {
+                    passaFiltroPorData = false;
+                  }
+                  if (dataFimObj && dataEmprestimoObj > dataFimObj) {
+                    passaFiltroPorData = false;
+                  }
+                } else {
+                  // Se não conseguir converter a data, não exibe se há filtro de data
+                  if (dataInicioObj || dataFimObj) {
+                    passaFiltroPorData = false;
+                  }
+                }
+              }
+              
+              if (!passaFiltroPorData) continue;
+              
+              // Buscar nome do usuário
+              let nomeUsuario = 'Usuário não encontrado';
+              try {
+                if (e.userId) {
+                  const userDoc = await db.collection('usuarios').doc(e.userId).get();
+                  if (userDoc.exists) {
+                    nomeUsuario = userDoc.data().nome || 'Nome não informado';
+                  }
+                }
+              } catch (error) {
+                console.error('Erro ao buscar usuário:', error);
+              }
+
+              // Buscar nomes dos livros
+              let nomesLivros = 'Livros não encontrados';
+              try {
+                if (Array.isArray(e.books)) {
+                  const livrosPromises = e.books.map(async (book) => {
+                    const livroDoc = await db.collection('livros').doc(book.bookId).get();
+                    const livroData = livroDoc.exists ? livroDoc.data() : null;
+                    const titulo = livroData ? livroData.titulo : book.bookId;
+                    return `${titulo} (Qtd: ${book.quantity})`;
+                  });
+                  const livrosArray = await Promise.all(livrosPromises);
+                  nomesLivros = livrosArray.join(', ');
+                }
+              } catch (error) {
+                console.error('Erro ao buscar livros:', error);
+              }
+
+              // Determinar status real
+              let statusAtual = e.status || 'EMPRESTADO';
+              
+              // Verificar se está atrasado baseado na data
+              if (e.returnDate && (statusAtual === 'EMPRESTADO' || statusAtual === 'ATRASADO')) {
+                const dateParts = e.returnDate.split('/');
+                if (dateParts.length === 3) {
+                  const returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                  returnDate.setHours(0, 0, 0, 0);
+                  if (returnDate < hoje) {
+                    statusAtual = 'ATRASADO';
+                  }
+                }
+              }
+
+              // Mapear status para filtro
+              let statusFiltro = '';
+              if (statusAtual === 'EMPRESTADO') statusFiltro = 'Ativo';
+              else if (statusAtual === 'ATRASADO') statusFiltro = 'Atrasado';
+              else if (statusAtual === 'DEVOLVIDO') statusFiltro = 'Finalizado';
+
+              // Aplicar filtro de situação
+              if (situacaoFiltro && situacaoFiltro !== statusFiltro) {
+                continue; // Pula este empréstimo
+              }
+
+              emprestimosExibidos++;
+
+              html += `
+                <tr>
+                  <td>${nomeUsuario}</td>
+                  <td>${nomesLivros}</td>
+                  <td>${e.loanDate || 'Data não informada'}</td>
+                  <td>${e.returnDate || 'Data não informada'}</td>
+                  <td><span class="badge ${statusAtual === 'DEVOLVIDO' ? 'bg-success' : statusAtual === 'ATRASADO' ? 'bg-danger' : 'bg-primary'}">${statusAtual}</span></td>
+                </tr>
+              `;
+            }
+            
+            if (emprestimosExibidos === 0) {
+              html = '<p>Nenhum empréstimo encontrado com os filtros selecionados.</p>';
+            } else {
+              html += '</tbody></table>';
+              
+              // Adiciona estatísticas resumidas
+              html += `
+                <div class="mt-3">
+                  <h5>Resumo:</h5>
+                  <p><strong>Total de empréstimos encontrados:</strong> ${emprestimosExibidos}</p>
+                  <p><strong>Total de empréstimos no sistema:</strong> ${snapshot.size}</p>
+                  ${dataInicio || dataFim ? `<p><strong>Período:</strong> ${dataInicio ? new Date(dataInicio).toLocaleDateString('pt-BR') : 'Início'} até ${dataFim ? new Date(dataFim).toLocaleDateString('pt-BR') : 'Fim'}</p>` : ''}
+                </div>
+              `;
+            }
+          }
+        } catch (error) {
+          html = `<p class="text-danger">Erro ao carregar empréstimos: ${error.message}</p>`;
+          console.error('Erro ao buscar empréstimos:', error);
+        }
+      }
+
+      if (reportType.value === 'advertencias') {
+        try {
+          const snapshot = await db.collection('advertencias').orderBy('createdAt', 'desc').get();
+          if (snapshot.empty) {
+            html = '<p>Nenhuma advertência encontrada.</p>';
+          } else {
+            html = `
+              <table class="table table-bordered table-sm">
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Usuário</th>
+                    <th>Registro Empréstimo</th>
+                    <th>Dias de Atraso</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+            `;
+            for (const doc of snapshot.docs) {
+              const adv = doc.data();
+              let nomeUsuario = 'Usuário não encontrado';
+              try {
+                if (adv.loanId) {
+                  const loanDoc = await db.collection('emprestimos').doc(adv.loanId).get();
+                  if (loanDoc.exists && loanDoc.data().userId) {
+                    const userDoc = await db.collection('usuarios').doc(loanDoc.data().userId).get();
+                    if (userDoc.exists) nomeUsuario = userDoc.data().nome || 'Nome não informado';
+                  }
+                }
+              } catch {}
+              html += `
+                <tr>
+                  <td>${adv.warningDate || '-'}</td>
+                  <td>${nomeUsuario}</td>
+                  <td>${adv.loanId || '-'}</td>
+                  <td>${adv.daysLate || '-'}</td>
+                  <td><span class="badge bg-warning">${adv.status || '-'}</span></td>
+                </tr>
+              `;
+            }
+            html += '</tbody></table>';
+            html += `<div class="mt-3"><strong>Total de advertências:</strong> ${snapshot.size}</div>`;
+          }
+        } catch (error) {
+          html = `<p class="text-danger">Erro ao carregar advertências: ${error.message}</p>`;
+          console.error('Erro ao buscar advertências:', error);
+        }
+      }
+
+      reportResult.innerHTML = html;
+    });
+
+    // Exibe/esconde filtros conforme o tipo de relatório
+    reportType.addEventListener('change', function () {
+      document.getElementById('livrosFilters').classList.toggle('d-none', this.value !== 'livros');
+      document.getElementById('usuariosFilters').classList.toggle('d-none', this.value !== 'usuarios');
+      document.getElementById('emprestimosFilters').classList.toggle('d-none', this.value !== 'emprestimos');
+      
+      // Controla a exibição dos filtros de data dos empréstimos
+      const emprestimosDateFilters = document.getElementById('emprestimosDateFilters');
+      const otherReportsActions = document.getElementById('otherReportsActions');
+      
+      if (this.value === 'emprestimos') {
+        emprestimosDateFilters.style.display = 'flex';
+        otherReportsActions.style.display = 'none';
+      } else {
+        emprestimosDateFilters.style.display = 'none';
+        otherReportsActions.style.display = 'flex';
+      }
+    });
+
+    // Função para baixar PDF (duplicada para os dois botões)
+    function baixarPDF() {
+      const reportType = document.getElementById('reportType').value;
+      const reportResult = document.getElementById('reportResult');
+      const doc = new jspdf.jsPDF();
+
+      let titulo = '';
+      if (reportType === 'livros') titulo = 'Relatório de Livros';
+      if (reportType === 'usuarios') titulo = 'Relatório de Usuários';
+      if (reportType === 'emprestimos') titulo = 'Relatório de Empréstimos';
+      if (reportType === 'advertencias') titulo = 'Relatório de Advertências';
+
+      // Adiciona informações de filtro ao título
+      if (reportType === 'emprestimos') {
+        const dataInicio = document.getElementById('dataInicio').value;
+        const dataFim = document.getElementById('dataFim').value;
+        const situacao = document.getElementById('emprestimosSituacao').value;
+        
+        if (dataInicio || dataFim || situacao) {
+          let filtros = [];
+          if (situacao) filtros.push(`Situação: ${situacao}`);
+          if (dataInicio) filtros.push(`De: ${new Date(dataInicio).toLocaleDateString('pt-BR')}`);
+          if (dataFim) filtros.push(`Até: ${new Date(dataFim).toLocaleDateString('pt-BR')}`);
+          titulo += ` (${filtros.join(', ')})`;
+        }
+      }
+
+      // Função para adicionar logo e cabeçalho
+      function adicionarCabecalho() {
+        // Adicionar logo ABA.png
+        try {
+          const logoImg = new Image();
+          logoImg.onload = function() {
+            // Adicionar logo no canto superior esquerdo
+            doc.addImage(logoImg, 'PNG', 14, 10, 30, 30);
+            
+            // Adicionar informações da escola
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Escola Estadual Professor Álvaro Brandão de Andrade', 50, 20);
+            
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Sistema de Gestão de Biblioteca - SIGEB', 50, 28);
+            
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text(titulo, 50, 38);
+            
+            // Adicionar data de geração
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 14, 50);
+            
+            // Linha separadora
+            doc.setLineWidth(0.5);
+            doc.line(14, 55, 196, 55);
+            
+            // Gerar tabela
+            const table = reportResult.querySelector('table');
+            if (table) {
+              doc.autoTable({ 
+                html: table, 
+                startY: 60,
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [13, 40, 71] },
+                theme: 'striped'
+              });
+            } else {
+              doc.text('Nenhum dado para exportar.', 14, 70);
+            }
+            
+            // Adicionar rodapé
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+              doc.setPage(i);
+              doc.setFontSize(8);
+              doc.text(`Página ${i} de ${pageCount}`, 14, 285);
+              doc.text('© 2025 SIGEB - Sistema de Gestão de Biblioteca', 120, 285);
+            }
+            
+            doc.save(`${titulo.replace(/\s/g, '_').toLowerCase()}.pdf`);
+          };
+          
+          logoImg.onerror = function() {
+            console.warn('Erro ao carregar logo, gerando PDF sem logo');
+            gerarPDFSemLogo();
+          };
+          
+          logoImg.src = 'logoaba.png';
+        } catch (error) {
+          console.warn('Erro ao processar logo:', error);
+          gerarPDFSemLogo();
+        }
+      }
+
+      // Função alternativa sem logo
+      function gerarPDFSemLogo() {
+        // Adicionar informações da escola
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Escola Estadual Professor Álvaro Brandão de Andrade', 14, 20);
+        
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Sistema de Gestão de Biblioteca - SIGEB', 14, 28);
+        
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text(titulo, 14, 38);
+        
+        // Adicionar data de geração
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 14, 48);
+        
+        // Linha separadora
+        doc.setLineWidth(0.5);
+        doc.line(14, 52, 196, 52);
+
+        const table = reportResult.querySelector('table');
+        if (table) {
+          doc.autoTable({ 
+            html: table, 
+            startY: 58,
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [13, 40, 71] },
+            theme: 'striped'
+          });
+        } else {
+          doc.text('Nenhum dado para exportar.', 14, 68);
+        }
+        
+        // Adicionar rodapé
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.setFontSize(8);
+          doc.text(`Página ${i} de ${pageCount}`, 14, 285);
+          doc.text('© 2025 SIGEB - Sistema de Gestão de Biblioteca', 120, 285);
+        }
+        
+        doc.save(`${titulo.replace(/\s/g, '_').toLowerCase()}.pdf`);
+      }
+
+      // Iniciar processo de geração
+      adicionarCabecalho();
+    }
+
+    btnBaixarPDF.addEventListener('click', baixarPDF);
+    document.getElementById('btnBaixarPDF2').addEventListener('click', baixarPDF);
+
+    // Exemplo para buscar a quantidade total de livros cadastrados no Firestore
+    async function buscarQuantidadeLivros() {
+      try {
+        const snapshot = await db.collection('livros').get();
+        const quantidade = snapshot.size; // Número total de documentos (livros)
+        console.log('Quantidade de livros:', quantidade);
+        // Exemplo: exibir na tela
+        document.getElementById('quantidadeLivros').textContent = quantidade;
+      } catch (e) {
+        console.error('Erro ao buscar quantidade de livros:', e);
+      }
+    }
+
+    // Chame a função ao carregar a página
+    buscarQuantidadeLivros();
+
+    // Buscar todos os empréstimos do Firestore
+    async function buscarEmprestimos() {
+      const snapshot = await db.collection('emprestimos').get();
+      const emprestimos = [];
+      snapshot.forEach(doc => {
+        emprestimos.push({ id: doc.id, ...doc.data() });
+      });
+      console.log(emprestimos);
+      return emprestimos;
+    }
+  });
+</script>
+</body>
+</html>

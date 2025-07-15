@@ -1,0 +1,3766 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SIGEB - Empréstimos</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+<style>
+body {
+font-family: 'Poppins', sans-serif;
+background: #f0f2f5;
+margin: 0;
+padding: 0;
+}
+.sidebar {
+position: fixed;
+top: 0;
+left: 0;
+height: 100%;
+width: 250px;
+background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+color: white;
+padding: 20px;
+transition: all 0.3s ease;
+z-index: 1000;
+}
+.sidebar-header {
+padding: 20px 0;
+text-align: center;
+border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.sidebar-header h3 {
+background: linear-gradient(90deg, #00f2fe, #4facfe);
+-webkit-background-clip: text;
+background-clip: text;
+-webkit-text-fill-color: transparent;
+margin: 0;
+font-weight: 600;
+}
+.menu-items {
+padding: 20px 0;
+}
+.menu-item {
+padding: 12px 20px;
+color: white;
+text-decoration: none;
+display: flex;
+align-items: center;
+transition: all 0.3s ease;
+border-radius: 8px;
+margin-bottom: 5px;
+}
+.menu-item:hover, .menu-item.active {
+background: rgba(255, 255, 255, 0.1);
+color: #4facfe;
+}
+.menu-item i {
+margin-right: 10px;
+font-size: 1.2rem;
+}
+.main-content {
+margin-left: 250px;
+padding: 20px;
+transition: all 0.3s ease;
+}
+.page-header {
+background: white;
+padding: 20px;
+border-radius: 15px;
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+margin-bottom: 20px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+.loans-table {
+background: white;
+border-radius: 15px;
+padding: 20px;
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+.table {
+margin-bottom: 0;
+}
+.table th {
+border-top: none;
+font-weight: 600;
+color: #1a1a2e;
+}
+.loan-status {
+display: inline-block;
+padding: 5px 10px;
+border-radius: 20px;
+font-size: 0.8rem;
+}
+.status-emprestado {
+background: #e8f5e9;
+color: #2e7d32;
+}
+.status-atrasado {
+background: #ffebee;
+color: #c62828;
+}
+.status-devolvido {
+background: #e3f2fd;
+color: #1565c0;
+}
+.add-button {
+background: linear-gradient(90deg, #00f2fe, #4facfe);
+color: white;
+border: none;
+padding: 10px 20px;
+border-radius: 8px;
+display: flex;
+align-items: center;
+gap: 8px;
+transition: all 0.3s ease;
+}
+.add-button:hover {
+transform: translateY(-2px);
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+.search-box {
+display: flex;
+gap: 10px;
+margin-bottom: 20px;
+}
+.search-box input {
+flex: 1;
+padding: 10px 15px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 0.9rem;
+}
+.action-buttons {
+display: flex;
+gap: 10px;
+}
+.action-button {
+background: none;
+border: none;
+padding: 5px;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+.action-button:hover {
+transform: translateY(-2px);
+}
+.return-button {
+color: #4facfe;
+}
+.renew-button {
+color: #2e7d32;
+}
+@media (max-width: 768px) {
+.sidebar {
+transform: translateX(-100%);
+}
+.main-content {
+margin-left: 0;
+}
+.sidebar.active {
+transform: translateX(0);
+}
+.table-responsive {
+margin-bottom: 0;
+}
+}
+#notReturnedBar {
+position: relative;
+overflow: hidden;
+height: 48px;
+min-height: 48px;
+display: flex;
+align-items: center;
+}
+#notReturnedBar .marquee {
+display: inline-block;
+white-space: nowrap;
+will-change: transform;
+/* Velocidade ajustada para leitura humana: 40s */
+animation: marquee-bar 40s linear infinite;
+}
+@keyframes marquee-bar {
+0% { transform: translateX(100%);}
+100% { transform: translateX(-100%);}
+}
+</style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+<!-- Firebase Initialization -->
+<script>
+// Corrigido: Removido import/export e inicialização modular
+// Use apenas a versão compat!
+const firebaseConfig = {
+apiKey: "AIzaSyCkttFoV_FoPn91ClE7xFiknFvs9pXaCoQ", // Troque pela chave correta do seu projeto!
+authDomain: "sigeb-ccd3f.firebaseapp.com",
+databaseURL: "https://sigeb-ccd3f-default-rtdb.firebaseio.com",
+projectId: "sigeb-ccd3f",
+storageBucket: "sigeb-ccd3f.appspot.com",
+messagingSenderId: "209689711066",
+appId: "1:209689711066:web:5a99505e60bd34f29b70e3",
+measurementId: "G-VJBDW2B7HZ"
+};
+
+// Inicializa Firebase usando compat
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+// Se quiser analytics (opcional, só se a API key for válida)
+if (firebase.analytics) {
+firebase.analytics();
+}
+</script>
+<!-- Email.js -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<!-- Date picker -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+<!-- Importação do SheetJS para geração de relatórios XLS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- Biblioteca para assinatura digital -->
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<style>
+body {
+font-family: 'Poppins', sans-serif;
+background: #f0f2f5;
+margin: 0;
+padding: 0;
+}
+.sidebar {
+position: fixed;
+top: 0;
+left: 0;
+height: 100%;
+width: 250px;
+background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+color: white;
+padding: 20px;
+transition: all 0.3s ease;
+z-index: 1000;
+}
+.sidebar-header {
+padding: 20px 0;
+text-align: center;
+border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.sidebar-header h3 {
+background: linear-gradient(90deg, #00f2fe, #4facfe);
+-webkit-background-clip: text;
+background-clip: text;
+-webkit-text-fill-color: transparent;
+margin: 0;
+font-weight: 600;
+}
+.menu-items {
+padding: 20px 0;
+}
+.menu-item {
+padding: 12px 20px;
+color: white;
+text-decoration: none;
+display: flex;
+align-items: center;
+transition: all 0.3s ease;
+border-radius: 8px;
+margin-bottom: 5px;
+}
+.menu-item:hover, .menu-item.active {
+background: rgba(255, 255, 255, 0.1);
+color: #4facfe;
+}
+.menu-item i {
+margin-right: 10px;
+font-size: 1.2rem;
+}
+.main-content {
+margin-left: 250px;
+padding: 20px;
+transition: all 0.3s ease;
+}
+.page-header {
+background: white;
+padding: 20px;
+border-radius: 15px;
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+margin-bottom: 20px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+.loans-table {
+background: white;
+border-radius: 15px;
+padding: 20px;
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+.table {
+margin-bottom: 0;
+}
+.table th {
+border-top: none;
+font-weight: 600;
+color: #1a1a2e;
+}
+.loan-status {
+display: inline-block;
+padding: 5px 10px;
+border-radius: 20px;
+font-size: 0.8rem;
+}
+.status-emprestado {
+background: #e8f5e9;
+color: #2e7d32;
+}
+.status-atrasado {
+background: #ffebee;
+color: #c62828;
+}
+.status-devolvido {
+background: #e3f2fd;
+color: #1565c0;
+}
+.add-button {
+background: linear-gradient(90deg, #00f2fe, #4facfe);
+color: white;
+border: none;
+padding: 10px 20px;
+border-radius: 8px;
+display: flex;
+align-items: center;
+gap: 8px;
+transition: all 0.3s ease;
+}
+.add-button:hover {
+transform: translateY(-2px);
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+.search-box {
+display: flex;
+gap: 10px;
+margin-bottom: 20px;
+}
+.search-box input {
+flex: 1;
+padding: 10px 15px;
+border: 1px solid #ddd;
+border-radius: 8px;
+font-size: 0.9rem;
+}
+.action-buttons {
+display: flex;
+gap: 10px;
+}
+.action-button {
+background: none;
+border: none;
+padding: 5px;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+.action-button:hover {
+transform: translateY(-2px);
+}
+.return-button {
+color: #4facfe;
+}
+.renew-button {
+color: #2e7d32;
+}
+@media (max-width: 768px) {
+.sidebar {
+transform: translateX(-100%);
+}
+.main-content {
+margin-left: 0;
+}
+.sidebar.active {
+transform: translateX(0);
+}
+.table-responsive {
+margin-bottom: 0;
+}
+}
+#notReturnedBar {
+position: relative;
+overflow: hidden;
+height: 48px;
+min-height: 48px;
+display: flex;
+align-items: center;
+}
+#notReturnedBar .marquee {
+display: inline-block;
+white-space: nowrap;
+will-change: transform;
+/* Velocidade ajustada para leitura humana: 40s */
+animation: marquee-bar 40s linear infinite;
+}
+@keyframes marquee-bar {
+0% { transform: translateX(100%);}
+100% { transform: translateX(-100%);}
+}
+</style>
+<!-- Adicione esta linha ANTES do seu <script> principal, logo após os outros scripts externos -->
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.6/dist/signature_pad.umd.min.js"></script>
+</head>
+<body>
+<div class="sidebar">
+<div class="sidebar-header">
+<h3>SIGEB</h3>
+</div>
+<div class="menu-items">
+<a href="dashboard.html" class="menu-item">
+<i class='bx bxs-dashboard'></i>
+Dashboard
+</a>
+<a href="livros.html" class="menu-item">
+<i class='bx bxs-book'></i>
+Livros
+</a>
+<a href="usuarios.html" class="menu-item">
+<i class='bx bxs-user'></i>
+Usuários
+</a>
+<a href="emprestimos.html" class="menu-item active">
+<i class='bx bxs-bookmark'></i>
+Empréstimos
+</a>
+<a href="relatorios.html" class="menu-item" title="Relatórios do sistema">
+<i class='bx bxs-report'></i>
+Relatórios
+</a>
+<a href="configuracoes.html" class="menu-item">
+<i class='bx bxs-cog'></i>
+Configurações
+</a>
+<a href="index.html" class="menu-item">
+<i class='bx bxs-log-out'></i>
+Sair
+</a>
+</div>
+</div>
+
+<div class="main-content">
+<div class="page-header">
+<div>
+<h2>Gerenciamento de Empréstimos</h2>
+<p>Controle os empréstimos da biblioteca</p>
+</div>
+<div class="d-flex gap-2">
+<button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#warningsListModal">
+<i class='bx bx-error-circle'></i>
+Consultar Advertências
+</button>
+<button class="add-button" data-bs-toggle="modal" data-bs-target="#addLoanModal">
+<i class='bx bx-plus'></i>
+Novo Empréstimo
+</button>
+</div>
+</div>
+
+<!-- Barra piscante de atrasos -->
+<div id="notReturnedBar" style="display:none; margin-bottom:20px;"></div>
+
+<!-- Botões de filtro estilo gráfico -->
+<div id="loanStats" class="d-flex justify-content-center align-items-center mb-4" style="gap: 40px;">
+<div class="pie-btn shadow-lg" id="btnEmprestado" onclick="showLoansByStatus('EMPRESTADO')">
+<div class="pie-chart pie-emprestado">
+<span id="countEmprestado"></span>
+<svg class="pie-svg" width="90" height="90">
+<circle class="pie-bg" cx="45" cy="45" r="38"/>
+<circle class="pie-fg pie-fg-emprestado" cx="45" cy="45" r="38"/>
+</svg>
+</div>
+<div class="pie-label">Emprestados</div>
+</div>
+<div class="pie-btn shadow-lg" id="btnAtrasado" onclick="showLoansByStatus('ATRASADO')">
+<div class="pie-chart pie-atrasado">
+<span id="countAtrasado"></span>
+<svg class="pie-svg" width="90" height="90">
+<circle class="pie-bg" cx="45" cy="45" r="38"/>
+<circle class="pie-fg pie-fg-atrasado" cx="45" cy="45" r="38"/>
+</svg>
+</div>
+<div class="pie-label">Atrasos</div>
+</div>
+<div class="pie-btn shadow-lg" id="btnDevolvido" onclick="showLoansByStatus('DEVOLVIDO')">
+<div class="pie-chart pie-devolvido">
+<span id="countDevolvido"></span>
+<svg class="pie-svg" width="90" height="90">
+<circle class="pie-bg" cx="45" cy="45" r="38"/>
+<circle class="pie-fg pie-fg-devolvido" cx="45" cy="45" r="38"/>
+</svg>
+</div>
+<div class="pie-label">Devolvidos</div>
+</div>
+</div>
+<style>
+#loanStats {
+margin-top: 40px;
+margin-bottom: 40px;
+gap: 40px;
+}
+.pie-btn {
+display: flex;
+flex-direction: column;
+align-items: center;
+cursor: pointer;
+min-width: 120px;
+transition: transform 0.18s, box-shadow 0.18s;
+border-radius: 18px;
+background: rgba(255,255,255,0.85);
+box-shadow: 0 4px 24px 0 rgba(80,120,255,0.07);
+padding: 18px 10px 10px 10px;
+position: relative;
+overflow: visible;
+}
+.pie-btn:hover {
+transform: translateY(-4px) scale(1.06);
+box-shadow: 0 8px 32px 0 rgba(80,120,255,0.13);
+background: linear-gradient(120deg, #f8fbff 80%, #e3f2fd 100%);
+}
+.pie-chart {
+width: 90px;
+height: 90px;
+border-radius: 50%;
+position: relative;
+margin-bottom: 10px;
+display: flex;
+align-items: center;
+justify-content: center;
+background: transparent;
+}
+.pie-chart span {
+position: absolute;
+left: 0; right: 0; top: 0; bottom: 0;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 2.1rem;
+font-weight: 700;
+z-index: 2;
+color: #222;
+pointer-events: none;
+text-shadow: 0 2px 8px #fff, 0 1px 0 #e3f2fd;
+}
+.pie-svg {
+position: absolute;
+left: 0; top: 0;
+z-index: 1;
+pointer-events: none;
+}
+.pie-bg {
+fill: none;
+stroke: #e3f2fd;
+stroke-width: 10;
+}
+.pie-fg {
+fill: none;
+stroke-width: 10;
+stroke-linecap: round;
+transform: rotate(-90deg);
+transform-origin: 50% 50%;
+transition: stroke-dasharray 0.7s cubic-bezier(.4,2,.6,1), stroke 0.3s;
+}
+.pie-fg-emprestado { stroke: #4facfe; }
+.pie-fg-atrasado { stroke: #c62828; }
+.pie-fg-devolvido { stroke: #2e7d32; }
+.pie-label {
+font-size: 1.13rem;
+font-weight: 600;
+margin-top: 8px;
+color: #1a1a2e;
+text-align: center;
+letter-spacing: 0.01em;
+text-shadow: 0 1px 0 #fff;
+}
+@media (max-width: 768px) {
+#loanStats {
+flex-direction: column !important;
+gap: 24px !important;
+}
+.pie-btn {
+min-width: 0;
+}
+}
+</style>
+
+<div class="search-box">
+<input type="text" id="searchInput" placeholder="Buscar por nome, matrícula ou registro do empréstimo...">
+<button class="add-button" onclick="searchLoans()">
+<i class='bx bx-search'></i> Buscar Empréstimo
+</button>
+</div>
+
+<!-- Lista dos últimos 15 empréstimos -->
+<div class="loans-table mt-4" id="recentLoansTable">
+<div class="table-responsive">
+<table class="table">
+<thead>
+<tr>
+<th>Livro</th>
+<th>Usuário</th>
+<th>Data Empréstimo</th>
+<th>Data Devolução</th>
+<th>Status</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody id="loansTableBody">
+<!-- Dados serão carregados dinamicamente -->
+</tbody>
+</table>
+</div>
+</div>
+<!-- Fim da lista dos últimos 15 empréstimos -->
+
+</div>
+
+<!-- Modal Novo Empréstimo Melhorado -->
+<div class="modal fade" id="addLoanModal" tabindex="-1" aria-labelledby="addLoanModalLabel" aria-hidden="true">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<form id="addLoanForm" class="needs-validation" novalidate>
+<div class="modal-header">
+<h5 class="modal-title" id="addLoanModalLabel">Novo Empréstimo</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+</div>
+<div class="modal-body">
+<div class="row mb-3">
+<div class="col-md-4">
+<label class="form-label" for="registroNumero">Nº Registro</label>
+<input type="text" class="form-control" id="registroNumero" readonly>
+</div>
+<div class="col-md-8">
+<label class="form-label" for="userSearch">Usuário*</label>
+<div class="input-group">
+<input type="text" class="form-control" id="userSearch" required placeholder="Digite nome ou matrícula">
+<button class="btn btn-outline-secondary" type="button" onclick="searchUsers()">
+<i class='bx bx-search'></i>
+</button>
+</div>
+<div id="userSearchResults" class="dropdown-menu w-100"></div>
+<input type="hidden" id="selectedUserId">
+<div class="form-text">Selecione o usuário para o empréstimo.</div>
+</div>
+</div>
+<div class="mb-3">
+<label class="form-label">Livros*</label>
+<div id="multiBookLoans">
+<div class="loan-book-row row align-items-end mb-2">
+<div class="col-md-6">
+<label class="form-label visually-hidden" for="bookSearch0">Livro*</label>
+<div class="input-group">
+<input type="text" class="form-control bookSearch" id="bookSearch0" name="bookSearch0" required placeholder="Digite o título ou ISBN">
+<button class="btn btn-outline-secondary" type="button" onclick="searchBooks(this)">
+<i class='bx bx-search'></i>
+</button>
+</div>
+<div class="bookSearchResults dropdown-menu w-100"></div>
+<input type="hidden" class="selectedBookId" name="selectedBookId0" id="selectedBookId0">
+</div>
+<div class="col-md-3">
+<label class="form-label visually-hidden" for="quantity0">Quantidade*</label>
+<input type="number" class="form-control quantity" id="quantity0" name="quantity0" required min="1" value="1">
+<div class="form-text">Disponível: <span class="availableQuantity">-</span></div>
+</div>
+<div class="col-md-2">
+<button type="button" class="btn btn-danger removeBookRow" style="display:none;" onclick="removeBookRow(this)">
+<i class="bx bx-minus"></i>
+</button>
+</div>
+</div>
+</div>
+<small class="text-muted d-block mt-2">Adicione vários títulos diferentes para o mesmo usuário neste empréstimo.</small>
+</div>
+<div class="row">
+<div class="col-md-6 mb-3">
+<label for="loanDate" class="form-label">Data do Empréstimo*</label>
+<input type="text" class="form-control" id="loanDate" required autocomplete="off" placeholder="dd/mm/aaaa">
+<div class="form-text">Formato: DD/MM/AAAA (ex: 27/06/2025)</div>
+</div>
+<div class="col-md-6 mb-3">
+<label for="returnDate" class="form-label">Data de Devolução*</label>
+<div class="input-group">
+<input type="text" class="form-control" id="returnDate" required autocomplete="off" placeholder="dd/mm/aaaa">
+<button class="btn btn-outline-secondary" type="button" id="setDefaultReturnDate" title="Definir 7 dias padrão">
+<i class='bx bx-calendar-plus'></i> 7 dias
+</button>
+</div>
+<div class="form-text">
+<span class="text-primary">Padrão: 7 dias.</span> 
+<span class="text-muted">Você pode alterar conforme necessário.</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Substitua o bloco da modal-footer do modal de novo empréstimo por este: -->
+<div class="modal-footer d-flex justify-content-between align-items-center">
+    <button type="button" class="btn btn-success" id="btnEnviarWhatsappForm">
+        <i class="bx bxl-whatsapp"></i> Enviar Via WhatsApp
+    </button>
+    <div>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Registrar Empréstimo</button>
+    </div>
+</div>
+<!-- Remova o botão WhatsApp duplicado fora do modal, se existir -->
+</form>
+<!-- Exemplo: Adicione este botão no modal de sucesso ou onde desejar -->
+<button type="button" class="btn btn-success" id="btnEnviarWhatsapp" style="display:none; margin-top:10px;">
+<i class="bx bxl-whatsapp"></i> Enviar Via WhatsApp
+</button>
+</div>
+</div>
+</div>
+
+<!-- Modal Editar Empréstimo -->
+<div class="modal fade" id="editLoanModal" tabindex="-1" aria-labelledby="editLoanModalLabel" aria-hidden="true">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title" id="editLoanModalLabel">Editar Empréstimo</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+</div>
+<div class="modal-body">
+<form id="editLoanForm" class="needs-validation" novalidate>
+<input type="hidden" id="editLoanId">
+<div class="row">
+<div class="col-md-6 mb-3">
+<label for="editLoanDate" class="form-label">Data do Empréstimo*</label>
+<input type="text" class="form-control" id="editLoanDate" required>
+</div>
+<div class="col-md-6 mb-3">
+<label for="editReturnDate" class="form-label">Data de Devolução*</label>
+<div class="input-group">
+<input type="text" class="form-control" id="editReturnDate" required>
+<button class="btn btn-outline-secondary" type="button" id="setDefaultEditReturnDate" title="Definir 7 dias a partir da data do empréstimo">
+<i class='bx bx-calendar-plus'></i> +7 dias
+</button>
+</div>
+<div class="form-text text-muted">
+Você pode alterar a data de devolução conforme necessário.
+</div>
+</div>
+</div>
+</form>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+<button type="submit" form="editLoanForm" class="btn btn-primary">Salvar Alterações</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Modal Renovar Empréstimo -->
+<div class="modal fade" id="renewLoanModal" tabindex="-1" aria-labelledby="renewLoanModalLabel" aria-hidden="true">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title" id="renewLoanModalLabel">Renovar Empréstimo</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+</div>
+<div class="modal-body">
+<form id="renewLoanForm" class="needs-validation" novalidate>
+<input type="hidden" id="renewLoanId">
+
+<div class="alert alert-info">
+<i class="bx bx-info-circle me-2"></i>
+<strong>Renovação de Empréstimo</strong><br>
+Defina a nova data de devolução para este empréstimo.
+</div>
+
+<div id="renewLoanInfo" class="mb-3">
+<!-- Informações do empréstimo serão carregadas aqui -->
+</div>
+
+<div class="mb-3">
+<label for="renewReturnDate" class="form-label">Nova Data de Devolução*</label>
+<div class="input-group">
+<input type="text" class="form-control" id="renewReturnDate" required autocomplete="off" placeholder="dd/mm/aaaa">
+<button class="btn btn-outline-secondary" type="button" id="setDefaultRenewReturnDate" title="Definir 7 dias a partir de hoje">
+<i class='bx bx-calendar-plus'></i> +7 dias
+</button>
+</div>
+<div class="form-text">
+<span class="text-primary">Padrão: 7 dias a partir de hoje.</span> 
+<span class="text-muted">Você pode alterar conforme necessário.</span>
+</div>
+</div>
+
+<div class="alert alert-warning">
+<i class="bx bx-info-circle me-2"></i>
+<strong>Observação:</strong> A renovação atualizará apenas a data de devolução. O empréstimo continuará ativo com o novo prazo.
+</div>
+</form>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+<button type="submit" form="renewLoanForm" class="btn btn-success">
+<i class="bx bx-refresh me-2"></i>Renovar Empréstimo
+</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Modal Comprovante de Empréstimo -->
+<div class="modal fade" id="printLoanModal" tabindex="-1" aria-labelledby="printLoanModalLabel" aria-hidden="true">
+<div class="modal-dialog">
+<div class="modal-content" id="printArea">
+<div class="modal-header">
+<h5 class="modal-title" id="printLoanModalLabel">Comprovante de Empréstimo</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+</div>
+<div class="modal-body">
+<div id="loanReceiptContent">
+<!-- Conteúdo preenchido via JS -->
+</div>
+<div class="mt-4">
+<label for="userSignature" class="form-label">Assinatura do Usuário:</label>
+<div style="border:1px solid #ccc; height:60px; margin-bottom:10px;">
+<canvas id="signaturePad" width="350" height="60" style="width:100%;height:60px;"></canvas>
+</div>
+<button type="button" class="btn btn-sm btn-secondary mb-2" onclick="clearSignature()">Limpar Assinatura</button>
+</div>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-primary" onclick="printLoanReceipt()">Imprimir</button>
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Modal de Advertência por Atraso -->
+<div class="modal fade" id="warningModal" tabindex="-1" aria-labelledby="warningModalLabel" aria-hidden="true">
+<div class="modal-dialog modal-lg">
+<div class="modal-content" id="warningPrintArea">
+<div class="modal-header bg-danger text-white">
+<h5 class="modal-title" id="warningModalLabel">
+<i class="bx bx-error-circle me-2"></i>Advertência por Atraso
+</h5>
+<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+</div>
+<div class="modal-body">
+<div class="alert alert-danger mb-4">
+<h6 class="alert-heading">
+<i class="bx bx-time me-2"></i>Empréstimo em Atraso
+</h6>
+<p class="mb-0">Este documento constitui uma advertência formal devido ao atraso na devolução de material bibliográfico.</p>
+</div>
+
+<div class="row mb-4">
+<div class="col-md-6">
+<div class="card">
+<div class="card-header bg-light">
+<h6 class="mb-0">Dados da Instituição</h6>
+</div>
+<div class="card-body">
+<p class="mb-1"><strong>${SYSTEM_CONFIG.schoolName}</strong></p>
+<p class="mb-1">Sistema de Gerenciamento de Biblioteca</p>
+<p class="mb-0">Data: <span id="warningDate"></span></p>
+</div>
+</div>
+</div>
+<div class="col-md-6">
+<div class="card">
+<div class="card-header bg-light">
+<h6 class="mb-0">Dados do Usuário</h6>
+</div>
+<div class="card-body" id="warningUserData">
+<!-- Preenchido via JavaScript -->
+</div>
+</div>
+</div>
+</div>
+
+<div class="card mb-4">
+<div class="card-header bg-light">
+<h6 class="mb-0">Detalhes do Empréstimo</h6>
+</div>
+<div class="card-body" id="warningLoanDetails">
+<!-- Preenchido via JavaScript -->
+</div>
+</div>
+
+<div class="alert alert-warning" id="warningConsequences">
+<!-- Preenchido dinamicamente via JavaScript baseado nos dias de atraso -->
+</div>
+
+<div class="alert alert-info">
+<h6 class="alert-heading">Ações Necessárias:</h6>
+<ol class="mb-0">
+<li>Devolução imediata do material em atraso</li>
+<li>Pagamento de eventual multa aplicada</li>
+<li>Assinatura deste termo de advertência</li>
+</ol>
+</div>
+
+<div class="mt-4">
+<div class="row">
+<div class="col-md-6">
+<label class="form-label">Assinatura do Usuário:</label>
+<div style="border: 2px solid #dc3545; height: 80px; border-radius: 5px; margin-bottom: 10px; background-color: #fff;">
+<canvas id="warningSignaturePad" width="400" height="80" style="width: 100%; height: 80px;"></canvas>
+</div>
+<button type="button" class="btn btn-sm btn-outline-danger" onclick="clearWarningSignature()">
+<i class="bx bx-eraser me-1"></i>Limpar Assinatura
+</button>
+</div>
+<div class="col-md-6">
+<label class="form-label">Assinatura do Responsável pela Biblioteca:</label>
+<div style="border: 2px solid #dc3545; height: 80px; border-radius: 5px; margin-bottom: 10px; background-color: #fff;">
+<canvas id="librarianSignaturePad" width="400" height="80" style="width: 100%; height: 80px;"></canvas>
+</div>
+<button type="button" class="btn btn-sm btn-outline-danger" onclick="clearLibrarianSignature()">
+<i class="bx bx-eraser me-1"></i>Limpar Assinatura
+</button>
+</div>
+</div>
+</div>
+
+<div class="mt-4 p-3 bg-light border-start border-5 border-danger">
+<p class="mb-2"><strong>Declaração:</strong></p>
+<p class="mb-0 small">
+Declaro estar ciente das normas da biblioteca e das consequências do atraso na devolução de materiais. 
+Comprometo-me a devolver o material em atraso e a cumprir as penalidades aplicadas conforme regulamento interno.
+</p>
+</div>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-danger" onclick="printWarning()">
+<i class="bx bx-printer me-2"></i>Imprimir Advertência
+</button>
+<button type="button" class="btn btn-success" onclick="saveWarning()" id="saveWarningBtn">
+<i class="bx bx-save me-2"></i>Salvar Advertência
+</button>
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+<i class="bx bx-x me-2"></i>Fechar
+</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Modal de Lista de Advertências -->
+<div class="modal fade" id="warningsListModal" tabindex="-1" aria-labelledby="warningsListModalLabel" aria-hidden="true">
+<div class="modal-dialog modal-xl">
+<div class="modal-content">
+<div class="modal-header bg-warning text-dark">
+<h5 class="modal-title" id="warningsListModalLabel">
+<i class="bx bx-error-circle me-2"></i>Consulta de Advertências Emitidas
+</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+</div>
+<div class="modal-body">
+<div class="row mb-3">
+<div class="col-md-6">
+<div class="input-group">
+<span class="input-group-text"><i class="bx bx-search"></i></span>
+<input type="text" class="form-control" id="warningsSearch" placeholder="Buscar por nome do usuário...">
+</div>
+</div>
+<div class="col-md-3">
+<select class="form-select" id="warningsDateFilter">
+<option value="">Todas as datas</option>
+<option value="7">Últimos 7 dias</option>
+<option value="30">Últimos 30 dias</option>
+<option value="90">Últimos 90 dias</option>
+</select>
+</div>
+<div class="col-md-3">
+<button class="btn btn-primary w-100" onclick="loadWarnings()">
+<i class="bx bx-refresh me-1"></i>Atualizar
+</button>
+</div>
+</div>
+
+<div class="alert alert-info">
+<i class="bx bx-info-circle me-2"></i>
+Total de advertências encontradas: <span id="warningsCount" class="fw-bold">0</span>
+</div>
+
+<div class="table-responsive">
+<table class="table table-hover">
+<thead class="table-warning">
+<tr>
+<th>Data da Advertência</th>
+<th>Usuário</th>
+<th>Livro(s)</th>
+<th>Data do Empréstimo</th>
+<th>Data de Devolução</th>
+<th>Dias de Atraso</th>
+<th>Status</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody id="warningsTableBody">
+<tr>
+<td colspan="8" class="text-center">Carregando advertências...</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-outline-primary" onclick="exportWarningsReport()">
+<i class="bx bx-download me-2"></i>Exportar Relatório
+</button>
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+<i class="bx bx-x me-2"></i>Fechar
+</button>
+</div>
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Configurações do sistema
+const SYSTEM_CONFIG = {
+schoolName: "Escola Estadual Professor Álvaro Brandão de Andrade", // Altere para o nome da sua escola
+systemName: "SIGEB - Sistema de Gerenciamento de Biblioteca",
+defaultLoanDays: 14
+};
+
+// Função para obter data/hora no horário de Brasília
+function getDataBrasilia() {
+// Cria uma nova data no horário UTC
+const agora = new Date();
+
+// Converte para o horário de Brasília (UTC-3)
+// Durante horário de verão seria UTC-2, mas vamos usar UTC-3 como padrão
+const brasiliaOffset = -3; // UTC-3
+const utc = agora.getTime() + (agora.getTimezoneOffset() * 60000);
+const brasilia = new Date(utc + (brasiliaOffset * 3600000));
+
+return brasilia;
+}
+
+// Função para formatar data no padrão brasileiro (DD/MM/AAAA)
+function formatarDataBrasil(data) {
+const day = String(data.getDate()).padStart(2, '0');
+const month = String(data.getMonth() + 1).padStart(2, '0');
+const year = data.getFullYear();
+return `${day}/${month}/${year}`;
+}
+
+// Função para adicionar dias a uma data (horário Brasília)
+function adicionarDias(data, dias) {
+const novaData = new Date(data);
+novaData.setDate(novaData.getDate() + dias);
+return novaData;
+}
+
+// Inicializar Email.js
+(function() {
+emailjs.init("SUA_PUBLIC_KEY_DO_EMAILJS"); // Substitua pela sua chave pública do Email.js
+})();
+
+// Função genérica para enviar email
+async function sendEmailNotification(templateId, userId, data, subject) {
+try {
+const userDoc = await db.collection('usuarios').doc(userId).get();
+const userData = userDoc.data();
+
+if (!userData || !userData.email) {
+console.error('Email do usuário não encontrado ou dados do usuário inválidos');
+return;
+}
+
+const templateParams = {
+to_email: userData.email,
+to_name: userData.nome,
+subject: subject,
+...data
+};
+
+await emailjs.send(
+"SEU_SERVICE_ID_DO_EMAILJS", // Substitua pelo seu Service ID do Email.js
+templateId,
+templateParams
+);
+
+console.log(`Email de ${subject} enviado com sucesso`);
+} catch (error) {
+console.error(`Erro ao enviar email de ${subject}:`, error);
+showAlert('warning', `Houve um erro ao enviar o email de ${subject}`);
+}
+}
+
+// Template do email de empréstimo (usando variáveis do Email.js)
+const LOAN_EMAIL_TEMPLATE_ID = "SEU_TEMPLATE_ID_DO_EMAILJS_EMPRESTIMO"; // Crie um template no Email.js com estas variáveis
+const LOAN_EMAIL_TEMPLATE_VARS = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+<h1 style="color: white; margin: 0; text-align: center;">${SYSTEM_CONFIG.systemName}</h1>
+<h2 style="color: white; margin: 10px 0 0; text-align: center; font-size: 1.2em;">${SYSTEM_CONFIG.schoolName}</h2>
+</div>
+
+<div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+<h2 style="color: #1a1a2e; margin-top: 0;">Comprovante de Empréstimo</h2>
+<p><strong>Usuário:</strong> {{userName}}</p>
+<p><strong>Email:</strong> {{userEmail}}</p>
+<p><strong>Livros:</strong></p>
+<ul>{{booksList}}</ul>
+<p><strong>Data do Empréstimo:</strong> {{loanDate}}</p>
+<p><strong>Data de Devolução:</strong> {{returnDate}}</p>
+</div>
+
+<div style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+<p style="color: #2e7d32; margin: 0;">
+⚠️ Por favor, mantenha este comprovante para referência futura.
+</p>
+</div>
+
+<div style="text-align: center; color: #666;">
+<p>Este é um email automático, por favor não responda.</p>
+<p>${SYSTEM_CONFIG.schoolName}</p>
+<p>${SYSTEM_CONFIG.systemName}</p>
+</div>
+</div>
+`;
+
+// Template do email de renovação (usando variáveis do Email.js)
+const RENEWAL_EMAIL_TEMPLATE_ID = "SEU_TEMPLATE_ID_DO_EMAILJS_RENOVACAO"; // Crie um template no Email.js com estas variáveis
+const RENEWAL_EMAIL_TEMPLATE_VARS = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+<h1 style="color: white; margin: 0; text-align: center;">${SYSTEM_CONFIG.systemName}</h1>
+<h2 style="color: white; margin: 10px 0 0; text-align: center; font-size: 1.2em;">${SYSTEM_CONFIG.schoolName}</h2>
+</div>
+
+<div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+<h2 style="color: #1a1a2e; margin-top: 0;">Confirmação de Renovação</h2>
+<p><strong>Usuário:</strong> {{userName}}</p>
+<p><strong>Email:</strong> {{userEmail}}</p>
+<p><strong>Livro:</strong> {{bookTitle}}</p>
+<p><strong>Nova Data de Devolução:</strong> {{newReturnDate}}</p>
+</div>
+
+<div style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+<p style="color: #2e7d32; margin: 0;">
+⚠️ Por favor, anote a nova data de devolução.
+</p>
+</div>
+
+<div style="text-align: center; color: #666;">
+<p>Este é um email automático, por favor não responda.</p>
+<p>${SYSTEM_CONFIG.schoolName}</p>
+<p>${SYSTEM_CONFIG.systemName}</p>
+</div>
+</div>
+`;
+
+// Função para enviar email de empréstimo (agora usando a função genérica)
+async function sendLoanConfirmationEmail(userId, books, loanDate, returnDate) {
+let booksList = '';
+for (const item of books) {
+const bookDoc = await db.collection('livros').doc(item.bookId).get();
+const bookData = bookDoc.data();
+booksList += `<li>${bookData.titulo} - Quantidade: ${item.quantity}</li>`;
+}
+
+const emailData = {
+userName: (await db.collection('usuarios').doc(userId).get()).data().nome,
+userEmail: (await db.collection('usuarios').doc(userId).get()).data().email,
+booksList: booksList,
+loanDate: loanDate,
+returnDate: returnDate
+};
+
+await sendEmailNotification(LOAN_EMAIL_TEMPLATE_ID, userId, emailData, `${SYSTEM_CONFIG.schoolName} - Comprovante de Empréstimo`);
+}
+
+// Função para enviar email de renovação (agora usando a função genérica)
+async function sendRenewalConfirmationEmail(userId, bookTitle, newReturnDate) {
+const emailData = {
+userName: (await db.collection('usuarios').doc(userId).get()).data().nome,
+userEmail: (await db.collection('usuarios').doc(userId).get()).data().email,
+bookTitle: bookTitle,
+newReturnDate: newReturnDate
+};
+
+await sendEmailNotification(RENEWAL_EMAIL_TEMPLATE_ID, userId, emailData, `${SYSTEM_CONFIG.schoolName} - Confirmação de Renovação`);
+}
+
+// Função para enviar mensagem WhatsApp ao registrar novo empréstimo
+async function sendWhatsAppOnLoan(userId, books, loanDate, returnDate) {
+try {
+const userDoc = await db.collection('usuarios').doc(userId).get();
+const userData = userDoc.data();
+if (!userData || !userData.telefone) {
+console.warn('Telefone do usuário não encontrado.');
+return;
+}
+// Monta a mensagem
+let booksList = '';
+for (const item of books) {
+const bookDoc = await db.collection('livros').doc(item.bookId).get();
+const bookData = bookDoc.data();
+booksList += `\n- ${bookData ? bookData.titulo : item.bookId} (Qtd: ${item.quantity})`;
+}
+const msg = 
+`Olá ${userData.nome}, seu empréstimo foi registrado na biblioteca!\n` +
+`Livros:${booksList}\n` +
+`Data do Empréstimo: ${loanDate}\n` +
+`Data de Devolução: ${returnDate}\n` +
+`Por favor, devolva os livros na data correta.`+
+`Agradecemos a sua colaboração.`+
+`Atenciosamente, ${SYSTEM_CONFIG.schoolName}`+
+`SIGEB - Sistema de Gerenciamento de Biblioteca`;
+
+
+
+// Formata o telefone para padrão internacional (ex: 5511999999999)
+let phone = userData.telefone.replace(/\D/g, '');
+if (phone.length === 11 && !phone.startsWith('55')) {
+phone = '55' + phone;
+}
+
+// Abre o WhatsApp Web em nova aba
+const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+window.open(url, '_blank');
+} catch (error) {
+console.error('Erro ao enviar WhatsApp:', error);
+}
+}
+
+// Função para exibir alertas de feedback ao usuário
+function showAlert(type, message, timeout = 4000) {
+// Remove alertas antigos
+document.querySelectorAll('.custom-alert').forEach(e => e.remove());
+const alert = document.createElement('div');
+alert.className = `alert alert-${type} custom-alert position-fixed top-0 start-50 translate-middle-x mt-3 shadow`;
+alert.style.zIndex = 2000;
+alert.innerHTML = message;
+document.body.appendChild(alert);
+setTimeout(() => alert.remove(), timeout);
+}
+
+// Função para fechar o modal de novo empréstimo
+function closeAddLoanModal() {
+const modal = bootstrap.Modal.getInstance(document.getElementById('addLoanModal'));
+if (modal) modal.hide();
+}
+
+// Corrige duplicidade de listeners e inicialização
+document.addEventListener('DOMContentLoaded', function() {
+// Flatpickr já inicializado acima
+
+// Adiciona máscaras para os campos de data
+const loanDateInput = document.getElementById('loanDate');
+const returnDateInput = document.getElementById('returnDate');
+
+// Função para aplicar máscara de data
+function applyDateMask(input) {
+input.addEventListener('input', function(e) {
+let value = e.target.value.replace(/\D/g, ''); // Remove tudo que não é dígito
+
+if (value.length >= 2) {
+value = value.substring(0, 2) + '/' + value.substring(2);
+}
+if (value.length >= 5) {
+value = value.substring(0, 5) + '/' + value.substring(5, 9);
+}
+
+e.target.value = value;
+});
+
+// Valida a data quando o usuário sai do campo
+input.addEventListener('blur', function(e) {
+const dateValue = e.target.value;
+if (dateValue && !isValidDateFormat(dateValue)) {
+e.target.classList.add('is-invalid');
+} else {
+e.target.classList.remove('is-invalid');
+}
+});
+}
+
+// Função para validar formato de data brasileira
+function isValidDateFormat(dateString) {
+const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+const match = dateString.match(regex);
+
+if (!match) return false;
+
+const day = parseInt(match[1], 10);
+const month = parseInt(match[2], 10);
+const year = parseInt(match[3], 10);
+
+if (month < 1 || month > 12) return false;
+if (day < 1 || day > 31) return false;
+if (year < 1900 || year > 2100) return false;
+
+// Verifica se a data é válida
+const date = new Date(year, month - 1, day);
+return date.getFullYear() === year && 
+date.getMonth() === month - 1 && 
+date.getDate() === day;
+}
+
+// Aplica máscaras aos campos de data
+if (loanDateInput) applyDateMask(loanDateInput);
+if (returnDateInput) applyDateMask(returnDateInput);
+
+// Aplica máscara ao campo de data do modal de edição
+const editLoanDateInput = document.getElementById('editLoanDate');
+const editReturnDateInput = document.getElementById('editReturnDate');
+if (editLoanDateInput) applyDateMask(editLoanDateInput);
+if (editReturnDateInput) applyDateMask(editReturnDateInput);
+
+// Aplica máscara ao campo de data do modal de renovação
+const renewReturnDateInput = document.getElementById('renewReturnDate');
+if (renewReturnDateInput) applyDateMask(renewReturnDateInput);
+
+// Listener para busca de usuários
+const userSearch = document.getElementById('userSearch');
+if (userSearch) {
+userSearch.addEventListener('input', searchUsers);
+userSearch.addEventListener('focus', searchUsers);
+}
+const userSearchBtn = document.querySelector('#addLoanForm button[onclick="searchUsers()"]');
+if (userSearchBtn) {
+userSearchBtn.addEventListener('click', searchUsers);
+}
+
+// Listener para busca de livros na primeira linha
+const firstBookSearch = document.querySelector('.bookSearch');
+if (firstBookSearch) {
+firstBookSearch.addEventListener('input', function() {
+searchBooks(this);
+});
+firstBookSearch.addEventListener('focus', function() {
+searchBooks(this);
+});
+}
+
+// Listener para submissão do formulário de empréstimo
+const addLoanForm = document.getElementById('addLoanForm');
+if (addLoanForm) {
+addLoanForm.addEventListener('submit', handleLoanSubmission);
+}
+
+// Adiciona validação em tempo real para campos de quantidade
+function addQuantityValidation() {
+document.querySelectorAll('.quantity').forEach(quantityInput => {
+quantityInput.addEventListener('input', function() {
+const row = this.closest('.loan-book-row');
+const availableQuantitySpan = row.querySelector('.availableQuantity');
+const availableQuantity = parseInt(availableQuantitySpan.textContent);
+const requestedQuantity = parseInt(this.value);
+
+// Remove validações anteriores
+this.classList.remove('is-invalid', 'is-valid');
+
+if (isNaN(requestedQuantity) || requestedQuantity <= 0) {
+this.classList.add('is-invalid');
+this.setCustomValidity('Quantidade deve ser um número positivo');
+} else if (!isNaN(availableQuantity) && requestedQuantity > availableQuantity) {
+this.classList.add('is-invalid');
+this.setCustomValidity(`Quantidade máxima disponível: ${availableQuantity}`);
+} else {
+this.classList.add('is-valid');
+this.setCustomValidity('');
+}
+});
+
+quantityInput.addEventListener('blur', function() {
+const row = this.closest('.loan-book-row');
+const availableQuantitySpan = row.querySelector('.availableQuantity');
+const availableQuantity = parseInt(availableQuantitySpan.textContent);
+const requestedQuantity = parseInt(this.value);
+
+if (!isNaN(availableQuantity) && requestedQuantity > availableQuantity) {
+showAlert('warning', `Quantidade solicitada (${requestedQuantity}) excede a disponível (${availableQuantity}). Ajustando para o máximo disponível.`);
+this.value = availableQuantity;
+this.classList.remove('is-invalid');
+this.classList.add('is-valid');
+this.setCustomValidity('');
+}
+});
+});
+}
+
+// Aplica validação inicial
+addQuantityValidation();
+
+// Gera número de registro automático ao abrir modal
+const addLoanModal = document.getElementById('addLoanModal');
+if (addLoanModal) {
+addLoanModal.addEventListener('show.bs.modal', async function () {
+// Gera um número sequencial simples (pode ser melhorado para produção)
+const snapshot = await db.collection('emprestimos').orderBy('createdAt', 'desc').limit(1).get();
+let nextNumber = 1;
+if (!snapshot.empty) {
+const last = snapshot.docs[0].data().registroNumero;
+if (last && !isNaN(Number(last))) nextNumber = Number(last) + 1;
+}
+document.getElementById('registroNumero').value = String(nextNumber).padStart(6, '0');
+
+// Define automaticamente as datas no formato brasileiro usando horário de Brasília
+const hoje = getDataBrasilia();
+const dataEmprestimo = formatarDataBrasil(hoje);
+
+// Adiciona 7 dias para a data de devolução
+const dataDevolucao = adicionarDias(hoje, 7);
+const dataRetorno = formatarDataBrasil(dataDevolucao);
+
+// Define os valores nos campos
+document.getElementById('loanDate').value = dataEmprestimo;
+document.getElementById('returnDate').value = dataRetorno;
+
+console.log('Datas definidas automaticamente (Horário Brasília):', {
+emprestimo: dataEmprestimo,
+devolucao: dataRetorno
+});
+});
+
+// Event listener para o botão "7 dias" no modal de novo empréstimo
+document.getElementById('setDefaultReturnDate').addEventListener('click', function() {
+const loanDateInput = document.getElementById('loanDate');
+const returnDateInput = document.getElementById('returnDate');
+
+if (loanDateInput.value) {
+// Parse da data do empréstimo
+const [day, month, year] = loanDateInput.value.split('/');
+const loanDate = new Date(year, month - 1, day);
+
+// Adiciona 7 dias usando a função utilitária
+const returnDate = adicionarDias(loanDate, 7);
+
+// Formata para dd/mm/yyyy usando horário de Brasília
+const formattedDate = formatarDataBrasil(returnDate);
+returnDateInput.value = formattedDate;
+
+showAlert('info', 'Data de devolução definida para 7 dias após o empréstimo (Horário Brasília)', 2000);
+} else {
+showAlert('warning', 'Primeiro defina a data do empréstimo', 3000);
+}
+});
+
+// Event listener para o botão "+7 dias" no modal de edição
+document.getElementById('setDefaultEditReturnDate').addEventListener('click', function() {
+const editLoanDateInput = document.getElementById('editLoanDate');
+const editReturnDateInput = document.getElementById('editReturnDate');
+
+if (editLoanDateInput.value) {
+// Parse da data do empréstimo
+const [day, month, year] = editLoanDateInput.value.split('/');
+const loanDate = new Date(year, month - 1, day);
+
+// Adiciona 7 dias usando a função utilitária
+const returnDate = adicionarDias(loanDate, 7);
+
+// Formata para dd/mm/yyyy usando horário de Brasília
+const formattedDate = formatarDataBrasil(returnDate);
+editReturnDateInput.value = formattedDate;
+
+showAlert('info', 'Data de devolução definida para 7 dias após o empréstimo (Horário Brasília)', 2000);
+} else {
+showAlert('warning', 'Primeiro defina a data do empréstimo', 3000);
+}
+});
+
+// Event listener para o botão "+7 dias" no modal de renovação
+document.getElementById('setDefaultRenewReturnDate').addEventListener('click', function() {
+const today = getDataBrasilia();
+const dataComSeteDias = adicionarDias(today, 7);
+const dataFormatada = formatarDataBrasil(dataComSeteDias);
+
+document.getElementById('renewReturnDate').value = dataFormatada;
+showAlert('info', 'Data de devolução definida para 7 dias a partir de hoje (Horário Brasília)', 2000);
+});
+
+// Limpa o formulário quando o modal é fechado
+addLoanModal.addEventListener('hidden.bs.modal', function () {
+// Reset do formulário
+document.getElementById('addLoanForm').reset();
+
+// Limpa campos específicos
+document.getElementById('selectedUserId').value = '';
+document.getElementById('userSearchResults').innerHTML = '';
+
+// Limpa resultados de busca de livros
+document.querySelectorAll('.selectedBookId').forEach(input => input.value = '');
+document.querySelectorAll('.bookSearchResults').forEach(div => div.innerHTML = '');
+document.querySelectorAll('.availableQuantity').forEach(span => span.textContent = '-');
+
+// Remove validação visual
+document.getElementById('addLoanForm').classList.remove('was-validated');
+
+console.log('Formulário de empréstimo limpo');
+});
+}
+}); // <-- Adiciona o fechamento do event listener aqui
+
+document.getElementById('addLoanModal').addEventListener('shown.bs.modal', function () {
+// Garante que o foco seja aplicado ao primeiro campo do modal após ele ser exibido
+const firstInput = document.querySelector('#addLoanModal input');
+if (firstInput) {
+firstInput.focus();
+}
+});
+document.getElementById('addLoanModal').addEventListener('show.bs.modal', function () {
+const modal = document.getElementById('addLoanModal');
+modal.removeAttribute('aria-hidden');
+});
+// Função para buscar e exibir os últimos 15 empréstimos
+async function loadLoans() {
+const tbody = document.getElementById('loansTableBody');
+if (!tbody) return;
+tbody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>';
+try {
+const snapshot = await db.collection('emprestimos')
+.orderBy('createdAt', 'desc')
+.limit(15)
+.get();
+
+tbody.innerHTML = '';
+for (const doc of snapshot.docs) {
+const data = doc.data();
+// Monta lista de livros
+let livros = '';
+if (Array.isArray(data.books)) {
+const titles = await Promise.all(
+data.books.map(async (b) => {
+const bookDoc = await db.collection('livros').doc(b.bookId).get();
+const bookData = bookDoc.data();
+return bookData ? `${bookData.titulo} (Qtd: ${b.quantity})` : b.bookId;
+})
+);
+livros = titles.join('<br>');
+}
+// Busca nome do usuário (corrigido para mostrar nome, não id)
+let userName = '';
+try {
+const userDoc = await db.collection('usuarios').doc(data.userId).get();
+if (userDoc.exists) userName = userDoc.data().nome;
+else userName = 'Usuário não encontrado';
+} catch {
+userName = 'Usuário não encontrado';
+}
+
+// Verifica se o empréstimo está realmente atrasado baseado na data (horário Brasília)
+let statusAtual = data.status;
+const hoje = getDataBrasilia();
+hoje.setHours(0, 0, 0, 0);
+
+// Se o status for EMPRESTADO, verifica se está atrasado
+if (data.status === 'EMPRESTADO' && data.returnDate) {
+const dateParts = data.returnDate.split('/');
+if (dateParts.length === 3) {
+const returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+returnDate.setHours(0, 0, 0, 0);
+
+// Se a data de devolução já passou, status é ATRASADO
+if (returnDate < hoje) {
+statusAtual = 'ATRASADO';
+// Atualiza o status no banco de dados
+await db.collection('emprestimos').doc(doc.id).update({ status: 'ATRASADO' });
+}
+}
+}
+
+// Status visual baseado no status atual calculado
+let statusClass = '';
+if (statusAtual === 'EMPRESTADO') statusClass = 'status-emprestado';
+else if (statusAtual === 'ATRASADO') statusClass = 'status-atrasado';
+else if (statusAtual === 'DEVOLVIDO') statusClass = 'status-devolvido';
+
+// Calcula dias de atraso se aplicável
+let diffDays = 0;
+if (statusAtual === 'ATRASADO' && data.returnDate) {
+const dateParts = data.returnDate.split('/');
+if (dateParts.length === 3) {
+const returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+returnDate.setHours(0, 0, 0, 0);
+const diffTime = Math.abs(hoje - returnDate);
+diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+}
+
+// Botões de ação baseados no status atual
+let actionBtns = `
+<button class="btn btn-sm btn-outline-secondary" title="Editar" onclick="openEditLoanModal('${doc.id}')">
+<i class="bx bx-edit"></i>
+</button>
+`;
+if (statusAtual === 'EMPRESTADO' || statusAtual === 'ATRASADO') {
+actionBtns += `
+<button class="btn btn-sm btn-outline-info return-button" title="Devolver" onclick="returnLoan('${doc.id}')">
+<i class="bx bx-check-circle"></i>
+</button>
+<button class="btn btn-sm btn-outline-success renew-button" title="Renovar" onclick="renewLoan('${doc.id}')">
+<i class="bx bx-refresh"></i>
+</button>
+`;
+
+// Adiciona botão de advertência para qualquer atraso
+if (statusAtual === 'ATRASADO' && diffDays > 0) {
+const hasWarning = data.hasWarning ? 'text-warning' : 'text-danger';
+const warningTitle = data.hasWarning ? 
+`Advertência já emitida em ${data.warningDate || 'data não disponível'}` : 
+`Atraso de ${diffDays} dias - Emitir advertência`;
+
+actionBtns += `
+<button class="btn btn-sm btn-outline-warning" title="${warningTitle}" onclick="openWarningModal('${doc.id}')">
+<i class="bx bx-error ${hasWarning}"></i>
+</button>
+`;
+}
+}
+actionBtns += `
+<button class="btn btn-sm btn-outline-danger" title="Excluir" onclick="deleteLoan('${doc.id}')">
+<i class="bx bx-trash"></i>
+</button>
+<button class="btn btn-sm btn-outline-primary" title="Imprimir Comprovante" onclick="openPrintLoanModal('${doc.id}')">
+<i class="bx bx-printer"></i>
+</button>
+`;
+
+// Monta o texto do status com informações de atraso
+let statusText = statusAtual;
+if (statusAtual === 'ATRASADO' && diffDays > 0) {
+statusText = `ATRASADO (${diffDays} ${diffDays === 1 ? 'dia' : 'dias'})`;
+}
+
+tbody.innerHTML += `
+<tr>
+<td>${livros}</td>
+<td>${userName}</td>
+<td>${data.loanDate}</td>
+<td>${data.returnDate}</td>
+<td><span class="loan-status ${statusClass}">${statusText}</span></td>
+<td>
+<div class="action-buttons">
+${actionBtns}
+</div>
+</td>
+</tr>
+`;
+}
+} catch (error) {
+console.error('Erro ao carregar empréstimos:', error);
+showAlert('danger', 'Erro ao carregar empréstimos.');
+}
+}
+
+// Funções de busca (usuários e livros)
+let userSearchTimeout;
+async function searchUsers() {
+clearTimeout(userSearchTimeout);
+userSearchTimeout = setTimeout(async () => {
+const query = document.getElementById('userSearch').value.toLowerCase();
+const userSearchResults = document.getElementById('userSearchResults');
+userSearchResults.innerHTML = '';
+if (query.length < 3) {
+userSearchResults.classList.remove('show');
+return;
+}
+
+try {
+const snapshot = await db.collection('usuarios')
+.where('nomeSearch', 'array-contains', query.split(' ')[0])
+.limit(10)
+.get();
+
+if (snapshot.empty) {
+userSearchResults.innerHTML = '<a class="dropdown-item">Nenhum usuário encontrado</a>';
+} else {
+snapshot.docs.forEach(doc => {
+const userData = doc.data();
+let extraInfo = `<br><small>Função: ${userData.funcao || '-'}</small>`;
+if ((userData.funcao || '').toLowerCase() === 'aluno') {
+extraInfo += `<br><small>Série: ${userData.serie || '-'} | Turma: ${userData.turma || '-'} | Turno: ${userData.turno || '-'}</small>`;
+}
+const a = document.createElement('a');
+a.className = 'dropdown-item';
+a.href = '#';
+a.innerHTML = `<strong>${userData.nome}</strong> (${userData.matricula || 'N/A'})${extraInfo}`;
+a.onclick = (e) => {
+e.preventDefault();
+// Exibe os dados do usuário selecionado em campos abaixo do input (ou em algum local desejado)
+document.getElementById('selectedUserId').value = doc.id;
+
+// Exemplo: Mostra dados em um bloco abaixo do campo de busca
+let userDetails = `
+<div class="alert alert-info mt-2 mb-0 p-2">
+<div><strong>Nome:</strong> ${userData.nome || '-'}</div>
+<div><strong>Função:</strong> ${userData.funcao || '-'}</div>
+`;
+if ((userData.funcao || '').toLowerCase() === 'aluno') {
+userDetails += `
+<div><strong>Série:</strong> ${userData.serie || '-'}</div>
+<div><strong>Turma:</strong> ${userData.turma || '-'}</div>
+<div><strong>Turno:</strong> ${userData.turno || '-'}</div>
+`;
+}
+userDetails += `</div>`;
+// Cria ou atualiza o bloco de detalhes
+let detailsDiv = document.getElementById('userDetailsBlock');
+if (!detailsDiv) {
+detailsDiv = document.createElement('div');
+detailsDiv.id = 'userDetailsBlock';
+document.getElementById('userSearch').parentNode.parentNode.appendChild(detailsDiv);
+}
+detailsDiv.innerHTML = userDetails;
+
+userSearchResults.classList.remove('show');
+};
+userSearchResults.appendChild(a);
+});
+}
+userSearchResults.classList.add('show');
+} catch (error) {
+console.error('Erro ao buscar usuários:', error);
+showAlert('danger', 'Erro ao buscar usuários.');
+}
+}, 300);
+}
+
+let bookSearchTimeout;
+async function searchBooks(inputElement) {
+clearTimeout(bookSearchTimeout);
+bookSearchTimeout = setTimeout(async () => {
+const query = inputElement.value.toLowerCase();
+const bookSearchResults = inputElement.closest('.input-group').nextElementSibling;
+bookSearchResults.innerHTML = '';
+if (query.length < 3) {
+bookSearchResults.classList.remove('show');
+return;
+}
+
+try {
+const snapshot = await db.collection('livros')
+.where('tituloSearch', 'array-contains', query.split(' ')[0]) // Busca por primeira palavra do título
+.limit(10)
+.get();
+
+if (snapshot.empty) {
+bookSearchResults.innerHTML = '<a class="dropdown-item">Nenhum livro encontrado</a>';
+} else {
+for (const doc of snapshot.docs) {
+const bookData = doc.data();
+
+// Busca a quantidade atualizada diretamente do banco
+const currentBookDoc = await db.collection('livros').doc(doc.id).get();
+const currentBookData = currentBookDoc.data();
+const currentAvailable = currentBookData?.quantidadeDisponivel || 0;
+
+const a = document.createElement('a');
+a.className = 'dropdown-item';
+a.href = '#';
+
+// Mostra quantidade disponível e adiciona indicador visual se não houver estoque
+if (currentAvailable > 0) {
+a.innerHTML = `<strong>${bookData.titulo}</strong><br><small class="text-success">Disponível: ${currentAvailable} unidades</small>`;
+} else {
+a.innerHTML = `<strong>${bookData.titulo}</strong><br><small class="text-danger">Indisponível (0 unidades)</small>`;
+a.classList.add('disabled');
+}
+
+a.onclick = (e) => {
+e.preventDefault();
+if (currentAvailable <= 0) {
+showAlert('warning', `O livro "${bookData.titulo}" não possui unidades disponíveis para empréstimo.`);
+return;
+}
+
+inputElement.value = bookData.titulo;
+inputElement.closest('.loan-book-row').querySelector('.selectedBookId').value = doc.id;
+inputElement.closest('.loan-book-row').querySelector('.availableQuantity').textContent = currentAvailable;
+
+// Atualiza o campo de quantidade máxima permitida
+const quantityInput = inputElement.closest('.loan-book-row').querySelector('.quantity');
+quantityInput.max = currentAvailable;
+quantityInput.title = `Máximo disponível: ${currentAvailable}`;
+
+bookSearchResults.classList.remove('show');
+};
+bookSearchResults.appendChild(a);
+}
+}
+bookSearchResults.classList.add('show');
+} catch (error) {
+console.error('Erro ao buscar livros:', error);
+showAlert('danger', 'Erro ao buscar livros.');
+}
+}, 300);
+}
+
+// Funções de adicionar/remover linha de livro no modal de empréstimo
+function addBookRow() {
+const multiBookLoans = document.getElementById('multiBookLoans');
+const rowCount = multiBookLoans.querySelectorAll('.loan-book-row').length;
+const newRow = multiBookLoans.querySelector('.loan-book-row').cloneNode(true);
+
+// Limpa valores e define IDs únicos
+const bookInput = newRow.querySelector('.bookSearch');
+const quantityInput = newRow.querySelector('.quantity');
+bookInput.value = '';
+bookInput.id = `bookSearch${rowCount}`;
+quantityInput.value = '1';
+quantityInput.id = `quantity${rowCount}`;
+newRow.querySelector('.selectedBookId').value = '';
+newRow.querySelector('.availableQuantity').textContent = '-';
+newRow.querySelector('.bookSearchResults').innerHTML = '';
+newRow.querySelector('.bookSearchResults').classList.remove('show');
+newRow.querySelector('.removeBookRow').style.display = 'block';
+
+// Adiciona listeners para busca dinâmica
+bookInput.addEventListener('input', function() { searchBooks(this); });
+bookInput.addEventListener('focus', function() { searchBooks(this); });
+
+// Adiciona validação de quantidade para a nova linha
+quantityInput.addEventListener('input', function() {
+const row = this.closest('.loan-book-row');
+const availableQuantitySpan = row.querySelector('.availableQuantity');
+const availableQuantity = parseInt(availableQuantitySpan.textContent);
+const requestedQuantity = parseInt(this.value);
+
+// Remove validações anteriores
+this.classList.remove('is-invalid', 'is-valid');
+
+if (isNaN(requestedQuantity) || requestedQuantity <= 0) {
+this.classList.add('is-invalid');
+this.setCustomValidity('Quantidade deve ser um número positivo');
+} else if (!isNaN(availableQuantity) && requestedQuantity > availableQuantity) {
+this.classList.add('is-invalid');
+this.setCustomValidity(`Quantidade máxima disponível: ${availableQuantity}`);
+} else {
+this.classList.add('is-valid');
+this.setCustomValidity('');
+}
+});
+
+quantityInput.addEventListener('blur', function() {
+const row = this.closest('.loan-book-row');
+const availableQuantitySpan = row.querySelector('.availableQuantity');
+const availableQuantity = parseInt(availableQuantitySpan.textContent);
+const requestedQuantity = parseInt(this.value);
+
+if (!isNaN(availableQuantity) && requestedQuantity > availableQuantity) {
+showAlert('warning', `Quantidade solicitada (${requestedQuantity}) excede a disponível (${availableQuantity}). Ajustando para o máximo disponível.`);
+this.value = availableQuantity;
+this.classList.remove('is-invalid');
+this.classList.add('is-valid');
+this.setCustomValidity('');
+}
+});
+
+multiBookLoans.appendChild(newRow);
+}
+
+function removeBookRow(button) {
+button.closest('.loan-book-row').remove();
+}
+
+// Função para lidar com a submissão do formulário de empréstimo
+async function handleLoanSubmission(event) {
+event.preventDefault();
+const form = event.target;
+if (!form.checkValidity()) {
+form.classList.add('was-validated');
+return;
+}
+
+const registroNumero = document.getElementById('registroNumero').value;
+const userId = document.getElementById('selectedUserId').value;
+const loanDate = document.getElementById('loanDate').value;
+const returnDate = document.getElementById('returnDate').value;
+
+const bookRows = document.querySelectorAll('#multiBookLoans .loan-book-row');
+const books = [];
+let hasError = false;
+
+// Consulta atual da quantidade disponível de cada livro no banco de dados
+for (const row of bookRows) {
+const bookId = row.querySelector('.selectedBookId').value;
+const quantity = parseInt(row.querySelector('.quantity').value);
+
+if (!bookId) {
+showAlert('danger', 'Por favor, selecione um livro para todas as linhas.');
+hasError = true;
+break;
+}
+if (isNaN(quantity) || quantity <= 0) {
+showAlert('danger', 'A quantidade do livro deve ser um número positivo.');
+hasError = true;
+break;
+}
+
+// Consulta a quantidade atual disponível no banco de dados
+try {
+const bookDoc = await db.collection('livros').doc(bookId).get();
+if (!bookDoc.exists) {
+showAlert('danger', 'Livro não encontrado no banco de dados.');
+hasError = true;
+break;
+}
+
+const bookData = bookDoc.data();
+const currentAvailable = bookData.quantidadeDisponivel || 0;
+const bookTitle = bookData.titulo || 'Livro sem título';
+
+if (quantity > currentAvailable) {
+showAlert('danger', `Quantidade solicitada para "${bookTitle}" (${quantity}) excede a disponível (${currentAvailable}).`);
+hasError = true;
+break;
+}
+
+// Verifica se o livro já foi adicionado na lista (para evitar duplicatas)
+const existingBook = books.find(b => b.bookId === bookId);
+if (existingBook) {
+const totalQuantity = existingBook.quantity + quantity;
+if (totalQuantity > currentAvailable) {
+showAlert('danger', `Quantidade total solicitada para "${bookTitle}" (${totalQuantity}) excede a disponível (${currentAvailable}).`);
+hasError = true;
+break;
+}
+existingBook.quantity = totalQuantity;
+} else {
+books.push({ bookId, quantity });
+}
+
+} catch (error) {
+console.error('Erro ao consultar livro:', error);
+showAlert('danger', 'Erro ao consultar disponibilidade do livro.');
+hasError = true;
+break;
+}
+}
+
+if (hasError) return;
+
+if (!userId) {
+showAlert('danger', 'Por favor, selecione um usuário.');
+return;
+}
+
+try {
+// Determina o status inicial baseado na data de devolução (horário Brasília)
+const [day, month, year] = returnDate.split('/');
+const loanReturnDate = new Date(year, month - 1, day);
+loanReturnDate.setHours(0, 0, 0, 0);
+
+const todayForStatus = getDataBrasilia();
+todayForStatus.setHours(0, 0, 0, 0);
+
+// Para novos empréstimos, geralmente será EMPRESTADO, mas por segurança verificamos
+const initialStatus = loanReturnDate < todayForStatus ? 'ATRASADO' : 'EMPRESTADO';
+
+// Adiciona o empréstimo ao Firestore
+const loanRef = await db.collection('emprestimos').add({
+registroNumero: registroNumero,
+userId: userId,
+books: books,
+loanDate: loanDate,
+returnDate: returnDate,
+status: initialStatus,
+createdAt: firebase.firestore.FieldValue.serverTimestamp()
+}); // Atualiza a quantidade de livros no estoque usando operações atômicas
+const updatePromises = [];
+for (const book of books) {
+const bookDocRef = db.collection('livros').doc(book.bookId);
+updatePromises.push(
+bookDocRef.update({
+quantidade: firebase.firestore.FieldValue.increment(-book.quantity),
+quantidadeDisponivel: firebase.firestore.FieldValue.increment(-book.quantity),
+emprestados: firebase.firestore.FieldValue.increment(book.quantity)
+})
+);
+}
+
+// Executa todas as atualizações de estoque em paralelo
+await Promise.all(updatePromises);
+
+// Fecha o modal e mostra mensagem de sucesso
+showAlert('success', 'Empréstimo registrado com sucesso!');
+document.getElementById('btnEnviarWhatsappForm').style.display = 'inline-block';
+document.getElementById('btnEnviarWhatsappForm').onclick = function() {
+sendWhatsAppOnLoan(userId, books, loanDate, returnDate);
+};
+const addLoanModal = bootstrap.Modal.getInstance(document.getElementById('addLoanModal'));
+if (addLoanModal) addLoanModal.hide();
+setTimeout(() => {
+document.getElementById('btnEnviarWhatsapp').focus();
+}, 500);
+loadLoans();
+updateLoanStats();
+updateNotReturnedBar();
+
+} catch (error) {
+console.error('Erro ao registrar empréstimo:', error);
+showAlert('danger', 'Erro ao registrar empréstimo.');
+}
+}
+
+
+// Funções de edição, devolução, renovação e exclusão de empréstimos
+async function openEditLoanModal(loanId) {
+try {
+const doc = await db.collection('emprestimos').doc(loanId).get();
+if (doc.exists) {
+const data = doc.data();
+document.getElementById('editLoanId').value = doc.id;
+document.getElementById('editLoanDate').value = data.loanDate;
+document.getElementById('editReturnDate').value = data.returnDate;
+const editLoanModal = new bootstrap.Modal(document.getElementById('editLoanModal'));
+editLoanModal.show();
+}
+} catch (error) {
+console.error('Erro ao abrir modal de edição:', error);
+showAlert('danger', 'Erro ao carregar dados do empréstimo para edição.');
+}
+}
+
+document.getElementById('editLoanForm').addEventListener('submit', async function(event) {
+event.preventDefault();
+const form = event.target;
+if (!form.checkValidity()) {
+form.classList.add('was-validated');
+return;
+}
+
+const loanId = document.getElementById('editLoanId').value;
+const loanDate = document.getElementById('editLoanDate').value;
+const returnDate = document.getElementById('editReturnDate').value;
+
+try {
+await db.collection('emprestimos').doc(loanId).update({
+loanDate: loanDate,
+returnDate: returnDate
+});
+showAlert('success', 'Empréstimo atualizado com sucesso!');
+bootstrap.Modal.getInstance(document.getElementById('editLoanModal')).hide();
+loadLoans();
+} catch (error) {
+console.error('Erro ao atualizar empréstimo:', error);
+showAlert('danger', 'Erro ao atualizar empréstimo.');
+}
+});
+
+// Event listener para o formulário de renovação
+document.getElementById('renewLoanForm').addEventListener('submit', async function(event) {
+event.preventDefault();
+const form = event.target;
+if (!form.checkValidity()) {
+form.classList.add('was-validated');
+return;
+}
+
+const loanId = document.getElementById('renewLoanId').value;
+const returnDate = document.getElementById('renewReturnDate').value;
+
+// Validação de data
+if (!isValidDateFormat(returnDate)) {
+showAlert('danger', 'Data de devolução deve estar no formato DD/MM/AAAA');
+return;
+}
+
+// Verificar se a nova data não está no passado (usando horário de Brasília)
+const [day, month, year] = returnDate.split('/');
+const newReturnDate = new Date(year, month - 1, day);
+const today = getDataBrasilia();
+today.setHours(0, 0, 0, 0);
+newReturnDate.setHours(0, 0, 0, 0);
+
+if (newReturnDate < today) {
+showAlert('warning', 'A nova data de devolução não pode ser anterior à data atual (Horário Brasília)');
+return;
+}
+
+try {
+// Determina o status correto baseado na nova data de devolução (horário Brasília)
+const [day2, month2, year2] = returnDate.split('/');
+const renewReturnDate = new Date(year2, month2 - 1, day2);
+renewReturnDate.setHours(0, 0, 0, 0);
+
+const todayForStatus = getDataBrasilia();
+todayForStatus.setHours(0, 0, 0, 0);
+
+// Define o status baseado na comparação de datas
+const newStatus = renewReturnDate < todayForStatus ? 'ATRASADO' : 'EMPRESTADO';
+
+await db.collection('emprestimos').doc(loanId).update({
+returnDate: returnDate,
+status: newStatus, // Status determinado dinamicamente baseado na data
+renewedAt: firebase.firestore.FieldValue.serverTimestamp(),
+renewedDate: formatarDataBrasil(getDataBrasilia())
+});
+
+showAlert('success', 'Empréstimo renovado com sucesso!');
+bootstrap.Modal.getInstance(document.getElementById('renewLoanModal')).hide();
+loadLoans();
+} catch (error) {
+console.error('Erro ao renovar empréstimo:', error);
+showAlert('danger', 'Erro ao renovar empréstimo.');
+}
+});
+
+async function returnLoan(loanId) {
+if (!confirm('Tem certeza que deseja registrar a devolução deste empréstimo?')) return;
+try {
+// Busca os dados do empréstimo
+const loanDoc = await db.collection('emprestimos').doc(loanId).get();
+if (!loanDoc.exists) {
+showAlert('danger', 'Empréstimo não encontrado.');
+return;
+}
+
+const loanData = loanDoc.data();
+
+// Verifica se o empréstimo já foi devolvido
+if (loanData.status === 'DEVOLVIDO') {
+showAlert('warning', 'Este empréstimo já foi devolvido.');
+return;
+}
+
+// Atualiza o status do empréstimo usando horário de Brasília
+const dataDevolucao = getDataBrasilia();
+await db.collection('emprestimos').doc(loanId).update({
+status: 'DEVOLVIDO',
+returnedAt: firebase.firestore.FieldValue.serverTimestamp(),
+actualReturnDate: formatarDataBrasil(dataDevolucao)
+}); // Retorna a quantidade de livros ao estoque
+const updatePromises = [];
+for (const book of loanData.books) {
+const bookDocRef = db.collection('livros').doc(book.bookId);
+updatePromises.push(
+bookDocRef.update({
+quantidade: firebase.firestore.FieldValue.increment(book.quantity),
+quantidadeDisponivel: firebase.firestore.FieldValue.increment(book.quantity),
+emprestados: firebase.firestore.FieldValue.increment(-book.quantity)
+})
+);
+}
+
+// Executa todas as atualizações de estoque em paralelo
+await Promise.all(updatePromises);
+
+console.log(`Estoque atualizado para ${loanData.books.length} livro(s)`);
+showAlert('success', 'Empréstimo devolvido com sucesso! Estoque atualizado.');
+
+// Atualiza a interface
+loadLoans();
+updateLoanStats();
+
+} catch (error) {
+console.error('Erro ao devolver empréstimo:', error);
+showAlert('danger', 'Erro ao devolver empréstimo: ' + error.message);
+}
+}
+
+async function renewLoan(loanId) {
+try {
+// Busca os dados do empréstimo
+const doc = await db.collection('emprestimos').doc(loanId).get();
+if (!doc.exists) {
+showAlert('danger', 'Empréstimo não encontrado.');
+return;
+}
+
+const data = doc.data();
+
+// Verifica se o empréstimo pode ser renovado
+if (data.status === 'DEVOLVIDO') {
+showAlert('warning', 'Este empréstimo já foi devolvido e não pode ser renovado.');
+return;
+}
+
+// Preenche o modal com os dados do empréstimo
+document.getElementById('renewLoanId').value = loanId;
+
+// Busca informações do usuário e livros
+let userName = 'N/A';
+try {
+const userDoc = await db.collection('usuarios').doc(data.userId).get();
+if (userDoc.exists) userName = userDoc.data().nome;
+} catch {}
+
+let bookTitles = [];
+if (Array.isArray(data.books)) {
+for (const b of data.books) {
+try {
+const bookDoc = await db.collection('livros').doc(b.bookId).get();
+if (bookDoc.exists) bookTitles.push(`${bookDoc.data().titulo} (Qtd: ${b.quantity})`);
+else bookTitles.push(`${b.bookId} (Qtd: ${b.quantity})`);
+} catch {
+bookTitles.push(`${b.bookId} (Qtd: ${b.quantity})`);
+}
+}
+}
+
+// Preenche as informações do empréstimo no modal
+document.getElementById('renewLoanInfo').innerHTML = `
+<div class="card">
+<div class="card-body">
+<h6 class="card-title">Informações do Empréstimo</h6>
+<p class="mb-1"><strong>Usuário:</strong> ${userName}</p>
+<p class="mb-1"><strong>Livro(s):</strong> ${bookTitles.join(', ')}</p>
+<p class="mb-1"><strong>Data do Empréstimo:</strong> ${data.loanDate}</p>
+<p class="mb-0"><strong>Data de Devolução Atual:</strong> ${data.returnDate}</p>
+</div>
+</div>
+`;
+
+// Define a data padrão (7 dias a partir de hoje) usando horário de Brasília
+const today = getDataBrasilia();
+const dataComSeteDias = adicionarDias(today, 7);
+const dataFormatada = formatarDataBrasil(dataComSeteDias);
+document.getElementById('renewReturnDate').value = dataFormatada;
+
+// Abre o modal
+const renewLoanModal = new bootstrap.Modal(document.getElementById('renewLoanModal'));
+renewLoanModal.show();
+
+} catch (error) {
+console.error('Erro ao abrir modal de renovação:', error);
+showAlert('danger', 'Erro ao carregar dados do empréstimo para renovação.');
+}
+}
+
+async function deleteLoan(loanId) {
+if (!confirm('Tem certeza que deseja excluir este empréstimo? Esta ação é irreversível.')) return;
+try {
+// Opcional: Reverter quantidade de livros se o empréstimo não foi devolvido
+const loanDoc = await db.collection('emprestimos').doc(loanId).get();
+const loanData = loanDoc.data(); if (loanData.status !== 'DEVOLVIDO') {
+for (const book of loanData.books) {
+const bookDocRef = db.collection('livros').doc(book.bookId);
+await bookDocRef.update({
+quantidade: firebase.firestore.FieldValue.increment(book.quantity),
+quantidadeDisponivel: firebase.firestore.FieldValue.increment(book.quantity),
+emprestados: firebase.firestore.FieldValue.increment(-book.quantity)
+});
+}
+}
+
+await db.collection('emprestimos').doc(loanId).delete();
+showAlert('success', 'Empréstimo excluído com sucesso!');
+loadLoans();
+} catch (error) {
+console.error('Erro ao excluir empréstimo:', error);
+showAlert('danger', 'Erro ao excluir empréstimo.');
+}
+}
+
+// Funções de relatório e barra de atrasos
+async function generateLoanReport() {
+try {
+const snapshot = await db.collection('emprestimos').get();
+const loans = [];
+
+for (const doc of snapshot.docs) {
+const data = doc.data();
+let userName = 'N/A';
+try {
+const userDoc = await db.collection('usuarios').doc(data.userId).get();
+if (userDoc.exists) userName = userDoc.data().nome;
+} catch {}
+
+let bookTitles = [];
+if (Array.isArray(data.books)) {
+for (const b of data.books) {
+try {
+const bookDoc = await db.collection('livros').doc(b.bookId).get();
+if (bookDoc.exists) bookTitles.push(`${bookDoc.data().titulo} (Qtd: ${b.quantity})`);
+else bookTitles.push(`${b.bookId} (Qtd: ${b.quantity})`);
+} catch (e) {
+bookTitles.push(`${b.bookId} (Qtd: ${b.quantity}) - Erro ao carregar`);
+}
+}
+}
+
+loans.push({
+'Registro': data.registroNumero,
+'Usuário': userName,
+'Livros': bookTitles.join('; '),
+'Data Empréstimo': data.loanDate,
+'Data Devolução': data.returnDate,
+'Status': data.status
+});
+}
+
+const ws = XLSX.utils.json_to_sheet(loans);
+const wb = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb, ws, "Empréstimos");
+XLSX.writeFile(wb, "relatorio_emprestimos.xlsx");
+showAlert('success', 'Relatório gerado com sucesso!');
+} catch (error) {
+console.error('Erro ao gerar relatório:', error);
+showAlert('danger', 'Erro ao gerar relatório de empréstimos.');
+}
+}
+
+async function updateNotReturnedBar() {
+try {
+const today = getDataBrasilia();
+today.setHours(0, 0, 0, 0);
+
+const snapshot = await db.collection('emprestimos')
+.where('status', 'in', ['EMPRESTADO', 'ATRASADO'])
+.get();
+
+let overdueLoans = [];
+let notReturnedCount = 0;
+
+for (const doc of snapshot.docs) {
+const data = doc.data();
+const returnDate = new Date(data.returnDate);
+returnDate.setHours(0, 0, 0, 0);
+
+if (returnDate < today) {
+let userName = 'N/A';
+try {
+const userDoc = await db.collection('usuarios').doc(data.userId).get();
+if (userDoc.exists) userName = userDoc.data().nome;
+} catch {}
+
+let bookTitles = [];
+if (Array.isArray(data.books)) {
+for (const b of data.books) {
+try {
+const bookDoc = await db.collection('livros').doc(b.bookId).get();
+if (bookDoc.exists) bookTitles.push(bookDoc.data().titulo);
+else bookTitles.push(b.bookId);
+} catch (e) {}
+}
+}
+overdueLoans.push(`${userName} - ${bookTitles.join(', ')} (Devolução: ${data.returnDate})`);
+notReturnedCount++;
+
+// Atualiza status para ATRASADO se ainda for EMPRESTADO
+if (data.status === 'EMPRESTADO') {
+await db.collection('emprestimos').doc(doc.id).update({ status: 'ATRASADO' });
+}
+}
+}
+
+const notReturnedBar = document.getElementById('notReturnedBar');
+if (notReturnedCount > 0) {
+notReturnedBar.style.display = 'block';
+notReturnedBar.innerHTML = `
+<div class="marquee" style="color: #c62828; font-weight: bold; background-color: #ffebee; padding: 10px; border-radius: 8px;">
+${overdueLoans.map(loan => `<span>${loan}</span>`).join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')}
+</div>
+`;
+} else {
+notReturnedBar.style.display = 'none';
+}
+} catch (error) {
+console.error('Erro ao atualizar barra de atrasos:', error);
+}
+}
+
+// Funções de gráficos de status
+async function updateLoanStats() {
+try {
+const snapshot = await db.collection('emprestimos').get();
+let emprestadoCount = 0;
+let atrasadoCount = 0;
+let devolvidoCount = 0;
+
+const today = getDataBrasilia();
+today.setHours(0, 0, 0, 0);
+
+for (const doc of snapshot.docs) {
+const data = doc.data();
+if (data.status === 'EMPRESTADO') {
+// Converte a data de devolução do formato DD/MM/AAAA para Date
+let returnDate;
+if (data.returnDate) {
+const dateParts = data.returnDate.split('/');
+if (dateParts.length === 3) {
+returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+returnDate.setHours(0, 0, 0, 0);
+}
+}
+
+if (returnDate && returnDate < today) {
+atrasadoCount++;
+} else {
+emprestadoCount++;
+}
+} else if (data.status === 'ATRASADO') {
+atrasadoCount++;
+} else if (data.status === 'DEVOLVIDO') {
+devolvidoCount++;
+}
+}
+
+document.getElementById('countEmprestado').textContent = emprestadoCount;
+document.getElementById('countAtrasado').textContent = atrasadoCount;
+document.getElementById('countDevolvido').textContent = devolvidoCount;
+
+// Atualiza os gráficos de pizza
+updatePieChart('emprestado', emprestadoCount, snapshot.size);
+updatePieChart('atrasado', atrasadoCount, snapshot.size);
+updatePieChart('devolvido', devolvidoCount, snapshot.size);
+
+} catch (error) {
+console.error('Erro ao atualizar estatísticas de empréstimos:', error);
+}
+}
+
+// Função de teste para verificar parsing de datas (pode ser executada no console)
+function testDateParsing() {
+const today = getDataBrasilia();
+today.setHours(0, 0, 0, 0);
+
+console.log('=== TESTE DE PARSING DE DATAS ===');
+console.log('Data de hoje:', today.toLocaleDateString('pt-BR'));
+
+// Teste com diferentes datas
+const testDates = [
+'28/06/2025', // 3 dias atrás
+'29/06/2025', // 2 dias atrás
+'30/06/2025', // 1 dia atrás
+'01/07/2025', // hoje
+'02/07/2025', // amanhã
+'08/07/2025' // 7 dias à frente
+];
+
+testDates.forEach(dateStr => {
+const dateParts = dateStr.split('/');
+const parsedDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+parsedDate.setHours(0, 0, 0, 0);
+
+const isLate = parsedDate < today;
+const daysDiff = Math.ceil(Math.abs(today - parsedDate) / (1000 * 60 * 60 * 24));
+
+console.log(`Data: ${dateStr} | Parsed: ${parsedDate.toLocaleDateString('pt-BR')} | Atrasado: ${isLate} | Diferença: ${daysDiff} dias`);
+});
+}
+
+function updatePieChart(status, count, total) {
+const circumference = 2 * Math.PI * 38; // 2 * PI * raio
+const percentage = total > 0 ? (count / total) : 0;
+const strokeDashoffset = circumference * (1 - percentage);
+document.querySelector(`.pie-fg-${status}`).style.strokeDasharray = `${circumference} ${circumference}`;
+document.querySelector(`.pie-fg-${status}`).style.strokeDashoffset = strokeDashoffset;
+} function showLoansByStatus(status) {
+const tbody = document.getElementById('loansTableBody');
+tbody.innerHTML = '<tr><td colspan="6">Buscando...</td></tr>';
+
+// Para atrasos, busca empréstimos ativos e verifica as datas
+if (status === 'ATRASADO') {
+db.collection('emprestimos')
+.where('status', 'in', ['EMPRESTADO', 'ATRASADO'])
+.get()
+.then(async (snapshot) => {
+tbody.innerHTML = '';
+const today = getDataBrasilia();
+today.setHours(0, 0, 0, 0); // Zera as horas para comparar apenas a data (horário Brasília)
+
+const overdueLoans = [];
+
+for (const doc of snapshot.docs) {
+const data = doc.data();
+
+// Converte a data de devolução para Date
+let returnDate;
+if (data.returnDate) {
+// Assume formato DD/MM/AAAA - usando o mesmo método da função loadLoans
+const dateParts = data.returnDate.split('/');
+if (dateParts.length === 3) {
+returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+returnDate.setHours(0, 0, 0, 0);
+}
+}
+
+// Verifica se está atrasado (data de devolução menor que hoje)
+if (returnDate && returnDate < today) {
+overdueLoans.push({ doc, data });
+}
+}
+
+if (overdueLoans.length === 0) {
+tbody.innerHTML = '<tr><td colspan="6">Nenhum empréstimo atrasado encontrado.</td></tr>';
+return;
+}
+
+for (const { doc, data } of overdueLoans) {
+let livros = '';
+if (Array.isArray(data.books)) {
+const titles = await Promise.all(
+data.books.map(async (b) => {
+const bookDoc = await db.collection('livros').doc(b.bookId).get();
+const bookData = bookDoc.data();
+return bookData ? `${bookData.titulo} (Qtd: ${b.quantity})` : b.bookId;
+})
+);
+livros = titles.join('<br>');
+}
+
+let userName = '';
+try {
+const userDoc = await db.collection('usuarios').doc(data.userId).get();
+if (userDoc.exists) userName = userDoc.data().nome;
+else userName = 'Usuário não encontrado';
+} catch {
+userName = 'Usuário não encontrado';
+}
+
+// Calcula dias de atraso usando o mesmo método da função loadLoans
+let diffDays = 0;
+if (returnDate) {
+const diffTime = Math.abs(today - returnDate);
+diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+let actionBtns = `
+<button class="btn btn-sm btn-outline-secondary" title="Editar" onclick="openEditLoanModal('${doc.id}')">
+<i class="bx bx-edit"></i>
+</button>
+<button class="btn btn-sm btn-outline-info return-button" title="Devolver" onclick="returnLoan('${doc.id}')">
+<i class="bx bx-check-circle"></i>
+</button>
+<button class="btn btn-sm btn-outline-success renew-button" title="Renovar" onclick="renewLoan('${doc.id}')">
+<i class="bx bx-refresh"></i>
+</button>
+<button class="btn btn-sm btn-outline-danger" title="Excluir" onclick="deleteLoan('${doc.id}')">
+<i class="bx bx-trash"></i>
+</button>
+<button class="btn btn-sm btn-outline-primary" title="Imprimir Comprovante" onclick="openPrintLoanModal('${doc.id}')">
+<i class="bx bx-printer"></i>
+</button>
+`;
+
+tbody.innerHTML += `
+<tr style="background-color: #ffe6e6;">
+<td>${livros}</td>
+<td>${userName}</td>
+<td>${data.loanDate}</td>
+<td>${data.returnDate}</td>
+<td><span class="loan-status status-atrasado">ATRASADO (${diffDays} dias)</span></td>
+<td>
+<div class="action-buttons">
+${actionBtns}
+</div>
+</td>
+</tr>
+`;
+}
+})
+.catch((error) => {
+console.error('Erro ao buscar empréstimos atrasados:', error);
+showAlert('danger', 'Erro ao buscar empréstimos atrasados.');
+});
+} else {
+// Para outros status, mantém a lógica original
+db.collection('emprestimos')
+.where('status', '==', status)
+.get()
+.then(async (snapshot) => {
+tbody.innerHTML = '';
+if (snapshot.empty) {
+tbody.innerHTML = '<tr><td colspan="6">Nenhum empréstimo encontrado.</td></tr>';
+return;
+}
+for (const doc of snapshot.docs) {
+const data = doc.data();
+let livros = '';
+if (Array.isArray(data.books)) {
+const titles = await Promise.all(
+data.books.map(async (b) => {
+const bookDoc = await db.collection('livros').doc(b.bookId).get();
+const bookData = bookDoc.data();
+return bookData ? `${bookData.titulo} (Qtd: ${b.quantity})` : b.bookId;
+})
+);
+livros = titles.join('<br>');
+}
+let userName = '';
+try {
+const userDoc = await db.collection('usuarios').doc(data.userId).get();
+if (userDoc.exists) userName = userDoc.data().nome;
+else userName = 'Usuário não encontrado';
+} catch {
+userName = 'Usuário não encontrado';
+}
+let statusClass = '';
+if (data.status === 'EMPRESTADO') statusClass = 'status-emprestado';
+else if (data.status === 'ATRASADO') statusClass = 'status-atrasado';
+else if (data.status === 'DEVOLVIDO') statusClass = 'status-devolvido';
+
+// Calcula dias de atraso se aplicável
+let diffDays = 0;
+const today = getDataBrasilia();
+today.setHours(0, 0, 0, 0);
+if (data.status === 'ATRASADO' && data.returnDate) {
+const dateParts = data.returnDate.split('/');
+if (dateParts.length === 3) {
+const returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+returnDate.setHours(0, 0, 0, 0);
+const diffTime = Math.abs(today - returnDate);
+diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+}
+
+let actionBtns = `
+<button class="btn btn-sm btn-outline-secondary" title="Editar" onclick="openEditLoanModal('${doc.id}')">
+<i class="bx bx-edit"></i>
+</button>
+`;
+if (data.status === 'EMPRESTADO' || data.status === 'ATRASADO') {
+actionBtns += `
+<button class="btn btn-sm btn-outline-info return-button" title="Devolver" onclick="returnLoan('${doc.id}')">
+<i class="bx bx-check-circle"></i>
+</button>
+<button class="btn btn-sm btn-outline-success renew-button" title="Renovar" onclick="renewLoan('${doc.id}')">
+<i class="bx bx-refresh"></i>
+</button>
+`;
+
+// Adiciona botão de advertência para qualquer atraso
+if (data.status === 'ATRASADO' && diffDays > 0) {
+const hasWarning = data.hasWarning ? 'text-warning' : 'text-danger';
+const warningTitle = data.hasWarning ? 
+`Advertência já emitida em ${data.warningDate || 'data não disponível'}` : 
+`Atraso de ${diffDays} dias - Emitir advertência`;
+
+actionBtns += `
+<button class="btn btn-sm btn-outline-warning" title="${warningTitle}" onclick="openWarningModal('${doc.id}')">
+<i class="bx bx-error ${hasWarning}"></i>
+</button>
+`;
+}
+}
+actionBtns += `
+<button class="btn btn-sm btn-outline-danger" title="Excluir" onclick="deleteLoan('${doc.id}')">
+<i class="bx bx-trash"></i>
+</button>
+<button class="btn btn-sm btn-outline-primary" title="Imprimir Comprovante" onclick="openPrintLoanModal('${doc.id}')">
+<i class="bx bx-printer"></i>
+</button>
+`;
+
+// Monta o texto do status com informações de atraso
+let statusText = data.status;
+if (data.status === 'ATRASADO' && diffDays > 0) {
+statusText = `ATRASADO (${diffDays} ${diffDays === 1 ? 'dia' : 'dias'})`;
+}
+
+tbody.innerHTML += `
+<tr>
+<td>${livros}</td>
+<td>${userName}</td>
+<td>${data.loanDate}</td>
+<td>${data.returnDate}</td>
+<td><span class="loan-status ${statusClass}">${statusText}</span></td>
+<td>
+<div class="action-buttons">
+${actionBtns}
+</div>
+</td>
+</tr>
+`;
+}
+})
+.catch((error) => {
+console.error('Erro ao buscar empréstimos:', error);
+showAlert('danger', 'Erro ao buscar empréstimos.');
+});
+}
+}
+
+// Funções de impressão de comprovante
+let signaturePad = null;
+async function openPrintLoanModal(loanId) {
+try {
+const doc = await db.collection('emprestimos').doc(loanId).get();
+if (doc.exists) {
+const data = doc.data();
+let userName = 'N/A';
+try {
+const userDoc = await db.collection('usuarios').doc(data.userId).get();
+if (userDoc.exists) userName = userDoc.data().nome;
+} catch {}
+
+let booksHtml = '';
+if (Array.isArray(data.books)) {
+for (const b of data.books) {
+try {
+const bookDoc = await db.collection('livros').doc(b.bookId).get();
+if (bookDoc.exists) booksHtml += `<li>${bookDoc.data().titulo} (Qtd: ${b.quantity})</li>`;
+else booksHtml += `<li>${b.bookId} (Qtd: ${b.quantity}) - Livro não encontrado</li>`;
+} catch (e) {
+booksHtml += `<li>${b.bookId} (Qtd: ${b.quantity}) - Erro ao carregar livro</li>`;
+}
+}
+}
+
+const receiptContent = `
+<p><strong>Registro:</strong> ${data.registroNumero}</p>
+<p><strong>Usuário:</strong> ${userName}</p>
+<p><strong>Livros:</strong></p>
+<ul>${booksHtml}</ul>
+<p><strong>Data do Empréstimo:</strong> ${data.loanDate}</p>
+<p><strong>Data de Devolução:</strong> ${data.returnDate}</p>
+<p><strong>Status:</strong> ${data.status}</p>
+`;
+document.getElementById('loanReceiptContent').innerHTML = receiptContent;
+
+const canvas = document.getElementById('signaturePad');
+signaturePad = new SignaturePad(canvas);
+
+const printLoanModal = new bootstrap.Modal(document.getElementById('printLoanModal'));
+printLoanModal.show();
+}
+} catch (error) {
+console.error('Erro ao abrir modal de impressão:', error);
+showAlert('danger', 'Erro ao carregar dados do empréstimo para impressão.');
+}
+}
+
+function clearSignature() {
+if (signaturePad) {
+signaturePad.clear();
+}
+}
+
+function printLoanReceipt() {
+const printArea = document.getElementById('printArea');
+if (!printArea) {
+showAlert('danger', 'Erro ao encontrar área de impressão.');
+return;
+}
+// Abre uma nova janela para impressão, preservando o layout do comprovante
+const printWindow = window.open('', '', 'width=800,height=600');
+printWindow.document.write(`
+<html>
+<head>
+<title>Comprovante de Empréstimo</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<style>
+body { font-family: 'Poppins', Arial, sans-serif; margin: 30px; }
+</style>
+</head>
+<body>
+${printArea.innerHTML}
+</body>
+</html>
+`);
+printWindow.document.close();
+printWindow.focus();
+printWindow.print();
+printWindow.close();
+}
+
+// Variáveis globais para assinaturas da advertência
+let warningSignaturePad = null;
+let librarianSignaturePad = null;
+let currentWarningLoanId = null;
+
+// Função para abrir modal de advertência
+async function openWarningModal(loanId) {
+try {
+const doc = await db.collection('emprestimos').doc(loanId).get();
+if (!doc.exists) {
+showAlert('danger', 'Empréstimo não encontrado.');
+return;
+}
+
+const loanData = doc.data();
+currentWarningLoanId = loanId;
+
+// Calcula dias de atraso
+const today = getDataBrasilia();
+today.setHours(0, 0, 0, 0);
+
+let returnDate;
+if (loanData.returnDate) {
+const dateParts = loanData.returnDate.split('/');
+if (dateParts.length === 3) {
+returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+returnDate.setHours(0, 0, 0, 0);
+}
+}
+
+const diffTime = Math.abs(today - returnDate);
+const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+if (diffDays < 1) {
+showAlert('info', `Este empréstimo não está em atraso. Advertência aplicável apenas para empréstimos atrasados.`);
+return;
+}
+
+// Busca dados do usuário
+const userDoc = await db.collection('usuarios').doc(loanData.userId).get();
+const userData = userDoc.exists ? userDoc.data() : null;
+
+// Busca títulos dos livros
+let bookTitles = [];
+if (Array.isArray(loanData.books)) {
+for (const book of loanData.books) {
+try {
+const bookDoc = await db.collection('livros').doc(book.bookId).get();
+if (bookDoc.exists) {
+bookTitles.push(`${bookDoc.data().titulo} (Qtd: ${book.quantity})`);
+} else {
+bookTitles.push(`${book.bookId} (Qtd: ${book.quantity})`);
+}
+} catch (e) {
+bookTitles.push(`${book.bookId} (Qtd: ${book.quantity}) - Erro ao carregar`);
+}
+}
+}
+
+// Preenche dados do usuário
+const userDataHtml = userData ? `
+<p class="mb-1"><strong>Nome:</strong> ${userData.nome || 'N/A'}</p>
+<p class="mb-1"><strong>Matrícula:</strong> ${userData.matricula || 'N/A'}</p>
+<p class="mb-1"><strong>Função:</strong> ${userData.funcao || 'N/A'}</p>
+${userData.funcao === 'aluno' ? `
+<p class="mb-1"><strong>Série:</strong> ${userData.serie || 'N/A'}</p>
+<p class="mb-1"><strong>Turma:</strong> ${userData.turma || 'N/A'}</p>
+<p class="mb-0"><strong>Turno:</strong> ${userData.turno || 'N/A'}</p>
+` : `
+<p class="mb-0"><strong>Email:</strong> ${userData.email || 'N/A'}</p>
+`}
+` : '<p class="mb-0">Dados do usuário não encontrados</p>';
+
+document.getElementById('warningUserData').innerHTML = userDataHtml;
+
+// Preenche detalhes do empréstimo
+const loanDetailsHtml = `
+<div class="row">
+<div class="col-md-6">
+<p class="mb-1"><strong>Registro:</strong> ${loanData.registroNumero || 'N/A'}</p>
+<p class="mb-1"><strong>Data do Empréstimo:</strong> ${loanData.loanDate}</p>
+<p class="mb-1"><strong>Data de Devolução:</strong> ${loanData.returnDate}</p>
+</div>
+<div class="col-md-6">
+<p class="mb-1"><strong>Dias de Atraso:</strong> <span class="text-danger fw-bold">${diffDays} dias</span></p>
+<p class="mb-1"><strong>Status:</strong> <span class="badge bg-danger">ATRASADO</span></p>
+</div>
+</div>
+<div class="mt-3">
+<p class="mb-1"><strong>Livros em Atraso:</strong></p>
+<ul class="mb-0">
+${bookTitles.map(title => `<li>${title}</li>`).join('')}
+</ul>
+</div>
+`;
+
+document.getElementById('warningLoanDetails').innerHTML = loanDetailsHtml;
+
+// Preenche consequências baseadas no tempo de atraso
+let consequencesHtml = '<h6 class="alert-heading">Consequências do Atraso:</h6><ul class="mb-0">';
+
+if (diffDays >= 1) {
+consequencesHtml += '<li>Orientação sobre a importância da devolução no prazo</li>';
+}
+if (diffDays >= 3) {
+consequencesHtml += '<li>Advertência formal por escrito</li>';
+}
+if (diffDays >= 7) {
+consequencesHtml += '<li>Suspensão temporária do direito a novos empréstimos</li>';
+consequencesHtml += '<li>Aplicação de multa conforme regulamento interno</li>';
+}
+if (diffDays >= 14) {
+consequencesHtml += '<li>Registro em ficha disciplinar (para estudantes)</li>';
+consequencesHtml += '<li>Comunicação aos pais/responsáveis (se menor de idade)</li>';
+}
+if (diffDays >= 30) {
+consequencesHtml += '<li>Suspensão prolongada de empréstimos (até 30 dias após devolução)</li>';
+consequencesHtml += '<li>Avaliação para substituição do material em caso de perda</li>';
+}
+
+consequencesHtml += '<li>Em caso de perda ou dano, ressarcimento do valor do material</li>';
+consequencesHtml += '</ul>';
+
+document.getElementById('warningConsequences').innerHTML = consequencesHtml;
+
+// Define data da advertência
+const dataAdvertencia = getDataBrasilia();
+document.getElementById('warningDate').textContent = formatarDataBrasil(dataAdvertencia);
+
+// Inicializa pads de assinatura
+const warningCanvas = document.getElementById('warningSignaturePad');
+const librarianCanvas = document.getElementById('librarianSignaturePad');
+
+warningSignaturePad = new SignaturePad(warningCanvas, {
+backgroundColor: '#ffffff',
+penColor: '#000000'
+});
+
+librarianSignaturePad = new SignaturePad(librarianCanvas, {
+backgroundColor: '#ffffff',
+penColor: '#000000'
+});
+
+// Abre o modal
+const warningModal = new bootstrap.Modal(document.getElementById('warningModal'));
+warningModal.show();
+
+} catch (error) {
+console.error('Erro ao abrir modal de advertência:', error);
+showAlert('danger', 'Erro ao carregar dados para advertência.');
+}
+}
+
+// Função para limpar assinatura do usuário
+function clearWarningSignature() {
+if (warningSignaturePad) {
+warningSignaturePad.clear();
+}
+}
+
+// Função para limpar assinatura do bibliotecário
+function clearLibrarianSignature() {
+if (librarianSignaturePad) {
+librarianSignaturePad.clear();
+}
+}
+
+// Função para salvar advertência no banco de dados
+async function saveWarning() {
+try {
+if (!currentWarningLoanId) {
+showAlert('danger', 'ID do empréstimo não encontrado.');
+return;
+}
+
+if (!warningSignaturePad || warningSignaturePad.isEmpty()) {
+showAlert('warning', 'Por favor, colete a assinatura do usuário antes de salvar.');
+return;
+}
+
+if (!librarianSignaturePad || librarianSignaturePad.isEmpty()) {
+showAlert('warning', 'Por favor, adicione a assinatura do responsável pela biblioteca.');
+return;
+}
+
+const saveBtn = document.getElementById('saveWarningBtn');
+saveBtn.disabled = true;
+saveBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-2"></i>Salvando...';
+
+// Converte assinaturas para base64
+const userSignature = warningSignaturePad.toDataURL();
+const librarianSignature = librarianSignaturePad.toDataURL();
+
+// Salva a advertência
+const dataAdvertenciaSalvar = getDataBrasilia();
+await db.collection('advertencias').add({
+loanId: currentWarningLoanId,
+createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+warningDate: formatarDataBrasil(dataAdvertenciaSalvar),
+userSignature: userSignature,
+librarianSignature: librarianSignature,
+status: 'EMITIDA'
+});
+
+// Atualiza o empréstimo com flag de advertência
+const dataAdvertenciaUpdate = getDataBrasilia();
+await db.collection('emprestimos').doc(currentWarningLoanId).update({
+hasWarning: true,
+warningDate: formatarDataBrasil(dataAdvertenciaUpdate)
+});
+
+showAlert('success', 'Advertência salva com sucesso!');
+
+// Fecha o modal
+const warningModal = bootstrap.Modal.getInstance(document.getElementById('warningModal'));
+if (warningModal) warningModal.hide();
+
+// Atualiza a tabela
+loadLoans();
+
+} catch (error) {
+console.error('Erro ao salvar advertência:', error);
+showAlert('danger', 'Erro ao salvar advertência: ' + error.message);
+} finally {
+const saveBtn = document.getElementById('saveWarningBtn');
+saveBtn.disabled = false;
+saveBtn.innerHTML = '<i class="bx bx-save me-2"></i>Salvar Advertência';
+}
+}
+
+// Função para imprimir advertência
+function printWarning() {
+if (!warningSignaturePad || warningSignaturePad.isEmpty()) {
+showAlert('warning', 'Por favor, colete a assinatura do usuário antes de imprimir.');
+return;
+}
+
+if (!librarianSignaturePad || librarianSignaturePad.isEmpty()) {
+showAlert('warning', 'Por favor, adicione a assinatura do responsável pela biblioteca.');
+return;
+}
+
+const printArea = document.getElementById('warningPrintArea');
+if (!printArea) {
+showAlert('danger', 'Erro ao encontrar área de impressão.');
+return;
+}
+
+// Abre uma nova janela para impressão
+const printWindow = window.open('', '', 'width=800,height=600');
+printWindow.document.write(`
+<html>
+<head>
+<title>Advertência por Atraso - ${SYSTEM_CONFIG.schoolName}</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<style>
+body { 
+font-family: 'Arial', sans-serif; 
+margin: 20px; 
+font-size: 12px;
+line-height: 1.4;
+}
+.print-header {
+text-align: center;
+border-bottom: 2px solid #dc3545;
+padding-bottom: 15px;
+margin-bottom: 20px;
+}
+.alert { 
+border: 1px solid #dc3545 !important;
+background-color: #f8d7da !important;
+color: #721c24 !important;
+padding: 8px 12px;
+margin-bottom: 15px;
+}
+.card { 
+border: 1px solid #ddd; 
+margin-bottom: 15px;
+}
+.card-header { 
+background-color: #f8f9fa; 
+border-bottom: 1px solid #ddd;
+padding: 8px 12px;
+font-weight: bold;
+}
+.card-body { 
+padding: 12px;
+}
+.signature-area {
+border: 2px solid #dc3545;
+height: 80px;
+margin: 10px 0;
+background-image: url('${warningSignaturePad.toDataURL()}');
+background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+.librarian-signature-area {
+border: 2px solid #dc3545;
+height: 80px;
+margin: 10px 0;
+background-image: url('${librarianSignaturePad.toDataURL()}');
+background-size: contain;
+background-repeat: no-repeat;
+background-position: center;
+}
+@media print {
+.modal-header, .modal-footer { display: none !important; }
+.btn-close { display: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="print-header">
+<h3 style="color: #dc3545; margin: 0;">ADVERTÊNCIA POR ATRASO</h3>
+<h5 style="margin: 5px 0 0 0;">${SYSTEM_CONFIG.schoolName}</h5>
+<p style="margin: 5px 0 0 0;">Sistema de Gerenciamento de Biblioteca</p>
+</div>
+${printArea.querySelector('.modal-body').innerHTML}
+<div style="margin-top: 30px; display: flex; justify-content: space-between;">
+<div style="text-align: center; width: 45%;">
+<div class="signature-area"></div>
+<p style="margin: 5px 0; border-top: 1px solid #000; padding-top: 5px;">
+<strong>Assinatura do Usuário</strong>
+</p>
+</div>
+<div style="text-align: center; width: 45%;">
+<div class="librarian-signature-area"></div>
+<p style="margin: 5px 0; border-top: 1px solid #000; padding-top: 5px;">
+<strong>Assinatura do Responsável</strong>
+</p>
+</div>
+</div>
+</body>
+</html>
+`);
+printWindow.document.close();
+printWindow.focus();
+printWindow.print();
+printWindow.close();
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+loadLoans();
+updateNotReturnedBar();
+updateLoanStats();
+
+// Inicializa Flatpickr para campos de data
+flatpickr("#loanDate", {
+dateFormat: "d/m/Y",
+locale: "pt"
+});
+flatpickr("#returnDate", {
+dateFormat: "d/m/Y",
+locale: "pt"
+});
+flatpickr("#editLoanDate", {
+dateFormat: "d/m/Y",
+locale: "pt"
+});
+flatpickr("#editReturnDate", {
+dateFormat: "d/m/Y",
+locale: "pt"
+});
+
+// Adiciona listener para o botão de gerar relatório
+const generateReportBtn = document.getElementById('generateReportBtn');
+if (generateReportBtn) {
+generateReportBtn.addEventListener('click', generateLoanReport);
+}
+
+// Adiciona listener para o botão de busca principal
+const searchButton = document.querySelector('.search-box button');
+if (searchButton) {
+searchButton.addEventListener('click', searchLoans);
+}
+
+// Adiciona listener para o input de busca principal
+const searchInput = document.getElementById('searchInput');
+if (searchInput) {
+searchInput.addEventListener('keypress', function(event) {
+if (event.key === 'Enter') {
+searchLoans();
+}
+});
+
+}
+
+// Carrega os dados iniciais dos gráficos
+updateLoanStats();
+});
+
+// Função de busca principal para a tabela de empréstimos
+async function searchLoans() {
+const query = document.getElementById('searchInput').value.toLowerCase();
+const tbody = document.getElementById('loansTableBody');
+tbody.innerHTML = '<tr><td colspan="6">Buscando...</td></tr>';
+
+try {
+let snapshot;
+if (query) {
+// Busca por registroNumero exato
+snapshot = await db.collection('emprestimos')
+.where('registroNumero', '==', query)
+.get();
+
+// Se não encontrar por registro, tenta buscar por nome de usuário ou livro
+if (snapshot.empty) {
+const allLoansSnapshot = await db.collection('emprestimos').get();
+const filteredLoans = [];
+
+for (const doc of allLoansSnapshot.docs) {
+const data = doc.data();
+let match = false;
+
+// Busca por nome de usuário
+try {
+const userDoc = await db.collection('usuarios').doc(data.userId).get();
+if (userDoc.exists && userDoc.data().nome.toLowerCase().includes(query)) {
+match = true;
+}
+} catch {}
+
+// Busca por título de livro
+if (!match && Array.isArray(data.books)) {
+for (const b of data.books) {
+try {
+const bookDoc = await db.collection('livros').doc(b.bookId).get();
+if (bookDoc.exists && bookDoc.data().titulo.toLowerCase().includes(query)) {
+match = true;
+break;
+}
+} catch {}
+}
+}
+
+if (match) {
+filteredLoans.push(doc);
+}
+}
+snapshot = { docs: filteredLoans }; // Simula um snapshot para o loop abaixo
+}
+
+} else {
+// Se a busca estiver vazia, carrega os últimos 15 empréstimos
+snapshot = await db.collection('emprestimos')
+.orderBy('createdAt', 'desc')
+.limit(15)
+.get();
+}
+
+
+
+tbody.innerHTML = '';
+if (snapshot.docs.length === 0) {
+tbody.innerHTML = '<tr><td colspan="6">Nenhum empréstimo encontrado.</td></tr>';
+return;
+}
+
+for (const doc of snapshot.docs) {
+const data = doc.data();
+let livros = '';
+if ( Array.isArray(data.books)) {
+const titles = await Promise.all(
+data.books.map(async (b) => {
+const bookDoc = await db.collection('livros').doc(b.bookId).get();
+const bookData = bookDoc.data();
+return bookData ? `${bookData.titulo} (Qtd: ${b.quantity})` : b.bookId;
+})
+);
+livros = titles.join('<br>');
+}
+let userName = data.userId;
+try {
+const userDoc = await db.collection('usuarios').doc(data.userId).get();
+if (userDoc.exists) userName = userDoc.data().nome;
+} catch {}
+
+let statusClass = '';
+if (data.status === 'EMPRESTADO') statusClass = 'status-emprestado';
+else if (data.status === 'ATRASADO') statusClass = 'status-atrasado';
+else if (data.status === 'DEVOLVIDO') statusClass = 'status-devolvido';
+
+let actionBtns = `
+<button class="btn btn-sm btn-outline-secondary" title="Editar" onclick="openEditLoanModal('${doc.id}')">
+<i class="bx bx-edit"></i>
+</button>
+`;
+if (data.status === 'EMPRESTADO' || data.status === 'ATRASADO') {
+actionBtns += `
+<button class="btn btn-sm btn-outline-info return-button" title="Devolver" onclick="returnLoan('${doc.id}')">
+<i class="bx bx-check-circle"></i>
+</button>
+<button class="btn btn-sm btn-outline-success renew-button" title="Renovar" onclick="renewLoan('${doc.id}')">
+<i class="bx bx-refresh"></i>
+</button>
+`;
+}
+actionBtns += `
+<button class="btn btn-sm btn-outline-danger" title="Excluir" onclick="deleteLoan('${doc.id}')">
+<i class="bx bx-trash"></i>
+</button>
+<button class="btn btn-sm btn-outline-primary" title="Imprimir Comprovante" onclick="openPrintLoanModal('${doc.id}')">
+<i class="bx bx-printer"></i>
+</button>
+`;
+
+tbody.innerHTML += `
+<tr>
+<td>${livros}</td>
+<td>${userName}</td>
+<td>${data.loanDate}</td>
+<td>${data.returnDate}</td>
+<td><span class="loan-status ${statusClass}">${data.status}</span></td>
+<td>
+<div class="action-buttons">
+${actionBtns}
+</div>
+</td>
+</tr>
+`;
+}
+} catch (error) {
+console.error('Erro ao buscar empréstimos:', error);
+showAlert('danger', 'Erro ao buscar empréstimos.');
+}
+}
+
+// Funções para consulta de advertências
+async function loadWarnings() {
+try {
+const searchTerm = document.getElementById('warningsSearch').value.toLowerCase();
+const dateFilter = document.getElementById('warningsDateFilter').value;
+
+let query = db.collection('warnings');
+
+// Filtro por data se selecionado
+if (dateFilter) {
+const daysAgo = getDataBrasilia();
+daysAgo.setDate(daysAgo.getDate() - parseInt(dateFilter));
+query = query.where('issueDate', '>=', daysAgo);
+}
+
+const snapshot = await query.orderBy('issueDate', 'desc').get();
+const tbody = document.getElementById('warningsTableBody');
+tbody.innerHTML = '';
+
+let count = 0;
+const now = getDataBrasilia();
+
+// Array para armazenar atualizações em lote
+const batch = db.batch();
+let batchUpdates = 0;
+
+for (const doc of snapshot.docs) {
+const data = doc.data();
+
+// Buscar dados do usuário
+let userName = 'N/A';
+try {
+const userDoc = await db.collection('usuarios').doc(data.userId).get();
+if (userDoc.exists) userName = userDoc.data().nome;
+} catch {}
+
+// Filtro por nome do usuário
+if (searchTerm && !userName.toLowerCase().includes(searchTerm)) {
+continue;
+}
+
+// Buscar dados dos livros
+let bookTitles = [];
+if (Array.isArray(data.books)) {
+for (const book of data.books) {
+try {
+const bookDoc = await db.collection('livros').doc(book.bookId).get();
+if (bookDoc.exists) {
+bookTitles.push(`${bookDoc.data().titulo} (Qtd: ${book.quantity})`);
+} else {
+bookTitles.push(`${book.bookId} (Qtd: ${book.quantity})`);
+}
+} catch {
+bookTitles.push(`${book.bookId} (Qtd: ${book.quantity})`);
+}
+}
+}
+
+// Atualizar empréstimo relacionado se existir
+let currentStatus = 'DEVOLVIDO';
+let currentDaysLate = 0;
+
+if (data.loanId) {
+try {
+const loanDoc = await db.collection('emprestimos').doc(data.loanId).get();
+if (loanDoc.exists) {
+const loanData = loanDoc.data();
+const returnDate = loanData.returnDate;
+
+if (returnDate && returnDate !== 'N/A' && loanData.status !== 'DEVOLVIDO') {
+const [datePart] = returnDate.split(' ');
+const [day, month, year] = datePart.split('/');
+const returnDateTime = new Date(year, month - 1, day);
+
+if (returnDateTime < now) {
+const diffTime = Math.abs(now - returnDateTime);
+const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+currentDaysLate = diffDays;
+currentStatus = `ATRASADO (${diffDays} dias)`;
+
+// Atualizar status do empréstimo no banco
+const loanRef = db.collection('emprestimos').doc(data.loanId);
+batch.update(loanRef, {
+status: 'ATRASADO'
+});
+batchUpdates++;
+
+// Atualizar dados na advertência se os dias de atraso mudaram
+if (data.daysLate !== diffDays) {
+const warningRef = db.collection('warnings').doc(doc.id);
+batch.update(warningRef, {
+daysLate: diffDays,
+lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+});
+batchUpdates++;
+}
+} else {
+currentStatus = 'EMPRESTADO';
+
+// Se não está mais atrasado, atualizar status
+if (loanData.status === 'ATRASADO') {
+const loanRef = db.collection('emprestimos').doc(data.loanId);
+batch.update(loanRef, {
+status: 'EMPRESTADO'
+});
+batchUpdates++;
+}
+}
+} else if (loanData.status === 'DEVOLVIDO') {
+currentStatus = 'DEVOLVIDO';
+} else {
+currentStatus = 'EMPRESTADO';
+}
+}
+} catch (error) {
+console.error('Erro ao verificar empréstimo:', error);
+// Usar dados da advertência como fallback
+const returnDate = data.returnDate;
+if (returnDate && returnDate !== 'N/A') {
+const [datePart] = returnDate.split(' ');
+const [day, month, year] = datePart.split('/');
+const returnDateTime = new Date(year, month - 1, day);
+
+if (returnDateTime < now) {
+const diffTime = Math.abs(now - returnDateTime);
+const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+currentStatus = `ATRASADO (${diffDays} dias)`;
+currentDaysLate = diffDays;
+} else {
+currentStatus = 'EMPRESTADO';
+}
+}
+}
+} else {
+// Se não há loanId, usar dados da advertência
+const returnDate = data.returnDate;
+if (returnDate && returnDate !== 'N/A') {
+const [datePart] = returnDate.split(' ');
+const [day, month, year] = datePart.split('/');
+const returnDateTime = new Date(year, month - 1, day);
+
+if (returnDateTime < now) {
+const diffTime = Math.abs(now - returnDateTime);
+const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+currentStatus = `ATRASADO (${diffDays} dias)`;
+currentDaysLate = diffDays;
+} else {
+currentStatus = 'EMPRESTADO';
+}
+}
+}
+
+// Formatar data da advertência
+let issueDateFormatted = 'N/A';
+if (data.issueDate && data.issueDate.toDate) {
+const date = data.issueDate.toDate();
+issueDateFormatted = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
+}
+
+count++;
+
+tbody.innerHTML += `
+<tr>
+<td>${issueDateFormatted}</td>
+<td>${userName}</td>
+<td>${bookTitles.join('; ')}</td>
+<td>${data.loanDate || 'N/A'}</td>
+<td>${data.returnDate || 'N/A'}</td>
+<td>${currentDaysLate}</td>
+<td>
+<span class="badge ${currentStatus.includes('ATRASADO') ? 'bg-danger' : currentStatus === 'EMPRESTADO' ? 'bg-warning' : 'bg-success'}">
+${currentStatus}
+</span>
+</td>
+<td>
+<div class="btn-group btn-group-sm">
+<button class="btn btn-outline-primary" onclick="viewWarningDetails('${doc.id}')" title="Visualizar">
+<i class="bx bx-eye"></i>
+</button>
+<button class="btn btn-outline-secondary" onclick="reprintWarning('${doc.id}')" title="Reimprimir">
+<i class="bx bx-printer"></i>
+</button>
+<button class="btn btn-outline-danger" onclick="deleteWarning('${doc.id}')" title="Excluir">
+<i class="bx bx-trash"></i>
+</button>
+</div>
+</td>
+</tr>
+`;
+}
+
+// Executar atualizações em lote se houver alguma
+if (batchUpdates > 0) {
+try {
+await batch.commit();
+console.log(`${batchUpdates} registros atualizados no banco de dados`);
+} catch (error) {
+console.error('Erro ao atualizar registros em lote:', error);
+}
+}
+
+if (count === 0) {
+tbody.innerHTML = '<tr><td colspan="8" class="text-center">Nenhuma advertência encontrada</td></tr>';
+}
+
+document.getElementById('warningsCount').textContent = count;
+
+// Mostrar feedback visual se houve atualizações
+if (batchUpdates > 0) {
+showAlert('info', `${batchUpdates} registros foram atualizados no banco de dados`, 3000);
+}
+
+} catch (error) {
+console.error('Erro ao carregar advertências:', error);
+document.getElementById('warningsTableBody').innerHTML = 
+'<tr><td colspan="8" class="text-center text-danger">Erro ao carregar advertências</td></tr>';
+}
+}
+
+async function viewWarningDetails(warningId) {
+try {
+const doc = await db.collection('warnings').doc(warningId).get();
+if (!doc.exists) {
+showAlert('danger', 'Advertência não encontrada');
+return;
+}
+
+const data = doc.data();
+
+// Buscar dados do usuário
+let userName = 'N/A';
+try {
+const userDoc = await db.collection('usuarios').doc(data.userId).get();
+if (userDoc.exists) userName = userDoc.data().nome;
+} catch {}
+
+// Criar modal para visualizar detalhes
+const modalId = 'warningDetailsModal';
+let modal = document.getElementById(modalId);
+
+if (!modal) {
+modal = document.createElement('div');
+modal.className = 'modal fade';
+modal.id = modalId;
+modal.setAttribute('tabindex', '-1');
+modal.innerHTML = `
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-warning text-dark">
+<h5 class="modal-title">
+<i class="bx bx-error-circle me-2"></i>Detalhes da Advertência
+</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body" id="warningDetailsBody">
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-primary" onclick="reprintWarning('${warningId}')">
+<i class="bx bx-printer me-2"></i>Reimprimir
+</button>
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+</div>
+</div>
+</div>
+`;
+document.body.appendChild(modal);
+}
+
+// Preencher conteúdo do modal
+document.getElementById('warningDetailsBody').innerHTML = data.content || 'Conteúdo não disponível';
+
+// Mostrar modal
+const bsModal = new bootstrap.Modal(modal);
+bsModal.show();
+
+} catch (error) {
+console.error('Erro ao visualizar advertência:', error);
+showAlert('danger', 'Erro ao carregar detalhes da advertência');
+}
+}
+
+async function reprintWarning(warningId) {
+try {
+const doc = await db.collection('warnings').doc(warningId).get();
+if (!doc.exists) {
+showAlert('danger', 'Advertência não encontrada');
+return;
+}
+
+const data = doc.data();
+
+// Criar janela de impressão
+const printWindow = window.open('', '_blank');
+printWindow.document.write(data.content || 'Conteúdo não disponível');
+printWindow.document.close();
+printWindow.print();
+
+showAlert('success', 'Advertência enviada para impressão');
+
+} catch (error) {
+console.error('Erro ao reimprimir advertência:', error);
+showAlert('danger', 'Erro ao reimprimir advertência');
+}
+}
+
+async function deleteWarning(warningId) {
+if (!confirm('Tem certeza que deseja excluir esta advertência? Esta ação é irreversível.')) {
+return;
+}
+
+try {
+await db.collection('warnings').doc(warningId).delete();
+showAlert('success', 'Advertência excluída com sucesso');
+loadWarnings(); // Recarregar lista
+
+} catch (error) {
+console.error('Erro ao excluir advertência:', error);
+showAlert('danger', 'Erro ao excluir advertência');
+}
+}
+
+async function exportWarningsReport() {
+try {
+const snapshot = await db.collection('warnings').orderBy('issueDate', 'desc').get();
+const warnings = [];
+
+for (const doc of snapshot.docs) {
+const data = doc.data();
+
+// Buscar dados do usuário
+let userName = 'N/A';
+try {
+const userDoc = await db.collection('usuarios').doc(data.userId).get();
+if (userDoc.exists) userName = userDoc.data().nome;
+} catch {}
+
+// Buscar dados dos livros
+let bookTitles = [];
+if (Array.isArray(data.books)) {
+for (const book of data.books) {
+try {
+const bookDoc = await db.collection('livros').doc(book.bookId).get();
+if (bookDoc.exists) {
+bookTitles.push(`${bookDoc.data().titulo} (Qtd: ${book.quantity})`);
+} else {
+bookTitles.push(`${book.bookId} (Qtd: ${book.quantity})`);
+}
+} catch {
+bookTitles.push(`${book.bookId} (Qtd: ${book.quantity})`);
+}
+}
+}
+
+// Formatar data da advertência
+let issueDateFormatted = 'N/A';
+if (data.issueDate && data.issueDate.toDate) {
+const date = data.issueDate.toDate();
+issueDateFormatted = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
+}
+
+warnings.push({
+'Data da Advertência': issueDateFormatted,
+'Usuário': userName,
+'Livros': bookTitles.join('; '),
+'Data do Empréstimo': data.loanDate || 'N/A',
+'Data de Devolução': data.returnDate || 'N/A',
+'Dias de Atraso': data.daysLate || 0,
+'Consequências': data.consequences || 'N/A'
+});
+}
+
+if (warnings.length === 0) {
+showAlert('warning', 'Nenhuma advertência encontrada para exportar');
+return;
+}
+
+const ws = XLSX.utils.json_to_sheet(warnings);
+const wb = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb, ws, "Advertências");
+
+const now = getDataBrasilia();
+const fileName = `advertencias_${now.getFullYear()}_${(now.getMonth() + 1).toString().padStart(2, '0')}_${now.getDate().toString().padStart(2, '0')}.xlsx`;
+
+XLSX.writeFile(wb, fileName);
+showAlert('success', 'Relatório de advertências exportado com sucesso!');
+
+} catch (error) {
+console.error('Erro ao exportar relatório:', error);
+showAlert('danger', 'Erro ao exportar relatório de advertências');
+}
+}
+
+// Carregar advertências quando o modal for aberto
+document.getElementById('warningsListModal').addEventListener('shown.bs.modal', function () {
+loadWarnings();
+});
+
+// Configurar busca em tempo real
+document.getElementById('warningsSearch').addEventListener('input', function() {
+clearTimeout(this.searchTimeout);
+this.searchTimeout = setTimeout(() => {
+loadWarnings();
+}, 500);
+});
+
+// Configurar filtro de data
+document.getElementById('warningsDateFilter').addEventListener('change', function() {
+loadWarnings();
+});
+
+// Atualize todos os usuários para ter o campo nomeSearch
+db.collection('usuarios').get().then(snapshot => {
+snapshot.forEach(doc => {
+const nome = doc.data().nome || '';
+const nomeSearch = nome.toLowerCase().split(' ');
+db.collection('usuarios').doc(doc.id).update({ nomeSearch });
+});
+});
+db.collection('livros').get().then(snapshot => {
+snapshot.forEach(doc => {
+const titulo = doc.data().titulo || '';
+const tituloSearch = titulo.toLowerCase().split(' ');
+db.collection('livros').doc(doc.id).update({ tituloSearch });
+});
+}); </script>
+<script>
+document.addEventListener('focusin', function(e) {
+let el = e.target;
+while (el) {
+if (el.getAttribute && el.getAttribute('aria-hidden') === 'true') {
+// Remove o foco se estiver dentro de um aria-hidden
+if (typeof el.blur === 'function') el.blur();
+// Move o foco para o body
+document.body.focus();
+break;
+}
+el = el.parentElement;
+}
+});
+
+</script>
+<script>
+// Garante que aria-hidden="true" seja removido de modais abertos
+function fixAriaHiddenOnOpenModals() {
+document.querySelectorAll('.modal').forEach(function(modal) {
+const isVisible = window.getComputedStyle(modal).display === 'block';
+if (isVisible) {
+// Remove aria-hidden se existir
+if (modal.hasAttribute('aria-hidden')) {
+modal.removeAttribute('aria-hidden');
+}
+}
+});
+}
+
+// Monitora abertura de modais Bootstrap para garantir acessibilidade
+document.addEventListener('shown.bs.modal', fixAriaHiddenOnOpenModals);
+document.addEventListener('DOMContentLoaded', function() {
+// Corrige ao carregar a página caso algum modal esteja aberto
+fixAriaHiddenOnOpenModals();
+});
+
+// Também corrige ao abrir modal programaticamente (ex: printLoanModal)
+const printLoanModal = document.getElementById('printLoanModal');
+if (printLoanModal) {
+printLoanModal.addEventListener('shown.bs.modal', function() {
+if (printLoanModal.hasAttribute('aria-hidden')) {
+printLoanModal.removeAttribute('aria-hidden');
+}
+});
+}
+</script>
+</body>
+</html>

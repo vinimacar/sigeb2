@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SIGEB - Escola Estadual Professor Álvaro Brandão de Andrade</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="SISTEMA DE GERENCIAMENTO DE BIBLIOTECA.png" />
+  <style>
+  :root {
+    /* Cores da identidade SIGEB - Educação e Conhecimento */
+    --primary: #0d2847;          /* Azul acadêmico profundo */
+    --secondary: #1a4971;        /* Azul médio educacional */
+    --accent1: #ffd700;          /* Dourado conhecimento */
+    --accent2: #2e8b57;          /* Verde sabedoria */
+    --accent3: #4a90e2;          /* Azul claro confiança */
+    --light-blue: #e8f4fd;       /* Azul muito claro para backgrounds */
+    --danger: #dc3545;           /* Vermelho padrão para erros */
+    --success: #28a745;          /* Verde padrão para sucesso */
+    --warning: #ffc107;          /* Amarelo para avisos */
+    --text-light: #ffffff;       /* Texto branco puro */
+    --text-secondary: #f8f9fa;   /* Texto secundário claro */
+    --text-muted: #e9ecef;       /* Texto suave */
+    --text-dark: #e9eef3;        /* Texto escuro */
+    --shadow-md: 0 8px 25px rgba(13, 40, 71, 0.15);
+    --shadow-lg: 0 15px 35px rgba(13, 40, 71, 0.25);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  html, body {
+    height: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: var(--text-light);
+    font-weight: 400;
+  }    .hero-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 48px;
+      padding-bottom: 48px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    }
+
+    .logo-container {
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .school-logo {
+      width: 200px;
+      height: 200px;
+      object-fit: contain;
+      margin-bottom: 1rem;
+      filter: drop-shadow(0 0 40px var(--accent1)) drop-shadow(0 10px 20px rgba(255, 215, 0, 0.4)) drop-shadow(0 0 60px rgba(255, 215, 0, 0.2));
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      padding: 15px;
+      border: 6px solid var(--accent1);
+      transition: var(--transition);
+      position: relative;
+      z-index: 5;
+      box-shadow: 0 0 80px rgba(255, 215, 0, 0.3), 0 8px 32px rgba(0, 0, 0, 0.15);
+    }
+
+    .institutional-logo {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      margin: 0 15px;
+      filter: drop-shadow(0 0 20px var(--accent2)) drop-shadow(0 4px 12px rgba(46, 139, 87, 0.3));
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      padding: 8px;
+      border: 3px solid var(--accent2);
+      transition: var(--transition);
+    }
+
+    .institutional-logo:hover {
+      transform: scale(1.05) rotate(2deg);
+      filter: drop-shadow(0 0 25px var(--accent2)) drop-shadow(0 6px 16px rgba(46, 139, 87, 0.4));
+      border-color: var(--accent1);
+    }
+
+    .logos-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .school-logo:hover {
+      transform: scale(1.1) rotate(-3deg);
+      filter: drop-shadow(0 0 60px var(--accent1)) drop-shadow(0 15px 30px rgba(255, 215, 0, 0.5)) drop-shadow(0 0 80px rgba(255, 215, 0, 0.3));
+      border-color: var(--accent2);
+      box-shadow: 0 0 100px rgba(255, 215, 0, 0.4), 0 12px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .logo-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, var(--accent1) 0%, var(--accent2) 40%, transparent 70%);
+      border-radius: 50%;
+      filter: blur(40px);
+      opacity: 0.4;
+      z-index: 1;
+      animation: pulse 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { 
+        opacity: 0.3; 
+        transform: translate(-50%, -50%) scale(0.95);
+        filter: blur(40px);
+      }
+      100% { 
+        opacity: 0.5; 
+        transform: translate(-50%, -50%) scale(1.05);
+        filter: blur(35px);
+      }
+    }
+
+    .hero-title {
+      font-weight: 800;
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--accent1) 0%, #fff 50%, var(--accent1) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+      letter-spacing: 3px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      position: relative;
+    }
+
+    .hero-title::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent2), var(--accent1));
+      border-radius: 2px;
+    }
+
+    .hero-subtitle {
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      font-size: 1.2rem;
+      line-height: 1.6;
+      text-align: center;
+      max-width: 450px;
+      margin-left: auto;
+      margin-right: auto;
+      opacity: 0.95;
+      font-weight: 500;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .main-content {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, #0d2847 0%, #1a4971 100%);
+      border-radius: 24px;
+      box-shadow: 0 12px 36px rgba(13,40,71,0.18);
+      border: 2px solid #ffd700;
+      padding: 2.8rem 2.2rem 2.2rem 2.2rem;
+      color: #ffffff;
+      transition: all 0.3s cubic-bezier(.4,0,.2,1);
+    }
+
+    .form-label {
+      color: #ffd700;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+      font-size: 1rem;
+      background: rgba(255,255,255,0.13);
+      border: 2px solid #4a90e2;
+      border-radius: 12px;
+      color: #ffffff;
+      padding: 0.75rem 1rem;
+      font-weight: 500;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .form-control:focus {
+      border-color: #ffd700;
+      background: rgba(255,255,255,0.18);
+      box-shadow: 0 0 0 3px rgba(255,215,0,0.18);
+      outline: none;
+      color: #ffffff;
+    }
+    .form-control::placeholder {
+      color: #e9ecef;
+      opacity: 0.9;
+    }
+
+    .btn-primary, .btn-success, .btn-secondary {
+      font-weight: 700;
+      letter-spacing: 1px;
+      border-radius: 10px;
+      box-shadow: var(--shadow-md);
+      border: none;
+      transition: var(--transition);
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      text-transform: uppercase;
+    }
+    .btn-primary {
+      background: linear-gradient(90deg, #4a90e2 0%, #2e8b57 100%);
+      color: #fff;
+      border-radius: 12px;
+      font-weight: 700;
+      box-shadow: 0 4px 16px rgba(46,139,87,0.18);
+      transition: all 0.3s cubic-bezier(.4,0,.2,1);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(90deg, #2e8b57 0%, #4a90e2 100%);
+      transform: translateY(-2px) scale(1.03);
+    }
+    .btn-success {
+      background: linear-gradient(135deg, var(--success) 0%, #20c997 100%);
+      color: var(--text-light);
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    .btn-success:hover {
+      background: linear-gradient(135deg, #20c997 0%, var(--success) 100%);
+      color: var(--text-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+    }
+    .btn-secondary {
+      background: linear-gradient(135deg, var(--accent1) 0%, #f39c12 100%);
+      color: var(--text-dark);
+      text-shadow: 1px 1px 2px rgba(255,255,255,0.3);
+      font-weight: 800;
+    }
+    .btn-secondary:hover {
+      background: linear-gradient(135deg, #f39c12 0%, var(--accent1) 100%);
+      color: var(--text-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+    }
+    .btn-light {
+      color: var(--text-dark);
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      border: 2px solid var(--accent1);
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 0.75rem 1.5rem;
+      transition: var(--transition);
+    }
+    .btn-light:hover {
+      background: linear-gradient(135deg, var(--accent1) 0%, #ffffff 100%);
+      color: var(--text-dark);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .btn-link {
+      color: #ffd700 !important;
+      font-size: 0.95rem;
+      padding: 0;
+      font-weight: 600;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      transition: var(--transition);
+    }
+    .btn-link:hover {
+      color: #ffffff !important;
+      text-decoration: underline;
+      text-decoration-color: #ffd700;
+      text-underline-offset: 3px;
+    }
+
+    .feature-section {
+      margin-top: 2.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: center;
+    }
+
+    .feature-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 100%);
+      backdrop-filter: blur(15px);
+      border-radius: 18px;
+      padding: 1.8rem 1.5rem 1.5rem 1.5rem;
+      min-width: 240px;
+      max-width: 280px;
+      flex: 1 1 240px;
+      transition: var(--transition);
+      cursor: pointer;
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(255,255,255,0.25);
+      text-align: center;
+      color: var(--text-light);
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    }
+    .feature-card:hover {
+      transform: translateY(-10px) scale(1.02);
+      background: linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(46,139,87,0.10) 100%);
+      border: 1px solid var(--accent1);
+      color: #ffffff !important;
+      box-shadow: 0 15px 40px rgba(255, 215, 0, 0.2);
+    }
+    .feature-card:hover h6 {
+      color: #ffffff !important;
+    }
+    .feature-card:hover p {
+      color: #ffffff !important;
+    }
+    .feature-icon {
+      font-size: 2.8rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+      filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+    }
+
+    .text-danger {
+      color: #ff6b6b !important;
+      font-weight: 600;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    .text-success {
+      color: #51cf66 !important;
+      font-weight: 600;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    .text-muted {
+      color: #e9ecef !important;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+
+    /* WhatsApp button highlight */
+    .btn-whatsapp {
+      background: linear-gradient(90deg, #25d366 0%, #128c7e 100%);
+      color: #fff !important;
+      border: none;
+      font-weight: 700;
+      border-radius: 14px;
+      box-shadow: 0 6px 24px rgba(37, 211, 102, 0.25);
+      transition: all 0.3s cubic-bezier(.4,0,.2,1);
+      padding: 0.85rem 1.7rem;
+      font-size: 1.08rem;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+    .btn-whatsapp:hover {
+      background: linear-gradient(90deg, #128c7e 0%, #25d366 100%);
+      box-shadow: 0 12px 32px rgba(37, 211, 102, 0.35);
+      transform: translateY(-2px) scale(1.04);
+    }
+
+    /* Enhanced modal styling */
+    .modal-content {
+      background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%) !important;
+      border: 2px solid var(--accent1) !important;
+      border-radius: 15px !important;
+      box-shadow: var(--shadow-lg) !important;
+    }
+    .modal-header {
+      border-bottom: 1px solid rgba(255, 215, 0, 0.3) !important;
+    }
+    .modal-title {
+      color: var(--accent1) !important;
+      font-weight: 600;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    .alert {
+      border-radius: 10px !important;
+    }
+
+    /* Subtle animations for better UX */
+    .form-control {
+      transition: all 0.3s ease;
+    }
+    .form-control:hover {
+      border-color: #ffd700;
+      background: rgba(255,255,255,0.15);
+      color: #ffffff;
+    }
+    
+    .feature-card h6 {
+      color: #ffffff !important;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+      font-size: 1.1rem;
+    }
+    
+    .feature-card p {
+      color: #ffffff !important;
+      margin-bottom: 0;
+      opacity: 1;
+      line-height: 1.4;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    /* Toggle password styling */
+    .toggle-password {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #ffd700;
+      font-size: 1.2rem;
+      transition: var(--transition);
+      z-index: 10;
+    }
+    .toggle-password:hover {
+      color: #ffffff;
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    /* Loading spinner animation */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: var(--accent1);
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .main-content {
+        padding: 1.2rem 0.5rem 1rem 0.5rem;
+      }
+      .feature-section {
+        gap: 0.7rem;
+      }
+      .feature-card {
+        min-width: 140px;
+        max-width: 100%;
+        padding: 1rem 0.5rem 0.7rem 0.5rem;
+      }
+      .logos-container {
+        gap: 5px;
+      }
+      .institutional-logo {
+        width: 80px;
+        height: 80px;
+        margin: 0 8px;
+      }
+      .school-logo {
+        width: 140px;
+        height: 140px;
+        border: 4px solid var(--accent1) !important;
+        box-shadow: 0 0 50px rgba(255, 215, 0, 0.3), 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+      }
+      .logo-glow {
+        width: 180px;
+        height: 180px;
+        opacity: 0.3;
+      }
+      .hero-title {
+        font-size: 1.5rem;
+      }
+    }
+
+    footer {
+      background: linear-gradient(135deg, rgba(13,40,71,0.95) 0%, rgba(26,73,113,0.9) 100%);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      padding: 1.5rem 0;
+      text-align: center;
+      margin-top: 2rem;
+      width: 100%;
+      letter-spacing: 0.5px;
+      border-top: 1px solid rgba(255,215,0,0.2);
+      box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+    }
+    footer a {
+      color: var(--accent1) !important;
+      text-decoration: none;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+    footer a:hover {
+      color: var(--text-light) !important;
+      text-shadow: 0 0 10px var(--accent1);
+    }
+
+    /* Títulos com gradiente dourado */
+    .hero-title {
+      background: linear-gradient(90deg, #ffd700 0%, #4a90e2 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.18);
+    }
+  </style>
+</head>
+<body>
+  <div class="hero-container" style="padding-top:32px; padding-bottom:32px;">
+    <div class="logo-container" style="position:relative; margin-bottom: 1.2rem;">
+      <div class="logo-glow"></div>
+      <div class="logos-container">
+        <img src="logoaba.png" alt="Logo da Escola" class="institutional-logo">
+        <img src="SISTEMA DE GERENCIAMENTO DE BIBLIOTECA.png" alt="Logo do SIGEB" class="school-logo" style="width: 220px; height: 220px; box-shadow: 0 0 80px rgba(255, 215, 0, 0.4), 0 8px 40px rgba(0, 0, 0, 0.2); border: 8px solid var(--accent1); background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); filter: drop-shadow(0 0 50px var(--accent1)) brightness(1.05);">
+        <img src="logoaba.png" alt="Logo da Escola" class="institutional-logo">
+      </div>
+      <h1 class="hero-title" style="font-size:3.2rem; margin-top:0.7rem; margin-bottom:0.3rem; background:linear-gradient(90deg,var(--accent1),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 4px 24px var(--accent2),0 2px 10px rgba(0,0,0,0.12);letter-spacing:3px;">SIGEB</h1>
+      <div class="hero-subtitle" style="font-size:1.15rem; color:#b8e0ff; margin-bottom:0.5rem; opacity:0.92;">
+        Sistema de Gestão de Biblioteca<br>
+        Escola Estadual Professor Álvaro Brandão de Andrade
+      </div>
+    </div>
+    <div class="main-content" style="max-width: 430px; margin-bottom: 1.2rem;">
+      <div id="login-container" style="display:block;">
+        <form id="loginForm">
+          <h5 class="mb-2" style="color:#ffffff;font-size:1.1rem;text-shadow:1px 1px 2px rgba(0,0,0,0.5);">Login</h5>
+          <div class="mb-2">
+            <label for="loginEmail" class="form-label">E-mail ou Usuário</label>
+            <input type="text" class="form-control form-control-sm" id="loginEmail" required autocomplete="username" placeholder="Digite seu e-mail ou nome de usuário">
+            <small class="text-muted" style="font-size:0.8rem;color:#e9ecef;">Você pode usar seu e-mail ou nome de usuário para fazer login</small>
+          </div>
+          <div class="mb-2 position-relative">
+            <label for="loginPassword" class="form-label">Senha</label>
+            <input type="password" class="form-control form-control-sm" id="loginPassword" required autocomplete="current-password" style="padding-right: 45px;">
+            <span class="toggle-password" toggle="#loginPassword" style="top: 38px;">
+              <i class="bx bx-show"></i>
+            </span>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm w-100">Entrar</button>
+          <div id="loginError" class="mt-1 text-danger" style="display:none;font-size:0.9rem;"></div>
+          <div class="text-center mt-2">
+            <button type="button" id="showRegisterBtn" class="btn btn-link">Não tem conta? Cadastre-se</button>
+          </div>
+          <div class="text-center mt-1">
+            <button type="button" id="forgotPasswordBtn" class="btn btn-link">Esqueceu a senha?</button>
+          </div>
+        </form>
+        <!-- Google Login Button -->
+        <div class="text-center mt-2">
+          <button type="button" id="googleLoginBtn" class="btn btn-light w-100" style="border:1px solid #ccc;">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width:22px; margin-right:8px; vertical-align:middle;">
+            Entrar com Google
+          </button>
+        </div>
+        <!-- Link para ver usuários de exemplo -->
+        <div class="text-center mt-2">
+          <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#usuariosExemplo" style="font-size:0.85rem;">
+            <i class="bx bx-info-circle"></i> Ver usuários de exemplo
+          </button>
+        </div>
+        <!-- WhatsApp Support Button -->
+        <div class="text-center mt-3">
+          <a href="https://wa.me/5534999188660" target="_blank" class="btn btn-whatsapp w-100">
+            <i class="bx bxl-whatsapp" style="font-size:1.3rem;"></i>
+            Suporte via WhatsApp
+          </a>
+        </div>
+      </div>
+      <div id="register-container" style="display:none;">
+        <form id="registerForm">
+          <h5 class="mb-2" style="color:#ffffff;font-size:1.1rem;text-shadow:1px 1px 2px rgba(0,0,0,0.5);">Cadastro</h5>
+          <div class="mb-2">
+            <label for="registerEmail" class="form-label">E-mail</label>
+            <input type="email" class="form-control form-control-sm" id="registerEmail" required autocomplete="username">
+          </div>
+          <div class="mb-2">
+            <button type="button" id="continueRegisterBtn" class="btn btn-success btn-sm w-100">Continuar cadastro</button>
+          </div>
+          <div id="registerStep2" style="display:none;">
+            <div class="mb-2">
+              <label for="registerUsuario" class="form-label">Nome de Usuário</label>
+              <input type="text" class="form-control form-control-sm" id="registerUsuario" required placeholder="Ex: joao123">
+              <small class="text-muted" style="font-size:0.85rem;color:#e9ecef;">Usado para fazer login (sem espaços)</small>
+            </div>
+            <div class="mb-2 position-relative">
+              <label for="registerPassword" class="form-label">Senha</label>
+              <input type="password" class="form-control form-control-sm" id="registerPassword" required autocomplete="new-password" minlength="6" style="padding-right: 45px;">
+              <span class="toggle-password" toggle="#registerPassword" style="top: 38px;">
+                <i class="bx bx-show"></i>
+              </span>
+              <small class="text-muted" style="font-size:0.85rem;color:#e9ecef;">Mínimo 6 caracteres</small>
+            </div>
+            <div class="mb-2 position-relative">
+              <label for="confirmPassword" class="form-label">Confirme a Senha</label>
+              <input type="password" class="form-control form-control-sm" id="confirmPassword" required autocomplete="new-password" style="padding-right: 45px;">
+              <span class="toggle-password" toggle="#confirmPassword" style="top: 38px;">
+                <i class="bx bx-show"></i>
+              </span>
+              <div id="passwordMatch" class="mt-1" style="font-size:0.8rem; display:none;"></div>
+            </div>
+            <button type="submit" class="btn btn-secondary btn-sm w-100">Cadastrar</button>
+          </div>
+          <div id="registerError" class="mt-1 text-danger" style="display:none;font-size:0.9rem;"></div>
+          <div id="registerSuccess" class="mt-1 text-success" style="display:none;font-size:0.9rem;"></div>
+          <div class="text-center mt-2">
+            <button type="button" id="backToLoginBtn" class="btn btn-link">Já tem conta? Fazer login</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="feature-section" style="margin-top: 1.2rem;">
+      <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+        <i class="bx bx-book-reader feature-icon"></i>
+        <h6 style="color: #ffffff !important; font-weight: 700; text-shadow: 2px 2px 6px rgba(17, 16, 16, 0.8);">Gestão de Acervo</h6>
+        <p style="font-size:0.95rem; color: #ffffff !important; font-weight: 500; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">Controle completo dos livros e materiais.</p>
+      </div>
+      <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+        <i class="bx bx-user-check feature-icon"></i>
+        <h6 style="color: #ffffff !important; font-weight: 700; text-shadow: 2px 2px 6px rgba(22, 21, 21, 0.8);">Controle de Usuários</h6>
+        <p style="font-size:0.95rem; color: #ffffff !important; font-weight: 500; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">Gerenciamento eficiente de membros.</p>
+      </div>
+      <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+        <i class="bx bx-transfer-alt feature-icon"></i>
+        <h6 style="color: #ffffff !important; font-weight: 700; text-shadow: 2px 2px 6px rgba(26, 24, 24, 0.8);">Empréstimos</h6>
+        <p style="font-size:0.95rem; color: #ffffff !important; font-weight: 500; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">Sistema inteligente de empréstimos.</p>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <div>
+      Sistema licenciado para: <strong>Escola Estadual Professor Álvaro Brandão de Andrade</strong><br>
+      Desenvolvido por: Curso Técnico em Desenvolvimento de Sistemas<br>
+      © 2025 SIGEB - Todos os direitos reservados
+    </div>
+  </footer>
+  <!-- Modal com usuários de exemplo -->
+  <div class="modal fade" id="usuariosExemplo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content" style="background: var(--secondary); color: var(--text-light); border: 1px solid var(--accent2);">
+        <div class="modal-header" style="border-bottom: 1px solid var(--accent2);">
+          <h5 class="modal-title" style="color: var(--accent2);">
+            <i class="bx bx-users"></i> Usuários de Exemplo
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p style="color: var(--text-light); margin-bottom: 1rem;">Você pode fazer login com qualquer uma dessas opções:</p>
+          
+          <div class="row mb-3">
+            <div class="col-6"><strong>Administrador:</strong></div>
+            <div class="col-6">
+              <small>admin@sigeb.com</small><br>
+              <small>ou: <code>admin</code></small>
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-6"><strong>Bibliotecária:</strong></div>
+            <div class="col-6">
+              <small>bibliotecaria@sigeb.com</small><br>
+              <small>ou: <code>maria</code></small>
+            </div>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-6"><strong>Diretor:</strong></div>
+            <div class="col-6">
+              <small>diretor@sigeb.com</small><br>
+              <small>ou: <code>joao</code></small>
+            </div>
+          </div>
+          
+          <div class="alert" style="background: rgba(255,193,7,0.1); border: 1px solid #ffc107; color: #ffc107; font-size: 0.9rem;">
+            <i class="bx bx-info-circle"></i> 
+            <strong>Senha padrão para todos:</strong> <code>123456</code>
+          </div>
+          
+          <p style="font-size: 0.85rem; color: #b8e0ff; margin-bottom: 0;">
+            <i class="bx bx-shield-check"></i> 
+            Altere as senhas após o primeiro login por segurança.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      AOS.init({ 
+        duration: 1000, 
+        once: true, 
+        offset: 100,
+        delay: 100
+      });
+    });
+
+    // Esconde o botão antigo, se existir
+    const oldBtn = document.querySelector('.access-button');
+    if (oldBtn) oldBtn.style.display = 'none';
+
+    // Alterna exibição entre login e cadastro
+    // Corrigido para não dar erro caso o botão não exista
+    const showRegisterBtn = document.getElementById('showRegisterBtn');
+    if (showRegisterBtn) {
+      showRegisterBtn.onclick = function() {
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('register-container').style.display = 'block';
+      };
+    }
+    const backToLoginBtn = document.getElementById('backToLoginBtn');
+    if (backToLoginBtn) {
+      backToLoginBtn.onclick = function() {
+        document.getElementById('register-container').style.display = 'none';
+        document.getElementById('login-container').style.display = 'block';
+      };
+    }
+
+    // --- LOGIN ---
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const loginInput = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorDiv = document.getElementById('loginError');
+      errorDiv.style.display = 'none';
+      
+      try {
+        let email = loginInput;
+        
+        // Verificar se é um email válido
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isEmail = emailRegex.test(loginInput);
+        
+        // Se não for email, buscar pelo nome de usuário
+        if (!isEmail) {
+          try {
+            const snapshot = await db.ref('usuarios').orderByChild('usuario').equalTo(loginInput).once('value');
+            const users = snapshot.val();
+            
+            if (users) {
+              const userData = Object.values(users)[0];
+              email = userData.email;
+            } else {
+              // Tentar buscar por nome também
+              const snapshotByName = await db.ref('usuarios').orderByChild('nome').equalTo(loginInput).once('value');
+              const usersByName = snapshotByName.val();
+              
+              if (usersByName) {
+                const userData = Object.values(usersByName)[0];
+                email = userData.email;
+              } else {
+                throw new Error('Usuário não encontrado');
+              }
+            }
+          } catch (dbError) {
+            throw new Error('Usuário não encontrado');
+          }
+        }
+        
+        // Fazer login com o email encontrado
+        await auth.signInWithEmailAndPassword(email, password);
+        window.location.href = 'dashboard.html';
+        
+      } catch (error) {
+        let msg = 'Usuário ou senha inválidos.';
+        if (error.code === 'auth/user-not-found') {
+          msg = 'Usuário não cadastrado.';
+        } else if (error.code === 'auth/wrong-password') {
+          msg = 'Senha incorreta.';
+        } else if (error.code === 'auth/invalid-email') {
+          msg = 'E-mail inválido.';
+        } else if (error.message === 'Usuário não encontrado') {
+          msg = 'Usuário não encontrado. Verifique se o nome de usuário está correto.';
+        }
+        errorDiv.textContent = msg;
+        errorDiv.style.display = 'block';
+      }
+    });
+
+    // --- Google Login ---
+    document.getElementById('googleLoginBtn').onclick = async function() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try {
+        const result = await auth.signInWithPopup(provider);
+        // Salva usuário no banco se for novo
+        if (result.additionalUserInfo.isNewUser) {
+          await db.ref('usuarios/' + result.user.uid).set({
+            email: result.user.email,
+            nome: result.user.displayName || '',
+            tipo: 'usuario',
+            cadastroCompleto: true,
+            dataCadastro: new Date().toISOString()
+          });
+        }
+        window.location.href = 'dashboard.html';
+      } catch (error) {
+        alert('Erro ao fazer login com Google: ' + (error.message || 'Tente novamente.'));
+      }
+    };
+
+    // --- CADASTRO ---
+    async function cadastrarUsuario(email, password) {
+      try {
+        await auth.createUserWithEmailAndPassword(email, password);
+        // Usuário cadastrado com sucesso
+        alert('Cadastro realizado! Você já pode fazer login.');
+        // Redirecionar ou limpar formulário, se desejar
+      } catch (error) {
+        alert('Erro ao cadastrar: ' + (error.message || 'Verifique os dados.'));
+      }
+    }
+
+
+    // --- LOGOUT ---
+    async function logout() {
+      try {
+        await auth.signOut();
+        window.location.href = 'index.html';
+      } catch (error) {
+        alert('Erro ao sair: ' + (error.message || 'Tente novamente.'));
+      }
+    }
+
+    // Cadastro em duas etapas: primeiro e-mail, depois senha
+    document.getElementById('continueRegisterBtn').onclick = function() {
+      const email = document.getElementById('registerEmail').value.trim();
+      const errorDiv = document.getElementById('registerError');
+      errorDiv.style.display = 'none';
+      if (!email) {
+        errorDiv.textContent = 'Digite um e-mail válido para continuar.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      // Validação simples de e-mail
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        errorDiv.textContent = 'Digite um e-mail válido.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      document.getElementById('registerEmail').setAttribute('readonly', 'readonly');
+      document.getElementById('continueRegisterBtn').style.display = 'none';
+      document.getElementById('registerStep2').style.display = 'block';
+    };
+
+    // Recuperação de senha
+    document.getElementById('forgotPasswordBtn').onclick = async function() {
+      const loginInput = document.getElementById('loginEmail').value.trim();
+      if (!loginInput) {
+        alert('Digite seu e-mail ou nome de usuário para recuperar a senha.');
+        document.getElementById('loginEmail').focus();
+        return;
+      }
+      
+      try {
+        let email = loginInput;
+        
+        // Verificar se é um email válido
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isEmail = emailRegex.test(loginInput);
+        
+        // Se não for email, buscar pelo nome de usuário
+        if (!isEmail) {
+          try {
+            const snapshot = await db.ref('usuarios').orderByChild('usuario').equalTo(loginInput).once('value');
+            const users = snapshot.val();
+            
+            if (users) {
+              const userData = Object.values(users)[0];
+              email = userData.email;
+            } else {
+              throw new Error('Usuário não encontrado');
+            }
+          } catch (dbError) {
+            alert('Usuário não encontrado. Verifique se o nome de usuário está correto.');
+            return;
+          }
+        }
+        
+        // Enviar email de recuperação
+        await auth.sendPasswordResetEmail(email);
+        alert('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
+        
+      } catch (error) {
+        let msg = 'Erro ao enviar e-mail de recuperação.';
+        if (error.code === 'auth/user-not-found') {
+          msg = 'E-mail não cadastrado.';
+        } else if (error.code === 'auth/invalid-email') {
+          msg = 'E-mail inválido.';
+        }
+        alert(msg);
+      }
+    };
+
+    // Mostrar/ocultar senha
+    document.querySelectorAll('.toggle-password').forEach(function(el) {
+      el.addEventListener('click', function() {
+        const input = document.querySelector(this.getAttribute('toggle'));
+        const icon = this.querySelector('i');
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.classList.remove('bx-show');
+          icon.classList.add('bx-hide');
+        } else {
+          input.type = 'password';
+          icon.classList.remove('bx-hide');
+          icon.classList.add('bx-show');
+        }
+      });
+    });
+
+    // Validação em tempo real do nome de usuário
+document.getElementById('registerUsuario').addEventListener('input', async function() {
+  const usuario = this.value.trim();
+  const errorDiv = document.getElementById('registerError');
+  
+  // Limpar erro anterior
+  if (errorDiv.textContent.includes('nome de usuário')) {
+    errorDiv.style.display = 'none';
+  }
+  
+  if (usuario.length > 0) {
+    // Validar formato
+    const usuarioRegex = /^[a-zA-Z0-9_]+$/;
+    if (!usuarioRegex.test(usuario)) {
+      this.style.borderColor = '#dc3545';
+      return;
+    }
+    
+    // Verificar disponibilidade (apenas se tiver 3+ caracteres)
+    if (usuario.length >= 3) {
+      try {
+        const snapshot = await db.ref('usuarios').orderByChild('usuario').equalTo(usuario).once('value');
+        if (snapshot.exists()) {
+          this.style.borderColor = '#dc3545';
+          this.setAttribute('title', 'Nome de usuário já em uso');
+        } else {
+          this.style.borderColor = '#28a745';
+          this.setAttribute('title', 'Nome de usuário disponível');
+        }
+      } catch (error) {
+        // Ignorar erros de verificação
+      }
+    } else {
+      this.style.borderColor = '';
+    }
+  } else {
+    this.style.borderColor = '';
+  }
+});
+
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    // Configuração do Firebase do seu projeto
+    const firebaseConfig = {
+      apiKey: "AIzaSyCkttFoV_FoPn91ClE7xFiknFvs9pXaCoQ",
+      authDomain: "sigeb-ccd3f.firebaseapp.com",
+      databaseURL: "https://sigeb-ccd3f-default-rtdb.firebaseio.com",
+      projectId: "sigeb-ccd3f",
+      storageBucket: "sigeb-ccd3f.firebasestorage.app",
+      messagingSenderId: "209689711066",
+      appId: "1:209689711066:web:5a99505e60bd34f29b70e3",
+      measurementId: "G-VJBDW2B7HZ"
+    };
+    // Inicializa o Firebase
+    firebase.initializeApp(firebaseConfig);
+    // Inicializa o Auth
+    const auth = firebase.auth();
+    // Inicializa o Database
+    const db = firebase.database();
+  </script>
+  
+  <script>
+// Validação em tempo real da confirmação de senha
+document.getElementById('confirmPassword').addEventListener('input', function() {
+  const password = document.getElementById('registerPassword').value;
+  const confirm = this.value;
+  const matchDiv = document.getElementById('passwordMatch');
+  
+  if (confirm.length > 0) {
+    matchDiv.style.display = 'block';
+    if (password === confirm) {
+      matchDiv.textContent = '✓ Senhas coincidem';
+      matchDiv.style.color = '#28a745';
+    } else {
+      matchDiv.textContent = '✗ Senhas não coincidem';
+      matchDiv.style.color = '#dc3545';
+    }
+  } else {
+    matchDiv.style.display = 'none';
+  }
+});
+
+// SUBSTITUA o event listener do registerForm por este:
+document.getElementById('registerForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const email = document.getElementById('registerEmail').value.trim();
+  const usuario = document.getElementById('registerUsuario').value.trim();
+  const password = document.getElementById('registerPassword').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  const errorDiv = document.getElementById('registerError');
+  const successDiv = document.getElementById('registerSuccess');
+  
+  // Limpar mensagens anteriores
+  errorDiv.style.display = 'none';
+  successDiv.style.display = 'none';
+  
+  // ✅ VALIDAÇÕES
+  try {
+    // Validar se senhas coincidem
+    if (password !== confirmPassword) {
+      throw new Error('As senhas não coincidem');
+    }
+    
+    // Validar força da senha
+    if (password.length < 6) {
+      throw new Error('A senha deve ter pelo menos 6 caracteres');
+    }
+    
+    // Validar email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error('Digite um e-mail válido');
+    }
+    
+    // Validar nome de usuário
+    if (!usuario || usuario.length < 3) {
+      throw new Error('Nome de usuário deve ter pelo menos 3 caracteres');
+    }
+    
+    // Validar se nome de usuário não tem espaços ou caracteres especiais
+    const usuarioRegex = /^[a-zA-Z0-9_]+$/;
+    if (!usuarioRegex.test(usuario)) {
+      throw new Error('Nome de usuário deve conter apenas letras, números e underscore');
+    }
+    
+    // Verificar se nome de usuário já existe
+    const snapshot = await db.ref('usuarios').orderByChild('usuario').equalTo(usuario).once('value');
+    if (snapshot.exists()) {
+      throw new Error('Este nome de usuário já está em uso');
+    }
+    
+    // Cadastrar no Firebase
+    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+    const user = userCredential.user;
+    
+    // Salvar dados do usuário
+    await db.ref('usuarios/' + user.uid).set({
+      email: email,
+      usuario: usuario,
+      tipo: 'usuario',
+      cadastroCompleto: false,
+      dataCadastro: new Date().toISOString()
+    });
+    
+    // Sucesso
+    successDiv.textContent = 'Cadastro realizado com sucesso!';
+    successDiv.style.display = 'block';
+    
+    // Redirecionar após 2 segundos
+    setTimeout(() => {
+      window.location.href = 'completar_cadastro.html';
+    }, 2000);
+    
+  } catch (error) {
+    // Tratar erros específicos do Firebase
+    let errorMessage = 'Erro ao cadastrar. Tente novamente.';
+    
+    if (error.code === 'auth/email-already-in-use') {
+      errorMessage = 'Este e-mail já está cadastrado';
+    } else if (error.code === 'auth/weak-password') {
+      errorMessage = 'Senha muito fraca. Use pelo menos 6 caracteres';
+    } else if (error.code === 'auth/invalid-email') {
+      errorMessage = 'E-mail inválido';
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    errorDiv.textContent = errorMessage;
+    errorDiv.style.display = 'block';
+  }
+});
+</script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

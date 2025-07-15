@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIGEB - Administração</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f5f5f5;
+    }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 250px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      padding: 20px;
+      color: white;
+    }
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+    }
+    .sidebar-logo {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 30px;
+      background: linear-gradient(90deg, #00f2fe, #4facfe);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .nav-link {
+      color: rgba(255, 255, 255, 0.8);
+      padding: 10px 15px;
+      border-radius: 5px;
+      margin-bottom: 5px;
+      transition: all 0.3s;
+    }
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+    .nav-link.active {
+      background: rgba(79, 172, 254, 0.2);
+      color: #4facfe;
+    }
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .user-table {
+      background: white;
+      border-radius: 15px;
+      overflow: hidden;
+    }
+    .user-table th {
+      background: #f8f9fa;
+      border: none;
+    }
+    .user-table td {
+      vertical-align: middle;
+    }
+    .action-buttons .btn {
+      padding: 5px 10px;
+      margin: 0 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-logo">SIGEB</div>
+    <div class="user-profile mb-4">
+      <img id="userPhoto" src="" alt="Foto do perfil" class="rounded-circle mb-2" style="width: 64px; height: 64px; object-fit: cover;">
+      <div class="user-info">
+        <h6 id="userName" class="mb-1" style="color: white;">Carregando...</h6>
+        <small id="userEmail" class="text-muted">Carregando...</small>
+      </div>
+    </div>
+    <nav class="nav flex-column">
+      <a class="nav-link" href="dashboard.html"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a class="nav-link" href="books.html"><i class="bi bi-book"></i> Livros</a>
+      <a class="nav-link" href="users.html"><i class="bi bi-people"></i> Usuários</a>
+      <a class="nav-link active" href="admin.html"><i class="bi bi-shield-lock"></i> Administração</a>
+      <a class="nav-link" href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Sair</a>
+    </nav>
+  </div>
+
+  <div class="main-content">
+    <div class="container-fluid">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Gerenciar Usuários Autorizados</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+          <i class="bi bi-plus-lg"></i> Adicionar Usuário
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table user-table">
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  <th>Função</th>
+                  <th>Data de Adição</th>
+                  <th>Adicionado por</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="userTableBody">
+                <!-- Users will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add User Modal -->
+  <div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Adicionar Usuário Autorizado</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addUserForm">
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" id="userEmail" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Função</label>
+              <select class="form-select" id="userRole" required>
+                <option value="admin">Administrador</option>
+                <option value="librarian">Bibliotecário</option>
+                <option value="user">Usuário</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="addAllowedUser()">Adicionar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script type="module">
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+
+    // Firebase config
+    import { firebaseConfig } from './firebase-config.js';
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getDatabase();
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const dbRef = ref(db);
+        get(child(dbRef, `usuarios/${user.uid}`)).then((snapshot) => {
+          if (snapshot.exists()) {
+            const nivel = snapshot.val().nivel;
+            if (nivel !== "admin") {
+              alert("Acesso negado!");
+              window.location.href = "index.html";
+            }
+          } else {
+            alert("Usuário não encontrado!");
+            window.location.href = "index.html";
+          }
+        });
+      } else {
+        window.location.href = "index.html";
+      }
+    });
+  </script>
+
+  <script>
+    function loadAllowedUsers() {
+      const tableBody = document.getElementById('userTableBody');
+      
+      db.collection('allowed_users')
+        .orderBy('email')
+        .onSnapshot((snapshot) => {
+          tableBody.innerHTML = '';
+          snapshot.forEach((doc) => {
+            const user = doc.data();
+            const row = `
+              <tr>
+                <td>${user.email}</td>
+                <td>
+                  <span class="badge bg-${getRoleBadgeColor(user.role)}">
+                    ${getRoleDisplayName(user.role)}
+                  </span>
+                </td>
+                <td>${formatDate(user.addedAt)}</td>
+                <td>${user.addedBy || 'N/A'}</td>
+                <td class="action-buttons">
+                  <button class="btn btn-sm btn-danger" onclick="removeAllowedUser('${doc.id}')">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            `;
+            tableBody.innerHTML += row;
+          });
+        });
+    }
+
+    function addAllowedUser() {
+      const email = document.getElementById('userEmail').value.trim();
+      const role = document.getElementById('userRole').value;
+      
+      if (!email) {
+        alert('Por favor, insira um email válido.');
+        return;
+      }
+
+      db.collection('allowed_users').add({
+        email: email,
+        role: role,
+        addedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        addedBy: auth.currentUser.email
+      }).then(() => {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addUserModal'));
+        modal.hide();
+        document.getElementById('addUserForm').reset();
+      }).catch((error) => {
+        console.error("Erro ao adicionar usuário:", error);
+        alert('Erro ao adicionar usuário: ' + error.message);
+      });
+    }
+
+    function removeAllowedUser(userId) {
+      if (confirm('Tem certeza que deseja remover este usuário?')) {
+        db.collection('allowed_users').doc(userId).delete()
+          .then(() => {
+            console.log("Usuário removido com sucesso!");
+          })
+          .catch((error) => {
+            console.error("Erro ao remover usuário:", error);
+            alert('Erro ao remover usuário: ' + error.message);
+          });
+      }
+    }
+
+    function getRoleBadgeColor(role) {
+      switch (role) {
+        case 'admin':
+          return 'danger';
+        case 'librarian':
+          return 'success';
+        default:
+          return 'primary';
+      }
+    }
+
+    function getRoleDisplayName(role) {
+      switch (role) {
+        case 'admin':
+          return 'Administrador';
+        case 'librarian':
+          return 'Bibliotecário';
+        default:
+          return 'Usuário';
+      }
+    }
+
+    function formatDate(timestamp) {
+      if (!timestamp) return 'N/A';
+      const date = timestamp.toDate();
+      return new Intl.DateTimeFormat('pt-BR', {
+        dateStyle: 'short',
+        timeStyle: 'short'
+      }).format(date);
+    }
+
+    function logout() {
+      auth.signOut().then(() => {
+        window.location.href = 'index.html';
+      }).catch((error) => {
+        console.error("Erro ao fazer logout:", error);
+      });
+    }
+  </script>
+</body>
+</html>

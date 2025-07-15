@@ -1,0 +1,2094 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SIGEB - Usuários</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">  <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <!-- jsPDF para geração de PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Firebase SDKs: SEMPRE antes do firebase-config.js -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCkttFoV_FoPn91ClE7xFiknFvs9pXaCoQ",
+      authDomain: "sigeb-ccd3f.firebaseapp.com",
+      databaseURL: "https://sigeb-ccd3f-default-rtdb.firebaseio.com",
+      projectId: "sigeb-ccd3f",
+      storageBucket: "sigeb-ccd3f.appspot.com",
+      messagingSenderId: "209689711066",
+      appId: "1:209689711066:web:5a99505e60bd34f29b70e3",
+      measurementId: "G-VJBDW2B7HZ"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+  
+  </script>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 0;
+    }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 250px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      padding: 20px;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    .sidebar-header {
+      padding: 20px 0;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .sidebar-header h3 {
+      background: linear-gradient(90deg, #00f2fe, #4facfe);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+      font-weight: 600;
+    }
+    .menu-items {
+      padding: 20px 0;
+    }
+    .menu-item {
+      padding: 12px 20px;
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+      margin-bottom: 5px;
+    }
+    .menu-item:hover, .menu-item.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #4facfe;
+    }
+    .menu-item i {
+      margin-right: 10px;
+      font-size: 1.2rem;
+    }
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+    .page-header {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .users-table {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .table {
+      margin-bottom: 0;
+    }
+    .table th {
+      border-top: none;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+    .user-status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+    }
+    .status-ativo {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    .status-inativo {
+      background: #ffebee;
+      color: #c62828;
+    }
+    .add-button {
+      background: linear-gradient(90deg, #00f2fe, #4facfe);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+    .add-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .search-box input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .action-button {
+      background: none;
+      border: none;
+      padding: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .action-button:hover {
+      transform: translateY(-2px);
+    }
+    .edit-button {
+      color: #4facfe;
+    }    .delete-button {
+      color: #c62828;
+    }
+    .user-checkbox {
+      cursor: pointer;
+    }
+    #selectAll {
+      cursor: pointer;
+    }
+    #gerarCartaoBtn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .cartao-preview {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .main-content {
+        margin-left: 0;
+      }
+      .sidebar.active {
+        transform: translateX(0);
+      }      .table-responsive {
+        margin-bottom: 0;
+      }
+    }
+    
+    /* Garantir visibilidade e estilo do botão de fechar nos modais */
+    .modal-header .btn-close {
+      filter: none !important;
+      opacity: 1 !important;
+      z-index: 1000 !important;
+      position: relative !important;
+      background: rgba(255, 255, 255, 0.2) !important;
+      border: 1px solid rgba(255, 255, 255, 0.3) !important;
+      border-radius: 50% !important;
+      font-size: 1.25rem !important;
+      width: 2em !important;
+      height: 2em !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      visibility: visible !important;
+      color: white !important;
+    }
+    
+    .modal-header .btn-close::before {
+      content: '×' !important;
+      display: inline-block !important;
+      color: white !important;
+      font-weight: bold !important;
+      font-size: 1.5rem !important;
+      line-height: 1 !important;
+    }
+    
+    .modal-header .btn-close:hover,
+    .modal-header .btn-close:focus {
+      opacity: 0.8 !important;
+      transform: scale(1.1) !important;
+      background: rgba(255, 255, 255, 0.3) !important;
+    }
+    
+    .modal-header .btn-close:hover::before {
+      color: #ff6b6b !important;
+    }
+    
+    /* Adicionar texto "Sair" visível no botão */
+    .modal-header .btn-close .visually-hidden {
+      position: static !important;
+      width: auto !important;
+      height: auto !important;
+      padding: 0 !important;
+      margin: 0 0 0 5px !important;
+      overflow: visible !important;
+      clip: auto !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+      color: white !important;
+      font-size: 0.8rem !important;
+      font-weight: normal !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h3>SIGEB</h3>
+    </div>
+    <div class="menu-items">
+      <a href="dashboard.html" class="menu-item">
+        <i class='bx bxs-dashboard'></i>
+        Dashboard
+      </a>
+      <a href="livros.html" class="menu-item">
+        <i class='bx bxs-book'></i>
+        Livros
+      </a>
+      <a href="usuarios.html" class="menu-item active">
+        <i class='bx bxs-user'></i>
+        Usuários
+      </a>
+      <a href="emprestimos.html" class="menu-item">
+        <i class='bx bxs-bookmark'></i>
+        Empréstimos
+      </a>
+       <a href="relatorios.html" class="menu-item" title="Relatórios do sistema">
+        <i class='bx bxs-report'></i>
+        Relatórios
+      </a>
+      <a href="configuracoes.html" class="menu-item">
+        <i class='bx bxs-cog'></i>
+        Configurações
+      </a>
+  
+      <a href="index.html" class="menu-item">
+        <i class='bx bxs-log-out'></i>
+        Sair
+      </a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <!-- Título e descrição -->
+    <div class="page-header">
+      <div>
+        <h2>Gerenciamento de Usuários</h2>
+        <p>Gerencie os usuários da biblioteca</p>
+      </div>
+      <button class="add-button" data-bs-toggle="modal" data-bs-target="#addUserModal">
+        <i class='bx bx-plus'></i>
+        Cadastro de Usuários
+      </button>
+    </div>
+
+    <div class="search-box">
+      <input type="text" placeholder="Pesquisar por nome, email ou matrícula...">
+      <button class="add-button">
+        <i class='bx bx-search'></i>
+      </button>
+    </div>    <!-- Adicione o botão de importação acima da tabela de usuários -->
+    <div class="d-flex justify-content-end mb-3">
+      <input type="file" id="xlsInput" accept=".xls,.xlsx" style="display:none" />
+      <button class="btn btn-success me-2" id="importXlsBtn" type="button">
+        <i class='bx bx-upload'></i> Importar Usuários XLS
+      </button>
+      <button class="btn btn-primary me-2" id="gerarCartaoBtn" type="button" disabled>
+        <i class='bx bx-id-card'></i> Cartão de Leitor
+      </button>
+    </div>
+
+    <div class="users-table">
+      <div class="table-responsive">        <table class="table" id="usuariosTable">
+          <thead>
+            <tr>
+              <th>
+                <input type="checkbox" id="selectAll" class="form-check-input">
+              </th>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Matrícula</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="usuariosTableBody">
+            <tr>
+              <td>
+                <input type="checkbox" class="form-check-input user-checkbox" data-user-id="user1">
+              </td>
+              <td>Maria Silva</td>
+              <td>maria.silva@email.com</td>
+              <td>2023001</td>
+              <td><span class="user-status status-ativo">Ativo</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="action-button edit-button" onclick="handleEditUser('static-user-1')">
+                    <i class='bx bx-edit-alt'></i>
+                  </button>
+                  <button class="action-button delete-button" onclick="handleDeleteUser('static-user-1')">
+                    <i class='bx bx-trash'></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" class="form-check-input user-checkbox" data-user-id="user2">
+              </td>
+              <td>João Santos</td>
+              <td>joao.santos@email.com</td>
+              <td>2023002</td>
+              <td><span class="user-status status-ativo">Ativo</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="action-button edit-button" onclick="handleEditUser('static-user-2')">
+                    <i class='bx bx-edit-alt'></i>
+                  </button>
+                  <button class="action-button delete-button" onclick="handleDeleteUser('static-user-2')">
+                    <i class='bx bx-trash'></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" class="form-check-input user-checkbox" data-user-id="user3">
+              </td>
+              <td>Ana Oliveira</td>
+              <td>ana.oliveira@email.com</td>
+              <td>2023003</td>
+              <td><span class="user-status status-inativo">Inativo</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="action-button edit-button" onclick="handleEditUser('static-user-3')">
+                    <i class='bx bx-edit-alt'></i>
+                  </button>
+                  <button class="action-button delete-button" onclick="handleDeleteUser('static-user-3')">
+                    <i class='bx bx-trash'></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Modal Adicionar Usuário -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addUserModalLabel">Adicionar Novo Usuário</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+              <span class="visually-hidden">Sair</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="addUserForm" class="needs-validation" novalidate>
+              <input type="hidden" id="usuarioId">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="nome" class="form-label">Nome Completo*</label>
+                    <input type="text" class="form-control" id="nome" required>
+                    <div class="invalid-feedback">
+                      Por favor, insira o nome completo.
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="funcao" class="form-label">Função*</label>
+                    <select class="form-select" id="funcao" required>
+                      <option value="">Selecione a função</option>
+                      <option value="ALUNO">Aluno</option>
+                      <option value="PROFESSOR">Professor</option>
+                      <option value="SUPERVISOR">Supervisor</option>
+                      <option value="DIRETOR">Diretor</option>
+                      <option value="BIBLIOTECARIO">Bibliotecário</option>
+                    </select>
+                    <div class="invalid-feedback">
+                      Por favor, selecione a função.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="mb-3">
+                    <label for="endereco" class="form-label">Endereço*</label>
+                    <input type="text" class="form-control" id="endereco" required>
+                    <div class="invalid-feedback">
+                      Por favor, insira o endereço.
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label for="numero" class="form-label">Número*</label>
+                    <input type="text" class="form-control" id="numero" required>
+                    <div class="invalid-feedback">
+                      Por favor, insira o número.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label for="cep" class="form-label">CEP*</label>
+                    <input type="text" class="form-control" id="cep" required 
+                           pattern="\d{5}-?\d{3}" onblur="buscarCEP()"
+                           placeholder="00000-000">
+                    <div class="invalid-feedback">
+                      Por favor, insira um CEP válido.
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label for="bairro" class="form-label">Bairro*</label>
+                    <input type="text" class="form-control" id="bairro" required>
+                    <div class="invalid-feedback">
+                      Por favor, insira o bairro.
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label for="cidade" class="form-label">Cidade*</label>
+                    <input type="text" class="form-control" id="cidade" required>
+                    <div class="invalid-feedback">
+                      Por favor, insira a cidade.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label for="uf" class="form-label">UF*</label>
+                    <select class="form-select" id="uf" required>
+                      <option value="">Selecione</option>
+                      <option value="AC">Acre</option>
+                      <option value="AL">Alagoas</option>
+                      <option value="AP">Amapá</option>
+                      <option value="AM">Amazonas</option>
+                      <option value="BA">Bahia</option>
+                      <option value="CE">Ceará</option>
+                      <option value="DF">Distrito Federal</option>
+                      <option value="ES">Espírito Santo</option>
+                      <option value="GO">Goiás</option>
+                      <option value="MA">Maranhão</option>
+                      <option value="MT">Mato Grosso</option>
+                      <option value="MS">Mato Grosso do Sul</option>
+                      <option value="MG">Minas Gerais</option>
+                      <option value="PA">Pará</option>
+                      <option value="PB">Paraíba</option>
+                      <option value="PR">Paraná</option>
+                      <option value="PE">Pernambuco</option>
+                      <option value="PI">Piauí</option>
+                      <option value="RJ">Rio de Janeiro</option>
+                      <option value="RN">Rio Grande do Norte</option>
+                      <option value="RS">Rio Grande do Sul</option>
+                      <option value="RO">Rondônia</option>
+                      <option value="RR">Roraima</option>
+                      <option value="SC">Santa Catarina</option>
+                      <option value="SP">São Paulo</option>
+                      <option value="SE">Sergipe</option>
+                      <option value="TO">Tocantins</option>
+                    </select>
+                    <div class="invalid-feedback">
+                      Por favor, selecione o estado.
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label for="telefone" class="form-label">Telefone*</label>
+                    <input type="tel" class="form-control" id="telefone" required
+                           pattern="\(\d{2}\)\s\d{4,5}-\d{4}"
+                           placeholder="(00) 00000-0000">
+                    <div class="invalid-feedback">
+                      Por favor, insira um telefone válido.
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label for="email" class="form-label">Email*</label>
+                    <input type="email" class="form-control" id="email" required>
+                    <div class="invalid-feedback">
+                      Por favor, insira um email válido.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label for="status" class="form-label">Status*</label>
+                    <select class="form-select" id="status" required>
+                      <option value="Ativo">Ativo</option>
+                      <option value="Inativo">Inativo</option>
+                    </select>
+                    <div class="invalid-feedback">
+                      Por favor, selecione o status do usuário.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Novos campos para cadastro de alunos -->
+              <div class="row" id="camposAluno" style="display:none">
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label for="matricula" class="form-label">Matrícula*</label>
+                    <input type="text" class="form-control" id="matricula">
+                    <div class="invalid-feedback">
+                      Por favor, insira a matrícula.
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-2">
+                  <div class="mb-3">
+                    <label for="serie" class="form-label">Série*</label>
+                    <select class="form-select" id="serie">
+                      <option value="">Selecione</option>
+                      <option value="1">1º</option>
+                      <option value="2">2º</option>
+                      <option value="3">3º</option>
+                      <option value="4">4º</option>
+                      <option value="5">5º</option>
+                      <option value="6">6º</option>
+                      <option value="7">7º</option>
+                      <option value="8">8º</option>
+                      <option value="9">9º</option>
+                    </select>
+                    <div class="invalid-feedback">
+                      Por favor, selecione a série.
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="mb-3">
+                    <label for="periodo" class="form-label">Período*</label>
+                    <select class="form-select" id="periodo">
+                      <option value="">Selecione</option>
+                      <option value="Anos Iniciais">Anos Iniciais</option>
+                      <option value="Fundamental">Fundamental</option>
+                      <option value="Anos Finais">Anos Finais</option>
+                      <option value="Ensino Médio">Ensino Médio</option>
+                      <option value="Outros">Outros</option>
+                    </select>
+                    <div class="invalid-feedback">
+                      Por favor, selecione o período.
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-1">
+                  <div class="mb-3">
+                    <label for="turma" class="form-label">Turma*</label>
+                    <select class="form-select" id="turma">
+                      <option value="">Selecione</option>
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                      <option value="D">D</option>
+                      <option value="E">E</option>
+                      <option value="F">F</option>
+                      <option value="G">G</option>
+                      <option value="H">H</option>
+                      <option value="I">I</option>
+                    </select>
+                    <div class="invalid-feedback">
+                      Por favor, selecione a turma.
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-2">
+                  <div class="mb-3">
+                    <label for="turno" class="form-label">Turno*</label>
+                    <select class="form-select" id="turno">
+                      <option value="">Selecione</option>
+                      <option value="Matutino">Matutino</option>
+                      <option value="Vespertino">Vespertino</option>
+                      <option value="Integral">Integral</option>
+                      <option value="Noturno">Noturno</option>
+                    </select>
+                    <div class="invalid-feedback">
+                      Por favor, selecione o turno.
+                    </div>
+                  </div>
+                </div>
+              </div>              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btnImprimirFicha" style="display: none;">
+                  <i class="bx bx-printer"></i> Imprimir Ficha
+                </button>
+                <button type="button" class="btn btn-primary" id="btnSalvarUsuario">Salvar Usuário</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Função para buscar CEP
+      async function buscarCEP() {
+        const cep = document.getElementById('cep').value.replace(/\D/g, '');
+        if (cep.length !== 8) return;
+
+        try {
+          const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+          const data = await response.json();
+          
+          if (data.erro) {
+            showAlert('warning', 'CEP não encontrado');
+            return;
+          }
+
+          document.getElementById('endereco').value = data.logradouro;
+          document.getElementById('bairro').value = data.bairro;
+          document.getElementById('cidade').value = data.localidade;
+          document.getElementById('uf').value = data.uf;
+        } catch (error) {
+          console.error('Erro ao buscar CEP:', error);
+          showAlert('danger', 'Erro ao buscar CEP');
+        }
+      }
+
+      // Máscara para telefone
+      document.getElementById('telefone').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length <= 11) {
+          value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+          value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+          e.target.value = value;
+        }
+      });
+
+      // Máscara para CEP
+      document.getElementById('cep').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length <= 8) {
+          value = value.replace(/^(\d{5})(\d)/, '$1-$2');
+          e.target.value = value;
+        }
+      });
+
+      // Máscara para telefone do colaborador
+      const colabTelefoneInput = document.getElementById('colabTelefone');
+      if (colabTelefoneInput) {
+        colabTelefoneInput.addEventListener('input', function(e) {
+          let value = e.target.value.replace(/\D/g, '');
+          if (value.length <= 11) {
+            value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+            value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+            e.target.value = value;
+          }
+        });
+      }
+
+      // Função para hash da senha (exemplo simples - em produção usar bcrypt ou similar)
+      async function hashPassword(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hash = await crypto.subtle.digest('SHA-256', data);
+        return Array.from(new Uint8Array(hash))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('');
+      }      // Função para exibir alertas
+      function showAlert(type, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = `
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        document.querySelector('.main-content').prepend(alertDiv);
+        setTimeout(() => alertDiv.remove(), 5000);
+      }      // Variável global para armazenar dados do último usuário cadastrado
+      let ultimoUsuarioCadastrado = null;
+
+      // Função para gerar ficha cadastral em PDF
+      function gerarFichaCadastral(dadosUsuario) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Configurações
+        const margin = 20;
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const contentWidth = pageWidth - (margin * 2);
+        let yPosition = margin;
+        
+        // Função para criar logo SIGEB
+        const criarLogoSIGEB = (x, y, tamanho = 1) => {
+          // Salva estado atual
+          const currentLineWidth = doc.getLineWidth();
+          
+          // Logo - Círculo com "S" estilizado
+          doc.setFillColor(79, 172, 254); // Azul do SIGEB
+          doc.circle(x + 10 * tamanho, y + 10 * tamanho, 8 * tamanho, 'F');
+          
+          // Letra "S" no centro do círculo
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(12 * tamanho);
+          doc.setFont('helvetica', 'bold');
+          doc.text('S', x + 7 * tamanho, y + 13 * tamanho);
+          
+          // Texto "SIGEB" ao lado
+          doc.setTextColor(26, 26, 46);
+          doc.setFontSize(16 * tamanho);
+          doc.setFont('helvetica', 'bold');
+          doc.text('SIGEB', x + 22 * tamanho, y + 13 * tamanho);
+          
+          // Texto "Sistema de Gerenciamento de Biblioteca" abaixo
+          doc.setTextColor(100, 100, 100);
+          doc.setFontSize(8 * tamanho);
+          doc.setFont('helvetica', 'normal');
+          doc.text('Sistema de Gerenciamento de Biblioteca', x + 22 * tamanho, y + 18 * tamanho);
+          
+          // Restaura cor do texto
+          doc.setTextColor(0, 0, 0);
+          doc.setLineWidth(currentLineWidth);
+        };
+        
+        // Função auxiliar para adicionar texto
+        const addText = (text, x, y, options = {}) => {
+          if (options.fontSize) doc.setFontSize(options.fontSize);
+          if (options.fontStyle) doc.setFont('helvetica', options.fontStyle);
+          doc.text(text, x, y);
+          if (options.fontSize || options.fontStyle) {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(12);
+          }
+        };
+        
+        // Função auxiliar para adicionar linha
+        const addLine = (x1, y1, x2, y2) => {
+          doc.line(x1, y1, x2, y2);
+        };
+        
+        // Adiciona logo no cabeçalho
+        criarLogoSIGEB(margin, yPosition);
+        yPosition += 30;
+        
+        // Cabeçalho principal
+        doc.setFillColor(26, 26, 46);
+        doc.rect(margin, yPosition, contentWidth, 20, 'F');
+        
+        doc.setTextColor(255, 255, 255);
+        addText('FICHA CADASTRAL DE USUÁRIO', margin + 5, yPosition + 13, {
+          fontSize: 14,
+          fontStyle: 'bold'
+        });
+        doc.setTextColor(0, 0, 0);
+        
+        yPosition += 30;
+        
+        // Informações pessoais
+        addText('DADOS PESSOAIS', margin, yPosition, {
+          fontSize: 14,
+          fontStyle: 'bold'
+        });
+        yPosition += 10;
+        addLine(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 15;
+        
+        // Nome
+        addText('Nome Completo:', margin, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.nome || '', margin + 35, yPosition);
+        yPosition += 15;
+        
+        // Email e Matrícula
+        addText('Email:', margin, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.email || '', margin + 20, yPosition);
+        addText('Matrícula:', margin + 100, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.matricula || '', margin + 135, yPosition);
+        yPosition += 15;
+        
+        // Função e Status
+        addText('Função:', margin, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.funcao || '', margin + 25, yPosition);
+        addText('Status:', margin + 100, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.status || '', margin + 125, yPosition);
+        yPosition += 15;
+        
+        // Telefone
+        addText('Telefone:', margin, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.telefone || '', margin + 30, yPosition);
+        yPosition += 20;
+        
+        // Endereço
+        addText('ENDEREÇO', margin, yPosition, {
+          fontSize: 14,
+          fontStyle: 'bold'
+        });
+        yPosition += 10;
+        addLine(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 15;
+        
+        // Logradouro e Número
+        addText('Logradouro:', margin, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.endereco?.logradouro || '', margin + 35, yPosition);
+        addText('Nº:', margin + 120, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.endereco?.numero || '', margin + 130, yPosition);
+        yPosition += 15;
+        
+        // Bairro e CEP
+        addText('Bairro:', margin, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.endereco?.bairro || '', margin + 25, yPosition);
+        addText('CEP:', margin + 100, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.endereco?.cep || '', margin + 120, yPosition);
+        yPosition += 15;
+        
+        // Cidade e UF
+        addText('Cidade:', margin, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.endereco?.cidade || '', margin + 25, yPosition);
+        addText('UF:', margin + 120, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.endereco?.uf || '', margin + 135, yPosition);
+        yPosition += 20;
+        
+        // Dados acadêmicos (se for aluno)
+        if (dadosUsuario.funcao === 'ALUNO') {
+          addText('DADOS ACADÊMICOS', margin, yPosition, {
+            fontSize: 14,
+            fontStyle: 'bold'
+          });
+          yPosition += 10;
+          addLine(margin, yPosition, pageWidth - margin, yPosition);
+          yPosition += 15;
+          
+          // Série e Período
+          addText('Série:', margin, yPosition, { fontStyle: 'bold' });
+          addText(dadosUsuario.serie ? `${dadosUsuario.serie}º ano` : '', margin + 25, yPosition);
+          addText('Período:', margin + 80, yPosition, { fontStyle: 'bold' });
+          addText(dadosUsuario.periodo || '', margin + 115, yPosition);
+          yPosition += 15;
+          
+          // Turma e Turno
+          addText('Turma:', margin, yPosition, { fontStyle: 'bold' });
+          addText(dadosUsuario.turma || '', margin + 25, yPosition);
+          addText('Turno:', margin + 80, yPosition, { fontStyle: 'bold' });
+          addText(dadosUsuario.turno || '', margin + 110, yPosition);
+          yPosition += 20;
+        }
+        
+        // Regras da biblioteca
+        addText('REGRAS DA BIBLIOTECA', margin, yPosition, {
+          fontSize: 14,
+          fontStyle: 'bold'
+        });
+        yPosition += 10;
+        addLine(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 15;
+        
+        const regras = [
+          '• Prazo de empréstimo: 7 dias (renovável por mais 7 dias)',
+          '• Multa por atraso: R$ 0,50 por dia',
+          '• Limite de livros: 3 livros por usuário',
+          '• É obrigatório apresentar a carteirinha ou documento com foto',
+          '• Danos ou perda do livro: pagamento do valor integral',
+          '• Manter silêncio e organização no ambiente'
+        ];
+        
+        regras.forEach(regra => {
+          addText(regra, margin, yPosition, { fontSize: 10 });
+          yPosition += 10;
+        });
+        
+        yPosition += 10;
+        
+        // Assinaturas
+        addText('ASSINATURAS', margin, yPosition, {
+          fontSize: 14,
+          fontStyle: 'bold'
+        });
+        yPosition += 10;
+        addLine(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 30;
+        
+        // Linha para assinatura do usuário
+        addLine(margin, yPosition, margin + 80, yPosition);
+        addText('Usuário', margin + 30, yPosition + 10, { fontSize: 10 });
+          // Linha para assinatura do responsável
+        addLine(margin + 100, yPosition, margin + 180, yPosition);
+        addText('Bibliotecário(a)', margin + 120, yPosition + 10, { fontSize: 10 });
+        
+        yPosition += 30;
+        
+        // Data de emissão
+        const dataAtual = new Date().toLocaleDateString('pt-BR');
+        addText('Emitido em: ' + dataAtual, margin, yPosition, {
+          fontSize: 10,
+          fontStyle: 'italic'
+        });
+        
+        // Rodapé
+        yPosition = doc.internal.pageSize.getHeight() - 20;
+        addText('SIGEB - Sistema de Gerenciamento de Biblioteca Escolar', margin, yPosition, {
+          fontSize: 8,
+          fontStyle: 'italic'
+        });
+        
+        return doc;
+      }
+      
+      // Função para imprimir ficha cadastral
+      function imprimirFichaCadastral() {
+        if (!ultimoUsuarioCadastrado) {
+          showAlert('warning', 'Nenhum usuário foi cadastrado para impressão.');
+          return;
+        }
+        
+        try {
+          const doc = gerarFichaCadastral(ultimoUsuarioCadastrado);
+          
+          // Gerar nome do arquivo
+          const nomeArquivo = `ficha_cadastral_${ultimoUsuarioCadastrado.nome?.replace(/\s+/g, '_').toLowerCase() || 'usuario'}.pdf`;
+          
+          // Opções para o usuário
+          const opcao = confirm(
+            'Como deseja proceder com a ficha cadastral?\n\n' +
+            'OK - Fazer download do PDF\n' +
+            'Cancelar - Abrir para visualização/impressão'
+          );
+          
+          if (opcao) {
+            // Download do PDF
+            doc.save(nomeArquivo);
+            showAlert('success', 'Ficha cadastral baixada com sucesso!');
+          } else {
+            // Abrir para visualização/impressão
+            const pdfBlob = doc.output('blob');
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            window.open(pdfUrl, '_blank');
+            showAlert('info', 'Ficha cadastral aberta em nova aba. Use Ctrl+P para imprimir.');
+          }
+          
+        } catch (error) {
+          console.error('Erro ao gerar ficha cadastral:', error);
+          showAlert('danger', 'Erro ao gerar ficha cadastral. Tente novamente.');
+        }
+      }
+
+      // Função para carregar todos os usuários do Firestore e Realtime Database e renderizar na tabela
+      async function loadUsers() {
+        const tbody = document.querySelector('.users-table tbody');
+        tbody.innerHTML = '';
+
+        try {
+          const snapshot = await db.collection('usuarios').get();
+          snapshot.forEach(doc => {
+            const user = doc.data();
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${user.nome || ''}</td>
+              <td>${user.email || ''}</td>
+              <td>${user.matricula || ''}</td>
+              <td><span class="user-status ${user.status === 'Inativo' ? 'status-inativo' : 'status-ativo'}">${user.status}</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="action-button edit-button" data-id="${doc.id}">
+                    <i class='bx bx-edit-alt'></i>
+                  </button>
+                  <button class="action-button delete-button" data-id="${doc.id}">
+                    <i class='bx bx-trash'></i>
+                  </button>
+                </div>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        } catch (e) {
+          console.error('Erro ao buscar usuários do Firestore:', e);
+        }
+      }
+
+      // Função para editar usuário
+      async function editUser(id) {
+        console.log('editUser chamada com id:', id);
+        try {
+          console.log('Buscando usuário no Firestore...');
+          const doc = await db.collection('usuarios').doc(id).get();
+          if (!doc.exists) {
+            console.log('Usuário não encontrado no Firestore');
+            showAlert('danger', 'Usuário não encontrado.');
+            return;
+          }
+          
+          const user = doc.data();
+          console.log('Dados do usuário encontrados:', user);
+
+          // Preenche o formulário com os dados do usuário
+          document.getElementById('usuarioId').value = id;
+          document.getElementById('nome').value = user.nome || '';
+          document.getElementById('funcao').value = user.funcao || '';
+          document.getElementById('endereco').value = user.endereco?.logradouro || '';
+          document.getElementById('numero').value = user.endereco?.numero || '';
+          document.getElementById('cep').value = user.endereco?.cep || '';
+          document.getElementById('bairro').value = user.endereco?.bairro || '';
+          document.getElementById('cidade').value = user.endereco?.cidade || '';
+          document.getElementById('uf').value = user.endereco?.uf || '';
+          document.getElementById('telefone').value = user.telefone || '';
+          document.getElementById('email').value = user.email || '';
+          document.getElementById('status').value = user.status || 'Ativo';
+          
+          // Campos específicos de aluno
+          document.getElementById('matricula').value = user.matricula || '';
+          document.getElementById('serie').value = user.serie || '';
+          document.getElementById('periodo').value = user.periodo || '';
+          document.getElementById('turma').value = user.turma || '';
+          document.getElementById('turno').value = user.turno || '';
+
+          // Controla a exibição dos campos de aluno baseado na função
+          const isAluno = user.funcao === 'ALUNO';
+          document.getElementById('camposAluno').style.display = isAluno ? '' : 'none';
+          
+          // Torna campos obrigatórios apenas se for aluno
+          ['matricula', 'serie', 'periodo', 'turma', 'turno'].forEach(id => {
+            document.getElementById(id).required = isAluno;
+          });
+
+          // Muda o título do modal para indicar edição
+          document.getElementById('addUserModalLabel').textContent = 'Editar Usuário';
+          
+          // Esconde botão de impressão e mostra botão de salvar
+          document.getElementById('btnImprimirFicha').style.display = 'none';
+          document.getElementById('btnSalvarUsuario').style.display = 'inline-block';
+
+          console.log('Abrindo modal para edição...');
+          // Abre o modal
+          const modal = new bootstrap.Modal(document.getElementById('addUserModal'));
+          modal.show();
+          
+        } catch (error) {
+          console.error('Erro ao carregar usuário para edição:', error);
+          showAlert('danger', 'Erro ao carregar dados do usuário.');
+        }
+      }
+
+      // Adicione esta função para filtrar usuários
+      function filterUsers() {
+        const search = document.querySelector('.search-box input').value.trim().toLowerCase();
+        document.querySelectorAll('.users-table tbody tr').forEach(tr => {
+          const nome = tr.children[0].textContent.toLowerCase();
+          const email = tr.children[1].textContent.toLowerCase();
+          const matricula = tr.children[2].textContent.toLowerCase();
+          if (
+            nome.includes(search) ||
+            email.includes(search) ||
+            matricula.includes(search)
+          ) {
+            tr.style.display = '';
+          } else {
+            tr.style.display = 'none';
+          }
+        });
+      }
+
+      // Adicione o evento ao campo de busca
+      document.querySelector('.search-box input').addEventListener('input', filterUsers);
+
+      // Carrega os usuários ao iniciar
+      document.addEventListener('DOMContentLoaded', function() {
+        loadUsers(); // Carrega usuários do Firestore
+        
+        const addUserForm = document.getElementById('addUserForm');
+        if (addUserForm) {
+          addUserForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            handleUserSubmission(event);
+          });
+        }
+        
+        // Adiciona event listeners para botões estáticos também
+        addActionButtonListeners();
+      });      // Limpa o formulário e o campo usuarioId ao fechar o modal
+      document.getElementById('addUserModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('addUserForm').reset();
+        document.getElementById('usuarioId').value = '';
+        document.getElementById('addUserForm').classList.remove('was-validated');
+        
+        // Resetar estado do modal
+        document.getElementById('addUserModalLabel').textContent = 'Adicionar Novo Usuário';
+        document.getElementById('btnSalvarUsuario').style.display = 'inline-block';
+        document.getElementById('btnImprimirFicha').style.display = 'none';
+        
+        // Remove o foco de qualquer elemento dentro do modal ao fechar
+        if (document.activeElement && document.getElementById('addUserModal').contains(document.activeElement)) {
+          document.activeElement.blur();
+        }
+      });
+
+      // Função para autenticar colaborador pelo username e senha (já existe no seu código)
+      async function autenticarColaborador(username, senha) {
+        const hash = await hashPassword(senha);
+        const snapshot = await db.collection('usuarios')
+          .where('credenciais.username', '==', username)
+          .where('credenciais.password', '==', hash)
+          .get();
+        if (!snapshot.empty) {
+          return snapshot.docs[0].data();
+        } else {
+          return null;
+        }
+      }
+
+      // Função para deletar usuário
+      async function deleteUser(id) {
+        try {
+          const confirmDelete = confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.');
+          if (!confirmDelete) return;
+
+          await db.collection('usuarios').doc(id).delete();
+          showAlert('success', 'Usuário excluído com sucesso!');
+          loadUsers(); // Recarrega a lista
+        } catch (error) {
+          console.error('Erro ao deletar usuário:', error);
+          showAlert('danger', 'Erro ao excluir usuário.');
+        }
+      }
+
+      // Atualizar loadUsers para adicionar eventos nos botões
+      async function loadUsers() {
+        const tbody = document.querySelector('#usuariosTableBody');
+        
+        // Mantém os exemplos estáticos se não houver dados do Firestore
+        let hasFirestoreData = false;
+
+        try {
+          const snapshot = await db.collection('usuarios').get();
+          
+          if (!snapshot.empty) {
+            hasFirestoreData = true;
+            tbody.innerHTML = ''; // Limpa dados estáticos
+            
+            snapshot.forEach(doc => {
+              const user = doc.data();
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>
+                  <input type="checkbox" class="form-check-input user-checkbox" data-user-id="${doc.id}">
+                </td>
+                <td>${user.nome || ''}</td>
+                <td>${user.email || ''}</td>
+                <td>${user.matricula || ''}</td>
+                <td><span class="user-status ${user.status === 'Inativo' ? 'status-inativo' : 'status-ativo'}">${user.status}</span></td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="action-button edit-button" data-id="${doc.id}" onclick="handleEditUser('${doc.id}')">
+                      <i class='bx bx-edit-alt'></i>
+                    </button>
+                    <button class="action-button delete-button" data-id="${doc.id}" onclick="handleDeleteUser('${doc.id}')">
+                      <i class='bx bx-trash'></i>
+                    </button>
+                  </div>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          }
+          
+          // Adicionar event listeners para os botões de ação (fallback)
+          addActionButtonListeners();
+          
+          // Atualiza estado do botão após carregar dados
+          updateCartaoButton();
+          
+        } catch (e) {
+          console.error('Erro ao buscar usuários do Firestore:', e);
+        }
+      }
+
+      // Função para adicionar event listeners aos botões de ação
+      function addActionButtonListeners() {
+        console.log('Adicionando event listeners aos botões...');
+        
+        // Remove listeners antigos para evitar duplicação
+        document.querySelectorAll('.edit-button').forEach(btn => {
+          btn.removeEventListener('click', handleEditClick);
+          btn.addEventListener('click', handleEditClick);
+        });
+        
+        document.querySelectorAll('.delete-button').forEach(btn => {
+          btn.removeEventListener('click', handleDeleteClick);
+          btn.addEventListener('click', handleDeleteClick);
+        });
+        
+        // Para botões estáticos, adiciona data-id se não existir
+        document.querySelectorAll('.edit-button:not([data-id])').forEach((btn, index) => {
+          btn.setAttribute('data-id', `static-user-${index + 1}`);
+          console.log('Adicionado data-id para botão estático:', `static-user-${index + 1}`);
+        });
+        
+        document.querySelectorAll('.delete-button:not([data-id])').forEach((btn, index) => {
+          btn.setAttribute('data-id', `static-user-${index + 1}`);
+        });
+        
+        console.log('Event listeners adicionados. Total de botões editar:', document.querySelectorAll('.edit-button').length);
+      }
+
+      // Handlers para os cliques dos botões
+      function handleEditClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const userId = e.currentTarget.getAttribute('data-id');
+        console.log('Botão editar clicado para usuário:', userId);
+        handleEditUser(userId);
+      }
+
+      function handleDeleteClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const userId = e.currentTarget.getAttribute('data-id');
+        console.log('Botão excluir clicado para usuário:', userId);
+        handleDeleteUser(userId);
+      }
+
+      // Funções globais para serem chamadas pelo onclick
+      window.handleEditUser = async function(userId) {
+        console.log('handleEditUser chamada com userId:', userId);
+        try {
+          // Verifica se é um usuário estático (de exemplo)
+          if (userId.startsWith('static-user-')) {
+            console.log('Usuário estático detectado');
+            showAlert('info', 'Este é um usuário de exemplo. Para editar usuários reais, cadastre-os primeiro através do botão "Cadastro de Usuários".');
+            return;
+          }
+          
+          console.log('Chamando editUser para userId:', userId);
+          // Chama diretamente a função de editar sem solicitar credenciais
+          await editUser(userId);
+        } catch (error) {
+          console.error('Erro ao editar usuário:', error);
+          showAlert('danger', 'Erro ao carregar dados do usuário.');
+        }
+      };
+
+      window.handleDeleteUser = async function(userId) {
+        try {
+          // Verifica se é um usuário estático (de exemplo)
+          if (userId.startsWith('static-user-')) {
+            showAlert('info', 'Este é um usuário de exemplo. Para excluir usuários reais, cadastre-os primeiro através do botão "Cadastro de Usuários".');
+            return;
+          }
+          
+          // Chama diretamente a função de deletar sem solicitar credenciais
+          await deleteUser(userId);
+        } catch (error) {
+          console.error('Erro ao excluir usuário:', error);
+          showAlert('danger', 'Erro ao excluir usuário.');
+        }
+      };
+
+      // Função para autenticar colaborador pelo username e senha
+      async function autenticarColaborador(username, senha) {
+        const hash = await hashPassword(senha);
+        const snapshot = await db.collection('usuarios')
+          .where('credenciais.username', '==', username)
+          .where('credenciais.password', '==', hash)
+          .get();
+        if (!snapshot.empty) {
+          // Login OK
+          return snapshot.docs[0].data();
+        } else {
+          // Login inválido
+          return null;
+        }
+      }
+
+      // Exemplo de uso (em sua tela de login de colaboradores):
+      // const user = await autenticarColaborador('usuario', 'senha');
+      // if (user) { /* acesso liberado */ } else { /* acesso negado */ }
+
+      // Certifique-se de declarar usuarioLogado no escopo global, antes de qualquer função que o utilize:
+      let usuarioLogado = null;
+
+      document.addEventListener('DOMContentLoaded', async function() {
+        // Cria o usuário admin se não existir
+        const adminSnapshot = await db.collection('usuarios')
+          .where('credenciais.username', '==', 'admin')
+          .get();
+
+        if (adminSnapshot.empty) {
+          // Cria hash da senha 'admin'
+          const encoder = new TextEncoder();
+          const data = encoder.encode('admin');
+          const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+          const hash = Array.from(new Uint8Array(hashBuffer))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
+
+          await db.collection('usuarios').add({
+            nome: 'Administrador',
+            funcao: 'DIRETOR',
+            email: 'admin@sigeb.com',
+            matricula: 'admin',
+            status: 'Ativo',
+            telefone: '',
+            endereco: {
+              logradouro: '',
+              numero: '',
+              cep: '',
+              bairro: '',
+              cidade: '',
+              uf: ''
+            },
+            credenciais: {
+              username: 'admin',
+              password: hash
+            },
+            livrosEmprestados: 0,
+            dataCadastro: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          console.log('Usuário admin criado com sucesso!');
+        }
+      });
+
+    </script>
+
+    <style>
+      .modal-body {
+        max-height: 70vh;
+        overflow-y: auto;
+      }
+
+      .form-label {
+        font-weight: 500;
+        margin-bottom: 0.3rem;
+      }
+
+      .input-group .btn-outline-secondary {
+        border-color: #ddd;
+      }
+
+      .input-group .btn-outline-secondary:hover {
+        background-color: #f8f9fa;
+        border-color: #4facfe;
+      }      hr {
+        margin: 1.5rem 0;
+        opacity: 0.15;
+      }
+      
+      #btnImprimirFicha {
+        background: linear-gradient(90deg, #28a745, #20c997);
+        border: none;
+        transition: all 0.3s ease;
+      }
+      
+      #btnImprimirFicha:hover {
+        background: linear-gradient(90deg, #20c997, #28a745);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+      }
+      
+      .modal-footer .btn {
+        min-width: 120px;
+      }
+    </style>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleSidebar = () => {
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        
+        if (window.innerWidth <= 768) {
+          sidebar.classList.toggle('active');
+          mainContent.style.marginLeft = sidebar.classList.contains('active') ? '250px' : '0';
+        }
+      };
+
+      if (window.innerWidth <= 768) {
+        const header = document.querySelector('.page-header');
+        const hamburger = document.createElement('button');
+        hamburger.className = 'btn btn-primary d-md-none mb-3';
+        hamburger.innerHTML = '<i class="bx bx-menu"></i>';
+        hamburger.onclick = toggleSidebar;
+        header.prepend(hamburger);
+      }
+    });
+  </script>
+
+  <!-- Adicione antes do fechamento do </body> -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    // Importar usuários via XLS/XLSX
+    document.getElementById('importXlsBtn').addEventListener('click', function() {
+      // Não solicita mais email/senha, apenas abre o seletor de arquivo
+      document.getElementById('xlsInput').click();
+    });
+
+    // Crie um modal para confirmação visual dos dados importados
+    function criarModalConfirmacaoImportacao(usuarios, onConfirm) {
+      // Remove modal antigo se existir
+      const oldModal = document.getElementById('modalConfirmImport');
+      if (oldModal) oldModal.remove();
+
+      // Cria HTML do modal
+      const modal = document.createElement('div');
+      modal.className = 'modal fade';
+      modal.id = 'modalConfirmImport';
+      modal.tabIndex = -1;
+      modal.innerHTML = `
+        <div class="modal-dialog modal-xl">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Confirmar Importação de Usuários</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div style="max-height:350px;overflow:auto;">
+                <table class="table table-bordered table-sm">
+                  <thead>
+                    <tr>
+                      <th>Nome</th>
+                      <th>Email</th>
+                      <th>Matrícula</th>
+                      <th>Status</th>
+                      <th>Função</th>
+                      <th>Telefone</th>
+                      <th>Endereço</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${usuarios.map(u => `
+                      <tr>
+                        <td>${u.nome || ''}</td>
+                        <td>${u.email || ''}</td>
+                        <td>${u.matricula || ''}</td>
+                        <td>${u.status || ''}</td>
+                        <td>${u.funcao || ''}</td>
+                        <td>${u.telefone || ''}</td>
+                        <td>${u.endereco ? [
+                          u.endereco.logradouro, u.endereco.numero, u.endereco.bairro, u.endereco.cidade, u.endereco.uf, u.endereco.cep
+                        ].filter(Boolean).join(', ') : ''}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+              <div id="importProgress" class="my-3" style="display:none;">
+                <div class="progress">
+                  <div class="progress-bar" role="progressbar" style="width:0%">0%</div>
+                </div>
+                <div class="mt-2 text-center" id="importProgressText"></div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" class="btn btn-success" id="btnConfirmarImportacao">Confirmar Importação</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      // Mostra o modal
+      const bsModal = new bootstrap.Modal(modal);
+      bsModal.show();
+
+      // Ao clicar em confirmar, chama o callback
+      document.getElementById('btnConfirmarImportacao').onclick = async function() {
+        document.getElementById('importProgress').style.display = 'block';
+        this.disabled = true;
+        await onConfirm(bsModal, usuarios);
+      };
+    }
+
+    document.getElementById('xlsInput').addEventListener('change', async function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const fileName = file.name.toLowerCase();
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          let usuariosRaw = [];
+          if (fileName.endsWith('.csv')) {
+            // CSV com tabulação (Excel exporta assim para colunas)
+            usuariosRaw = csvToArray(e.target.result, "\t");
+            // Se não encontrar, tenta ponto e vírgula
+            if (usuariosRaw.length === 0 || (Array.isArray(usuariosRaw[0]) && usuariosRaw[0].length < 2)) {
+              usuariosRaw = csvToArray(e.target.result, ";");
+            }
+            // Se não encontrar, tenta vírgula
+            if (usuariosRaw.length === 0 || (Array.isArray(usuariosRaw[0]) && usuariosRaw[0].length < 2)) {
+              usuariosRaw = csvToArray(e.target.result, ",");
+            }
+            // Se for array de arrays, converte para objetos
+            if (Array.isArray(usuariosRaw[0])) {
+              const cabecalhos = usuariosRaw[0].map(c => c.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s/g, '').toLowerCase());
+              usuariosRaw = usuariosRaw.slice(1).map(linha => {
+                const obj = {};
+                linha.forEach((valor, idx) => {
+                  obj[cabecalhos[idx]] = valor;
+                });
+                return obj;
+              });
+            }
+          } else {
+            const data = e.target.result;
+            const workbook = XLSX.read(data, { type: 'binary' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            // Remove as linhas em branco
+            for (let i = json.length - 1; i >= 0; i--) {
+              if (json[i].every(cell => cell === null || cell === '')) {
+                json.splice(i, 1);
+              }
+            }
+            // Converte para objeto com chaves normalizadas
+            const cabecalhos = json[0].map(cabecalho =>
+              cabecalho
+                ? cabecalho.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s/g, '').toLowerCase()
+                : ''
+            );
+            usuariosRaw = json.slice(1).map(linha => {
+              const usuario = {};
+              linha.forEach((valor, index) => {
+                usuario[cabecalhos[index]] = valor;
+              });
+              return usuario;
+            });
+          }
+
+          // Aceita usuário se tiver nome e matrícula (email não é obrigatório)
+          const usuariosValidos = usuariosRaw.filter(u => u.nome && u.matricula);
+
+          if (usuariosValidos.length === 0) {
+            alert('Nenhum usuário válido encontrado no arquivo.\n\nVerifique se os cabeçalhos estão como "Nome" e "Matrícula" (ou "nome" e "matricula").');
+            return;
+          }
+
+          criarModalConfirmacaoImportacao(usuariosValidos, async (modal, usuarios) => {
+            const updateProgress = (percent) => {
+              const progressBar = document.querySelector('.progress-bar');
+              const progressText = document.getElementById('importProgressText');
+              progressBar.style.width = `${percent}%`;
+              progressText.textContent = `${percent}% concluído`;
+            };
+
+            // Limpa usuários existentes (exceto admin)
+            try {
+              const snapshot = await db.collection('usuarios').get();
+              const deletarUsuarios = snapshot.docs.filter(doc => doc.data().matricula !== 'admin');
+              for (const doc of deletarUsuarios) {
+                await db.collection('usuarios').doc(doc.id).delete();
+              }
+            } catch (error) {
+              showAlert('danger', 'Erro ao remover usuários existentes. Importação cancelada.');
+              modal.hide();
+              return;
+            }
+
+            // Importa usuários válidos
+            for (let i = 0; i < usuarios.length; i++) {
+              const usuario = usuarios[i];
+              try {
+                await db.collection('usuarios').add({
+                  nome: usuario.nome,
+                  email: usuario.email || '',
+                  matricula: usuario.matricula,
+                  status: usuario.status || 'Ativo',
+                  funcao: usuario.funcao || 'ALUNO',
+                  telefone: usuario.telefone || '',
+                  serie: usuario.serie || '',
+                  periodo: usuario.periodo || '',
+                  turma: usuario.turma || '',
+                  turno: usuario.turno || '',
+                  endereco: {
+                    logradouro: usuario.endereco || '',
+                    numero: usuario.numero || '',
+                    cep: usuario.cep || '',
+                    bairro: usuario.bairro || '',
+                    cidade: usuario.cidade || '',
+                    uf: usuario.uf || ''
+                  },
+                  livrosEmprestados: 0,
+                  dataCadastro: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                updateProgress(Math.round(((i + 1) / usuarios.length) * 100));
+                await new Promise(resolve => setTimeout(resolve, 100));
+              } catch (error) {
+                showAlert('danger', `Erro ao importar usuário ${usuario.nome}.`);
+              }
+            }
+
+            showAlert('success', 'Importação concluída com sucesso!');
+            modal.hide();
+            loadUsers();
+          });
+        } catch (error) {
+          alert('Erro ao ler arquivo. Por favor, tente novamente.');
+        }
+      };
+      reader.readAsBinaryString(file);
+    });
+
+    // Função para converter CSV para array de objetos
+    function csvToArray(strData, strDelimiter) {
+      // Delimitador padrão
+      strDelimiter = (strDelimiter || ",");
+      
+      // Cria expressão regular para parsing do CSV
+      const objPattern = new RegExp(
+        (
+          // Delimitadores iniciais
+          "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+          // Captura os campos entre delimitadores
+          "([^\"\\" + strDelimiter + "\\r\\n]*|" +
+          // Campos com aspas
+          "\"([^\"]*(?:\"\"[^\"]*)*)\")"
+        ),
+        "gi"
+        );
+        
+      // Armazena os dados
+      const arrData = [[]];
+      
+      let arrMatches = null;
+      
+      // Executa o parsing
+      while (arrMatches = objPattern.exec(strData)) {
+        const strMatchedDelimiter = arrMatches[1];
+        let strMatchedValue;
+        
+        // Verifica se é um delimitador de nova linha
+        if (strMatchedDelimiter.length && strMatchedDelimiter !== strDelimiter) {
+          // Nova linha - cria um novo array para os dados
+          arrData.push([]);
+        }
+        
+        // Verifica se o campo está entre aspas
+        if (arrMatches[2]) {
+          strMatchedValue = arrMatches[2].replace(/""/g, '"');
+        } else {
+          strMatchedValue = arrMatches[3] || '';
+        }
+        
+        // Adiciona o valor ao último array
+        arrData[arrData.length - 1].push(strMatchedValue);
+      }
+      
+      // Remove arrays vazios
+      return arrData.filter(arr => arr.length > 0);
+    }    // Função para salvar/atualizar usuário ao submeter o formulário do modal
+    async function handleUserSubmission(event) {
+      event.preventDefault?.();
+
+      const form = document.getElementById('addUserForm');
+      form.classList.add('was-validated');
+      if (!form.checkValidity()) return;
+
+      const id = document.getElementById('usuarioId').value;
+      const nome = document.getElementById('nome').value.trim();
+      const funcao = document.getElementById('funcao').value;
+      const endereco = document.getElementById('endereco').value.trim();
+      const numero = document.getElementById('numero').value.trim();
+      const cep = document.getElementById('cep').value.trim();
+      const bairro = document.getElementById('bairro').value.trim();
+      const cidade = document.getElementById('cidade').value.trim();
+      const uf = document.getElementById('uf').value;
+      const telefone = document.getElementById('telefone').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const status = document.getElementById('status').value;
+
+      // Só pega campos de aluno se for ALUNO
+      let matricula = '', serie = '', periodo = '', turma = '', turno = '';
+      if (funcao === 'ALUNO') {
+        matricula = document.getElementById('matricula').value.trim();
+        serie = document.getElementById('serie').value;
+        periodo = document.getElementById('periodo').value;
+        turma = document.getElementById('turma').value;
+        turno = document.getElementById('turno').value;
+      }
+
+      const usuario = {
+        nome,
+        funcao,
+        matricula,
+        serie,
+        periodo,
+        turma,
+        turno,
+        endereco: {
+          logradouro: endereco,
+          numero,
+          cep,
+          bairro,
+          cidade,
+          uf
+        },
+        telefone,
+        email,
+        status,
+        livrosEmprestados: 0,
+        dataCadastro: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      try {
+        if (id) {
+          await db.collection('usuarios').doc(id).update(usuario);
+          showAlert('success', 'Usuário atualizado com sucesso!');
+          // Para edição, não mostra botão de impressão
+          document.getElementById('btnImprimirFicha').style.display = 'none';
+        } else {
+          await db.collection('usuarios').add(usuario);
+          showAlert('success', 'Usuário cadastrado com sucesso!');
+          
+          // Armazenar dados para impressão
+          ultimoUsuarioCadastrado = usuario;
+          
+          // Mostrar botão de impressão
+          document.getElementById('btnImprimirFicha').style.display = 'inline-block';
+          document.getElementById('btnSalvarUsuario').style.display = 'none';
+            // Mudar título do modal
+          document.getElementById('addUserModalLabel').textContent = 'Usuário Cadastrado com Sucesso!';
+          
+          showAlert('info', 'Clique em "Imprimir Ficha" para gerar a ficha cadastral do usuário.');
+          
+          // Perguntar se quer imprimir o cartão do leitor
+          setTimeout(() => {
+            const imprimirCartao = confirm('Usuário cadastrado com sucesso!\n\nDeseja imprimir o Cartão de Leitor agora?');
+            if (imprimirCartao) {
+              gerarCartaoUsuarioIndividual(usuario);
+            }
+          }, 1000); // Aguarda 1 segundo para mostrar o alert de sucesso primeiro
+        }
+        
+        loadUsers();
+      } catch (error) {
+        console.error('Erro ao salvar usuário:', error);
+        showAlert('danger', 'Erro ao salvar usuário.');
+      }
+    }    // Certifique-se de adicionar o event listener após a definição da função:
+    document.addEventListener('DOMContentLoaded', function() {
+      const btnSalvar = document.getElementById('btnSalvarUsuario');
+      if (btnSalvar) {
+        btnSalvar.addEventListener('click', function(event) {
+          event.preventDefault();
+          handleUserSubmission(event);
+        });
+      }
+      
+      // Event listener para botão de impressão
+      const btnImprimir = document.getElementById('btnImprimirFicha');
+      if (btnImprimir) {
+        btnImprimir.addEventListener('click', function() {
+          imprimirFichaCadastral();
+        });
+      }
+    });
+
+    // Exibe ou esconde campos de aluno conforme função selecionada
+    document.getElementById('funcao').addEventListener('change', function() {
+      const isAluno = this.value === 'ALUNO';
+      document.getElementById('camposAluno').style.display = isAluno ? '' : 'none';
+      // Torna campos obrigatórios apenas se for aluno
+      ['matricula','serie','periodo','turma','turno'].forEach(id => {
+        document.getElementById(id).required = isAluno;
+      });
+    });
+
+    // SISTEMA DE CARTÃO DE LEITOR    // Função para gerar cartão de um usuário individual (após cadastro)
+    async function gerarCartaoUsuarioIndividual(userData) {
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+          orientation: 'landscape',
+          unit: 'mm',
+          format: [85.6, 53.98] // Tamanho padrão de cartão de crédito
+        });
+
+        // Criar o cartão usando a função existente
+        criarCartaoUsuario(doc, userData, 0, 0, 85.6, 53.98);
+
+        // Salvar o PDF
+        const nomeArquivo = `cartao_leitor_${userData.nome.replace(/\s+/g, '_')}.pdf`;
+        doc.save(nomeArquivo);
+
+        showAlert('success', `Cartão de leitor gerado com sucesso para ${userData.nome}!`);
+        
+      } catch (error) {
+        console.error('Erro ao gerar cartão:', error);
+        showAlert('danger', 'Erro ao gerar cartão de leitor.');
+      }
+    }
+
+    // Função para habilitar/desabilitar botão de cartão baseado na seleção
+    function updateCartaoButton() {
+      const checkedBoxes = document.querySelectorAll('.user-checkbox:checked');
+      const cartaoBtn = document.getElementById('gerarCartaoBtn');
+      cartaoBtn.disabled = checkedBoxes.length === 0;
+      
+      if (checkedBoxes.length > 0) {
+        cartaoBtn.textContent = `Cartão de Leitor (${checkedBoxes.length} selecionado${checkedBoxes.length > 1 ? 's' : ''})`;
+      } else {
+        cartaoBtn.innerHTML = '<i class="bx bx-id-card"></i> Cartão de Leitor';
+      }
+    }
+
+    // Checkbox "Selecionar Todos"
+    document.getElementById('selectAll').addEventListener('change', function() {
+      const checkboxes = document.querySelectorAll('.user-checkbox');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+      });
+      updateCartaoButton();
+    });
+
+    // Event listeners para checkboxes individuais
+    document.addEventListener('change', function(e) {
+      if (e.target.classList.contains('user-checkbox')) {
+        const allCheckboxes = document.querySelectorAll('.user-checkbox');
+        const checkedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
+        const selectAllCheckbox = document.getElementById('selectAll');
+        
+        // Atualiza o checkbox "Selecionar Todos"
+        if (checkedCheckboxes.length === 0) {
+          selectAllCheckbox.checked = false;
+          selectAllCheckbox.indeterminate = false;
+        } else if (checkedCheckboxes.length === allCheckboxes.length) {
+          selectAllCheckbox.checked = true;
+          selectAllCheckbox.indeterminate = false;
+        } else {
+          selectAllCheckbox.checked = false;
+          selectAllCheckbox.indeterminate = true;
+        }
+        
+        updateCartaoButton();
+      }
+    });
+
+    // Função para gerar cartões de leitor em PDF
+    async function gerarCartoesLeitor() {
+      const checkedBoxes = document.querySelectorAll('.user-checkbox:checked');
+      
+      if (checkedBoxes.length === 0) {
+        showAlert('warning', 'Selecione pelo menos um usuário para gerar o cartão.');
+        return;
+      }
+
+      try {
+        // Coleta dados dos usuários selecionados
+        const usuariosSelecionados = [];
+        
+        for (const checkbox of checkedBoxes) {
+          const row = checkbox.closest('tr');
+          const nome = row.cells[1].textContent;
+          const email = row.cells[2].textContent;
+          const matricula = row.cells[3].textContent;
+          
+          // Busca dados completos do usuário no Firestore
+          try {
+            const userId = checkbox.dataset.userId;
+            let dadosCompletos = null;
+            
+            if (userId && userId.startsWith('user')) {
+              // Dados de exemplo (usuários estáticos)
+              dadosCompletos = {
+                nome: nome,
+                email: email,
+                matricula: matricula,
+                funcao: nome === 'Maria Silva' ? 'ALUNO' : nome === 'João Santos' ? 'PROFESSOR' : 'ALUNO',
+                telefone: nome === 'Maria Silva' ? '(11) 99999-9999' : nome === 'João Santos' ? '(11) 88888-8888' : '(11) 77777-7777'
+              };
+            } else {
+              // Busca no Firestore
+              const userDoc = await db.collection('usuarios').doc(userId).get();
+              if (userDoc.exists) {
+                dadosCompletos = userDoc.data();
+              }
+            }
+            
+            usuariosSelecionados.push(dadosCompletos || {
+              nome: nome,
+              email: email,
+              matricula: matricula,
+              funcao: 'USUÁRIO',
+              telefone: ''
+            });
+          } catch (error) {
+            console.error('Erro ao buscar dados do usuário:', error);
+            usuariosSelecionados.push({
+              nome: nome,
+              email: email,
+              matricula: matricula,
+              funcao: 'USUÁRIO',
+              telefone: ''
+            });
+          }
+        }
+
+        // Gera PDF com os cartões
+        await criarPDFCartoes(usuariosSelecionados);
+        
+      } catch (error) {
+        console.error('Erro ao gerar cartões:', error);
+        showAlert('danger', 'Erro ao gerar cartões de leitor.');
+      }
+    }
+
+    // Função para criar PDF com múltiplos cartões
+    async function criarPDFCartoes(usuarios) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Configurações do cartão
+      const cartaoWidth = 85.6; // Tamanho padrão de cartão de crédito em mm
+      const cartaoHeight = 53.98;
+      const margem = 10;
+      const cartoesPerRow = 2;
+      const cartoesPerPage = 4; // 2x2
+      
+      let cartaoAtual = 0;
+      
+      for (let i = 0; i < usuarios.length; i++) {
+        const usuario = usuarios[i];
+        
+        // Calcula posição do cartão na página
+        const row = Math.floor(cartaoAtual % cartoesPerPage / cartoesPerRow);
+        const col = cartaoAtual % cartoesPerRow;
+        
+        const x = margem + (col * (cartaoWidth + margem));
+        const y = margem + (row * (cartaoHeight + margem * 2));
+        
+        // Nova página se necessário
+        if (cartaoAtual > 0 && cartaoAtual % cartoesPerPage === 0) {
+          doc.addPage();
+        }
+        
+        // Desenha o cartão
+        criarCartaoUsuario(doc, usuario, x, y, cartaoWidth, cartaoHeight);
+        
+        cartaoAtual++;
+      }
+      
+      // Salva o PDF
+      const dataAtual = new Date().toISOString().split('T')[0];
+      doc.save(`cartoes-leitor-${dataAtual}.pdf`);
+      
+      showAlert('success', `Cartões de leitor gerados com sucesso! ${usuarios.length} cartão(ões) criado(s).`);
+    }
+
+    // Função para criar um cartão individual
+    function criarCartaoUsuario(doc, usuario, x, y, width, height) {
+      // Fundo do cartão com gradiente (simulado com retângulos)
+      doc.setFillColor(26, 26, 46); // Cor azul escura
+      doc.rect(x, y, width, height, 'F');
+      
+      // Borda do cartão
+      doc.setDrawColor(79, 172, 254);
+      doc.setLineWidth(0.5);
+      doc.rect(x, y, width, height);
+      
+      // Logo/Título da biblioteca
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.text('SIGEB', x + 5, y + 8);
+      doc.setFontSize(8);
+      doc.setFont(undefined, 'normal');
+      doc.text('Sistema de Gerenciamento de Biblioteca', x + 5, y + 12);
+      
+      // Linha separadora
+      doc.setDrawColor(79, 172, 254);
+      doc.line(x + 5, y + 15, x + width - 5, y + 15);
+      
+      // Informações do usuário
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'bold');
+      
+      // Nome (limitado para caber no cartão)
+      const nomeMaxLength = 25;
+      const nomeDisplay = usuario.nome.length > nomeMaxLength ? 
+        usuario.nome.substring(0, nomeMaxLength) + '...' : usuario.nome;
+      doc.text(nomeDisplay, x + 5, y + 22);
+      
+      // Matrícula
+      doc.setFontSize(9);
+      doc.setFont(undefined, 'normal');
+      doc.text(`Matrícula: ${usuario.matricula || 'N/A'}`, x + 5, y + 27);
+      
+      // Função
+      doc.text(`Função: ${usuario.funcao || 'USUÁRIO'}`, x + 5, y + 31);
+      
+      // Email (truncado se muito longo)
+      const emailMaxLength = 30;
+      const emailDisplay = usuario.email && usuario.email.length > emailMaxLength ? 
+        usuario.email.substring(0, emailMaxLength) + '...' : (usuario.email || '');
+      if (emailDisplay) {
+        doc.setFontSize(7);
+        doc.text(emailDisplay, x + 5, y + 35);
+      }
+      
+      // Código de barras simulado (apenas visual)
+      doc.setFillColor(255, 255, 255);
+      for (let i = 0; i < 15; i++) {
+        const barWidth = Math.random() > 0.5 ? 1 : 0.5;
+        doc.rect(x + 5 + (i * 2), y + height - 12, barWidth, 8, 'F');
+      }
+      
+      // Data de validade
+      const dataValidade = new Date();
+      dataValidade.setFullYear(dataValidade.getFullYear() + 1);
+      doc.setTextColor(200, 200, 200);
+      doc.setFontSize(6);
+      doc.text(`Válido até: ${dataValidade.toLocaleDateString('pt-BR')}`, x + 5, y + height - 2);
+      
+      // Número do cartão (baseado na matrícula)
+      doc.text(`Card: ${usuario.matricula || '000000'}`, x + width - 25, y + height - 2);
+    }
+
+    // Event listener para o botão de gerar cartão
+    document.getElementById('gerarCartaoBtn').addEventListener('click', gerarCartoesLeitor);
+
+    document.addEventListener('DOMContentLoaded', loadUsers);
+  </script>
+</body>
+</html>                                                                                                                          

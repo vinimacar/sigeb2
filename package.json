@@ -1,0 +1,14 @@
+{
+  "name": "user-migration",
+  "version": "1.0.0",
+  "description": "A project to migrate user registrations from 'completar cadastro' to the user database.",
+  "main": "src/migrateUsers.js",
+  "scripts": {
+    "migrate": "node src/migrateUsers.js"
+  },
+  "dependencies": {
+    "firebase": "^9.0.0"
+  },
+  "author": "",
+  "license": "ISC"
+}

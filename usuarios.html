@@ -2101,174 +2101,186 @@
         const matriculaSegura = usuario.matricula || 'N/A';
         const funcaoSegura = usuario.funcao || 'USUÁRIO';
 
-        // === DESIGN MELHORADO DO CARTÃO ===
+        // === DESIGN PROFISSIONAL DO CARTÃO ===
         
-        // Fundo branco com borda elegante
-        doc.setFillColor(255, 255, 255); // Fundo branco
+        // Fundo branco limpo
+        doc.setFillColor(255, 255, 255);
         doc.rect(x, y, width, height, 'F');
         
-        // Borda externa azul mais elegante
-        doc.setDrawColor(52, 144, 220); // Azul mais suave
-        doc.setLineWidth(0.8);
+        // Borda principal elegante
+        doc.setDrawColor(34, 139, 34); // Verde institucional
+        doc.setLineWidth(1.2);
         doc.rect(x, y, width, height);
         
-        // Faixa superior decorativa (gradiente simulado)
-        doc.setFillColor(52, 144, 220); // Azul principal
-        doc.rect(x, y, width, 8, 'F');
+        // === CABEÇALHO INSTITUCIONAL ===
         
-        // Faixa superior mais clara
-        doc.setFillColor(79, 172, 254); // Azul mais claro
-        doc.rect(x, y, width, 4, 'F');
+        // Faixa superior com gradiente verde
+        doc.setFillColor(34, 139, 34); // Verde principal
+        doc.rect(x, y, width, 12, 'F');
+        
+        // Destaque superior
+        doc.setFillColor(46, 125, 50); // Verde mais claro
+        doc.rect(x, y, width, 6, 'F');
 
-        // === LOGOS ===
+        // === POSICIONAMENTO OTIMIZADO DOS LOGOS ===
         
-        // Logo SIGEB no topo esquerdo
+        // Logo SIGEB (esquerda)
         if (logoSigebBase64) {
           try {
-            doc.addImage(logoSigebBase64, 'PNG', x + 6, y + 10, 18, 11);
+            doc.addImage(logoSigebBase64, 'PNG', x + 4, y + 14, 20, 12);
           } catch (error) {
-            console.warn('Erro ao adicionar logo SIGEB, usando fallback:', error);
-            // Fallback elegante
-            doc.setFillColor(52, 144, 220);
-            doc.rect(x + 6, y + 10, 16, 10, 'F');
+            // Fallback profissional
+            doc.setFillColor(34, 139, 34);
+            doc.rect(x + 4, y + 14, 18, 10, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'bold');
+            doc.text('SIGEB', x + 8, y + 21);
+          }
+        } else {
+          doc.setFillColor(34, 139, 34);
+          doc.rect(x + 4, y + 14, 18, 10, 'F');
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'bold');
+          doc.text('SIGEB', x + 8, y + 21);
+        }
+
+        // Logo da escola (direita)
+        if (logoBiasBase64) {
+          try {
+            doc.addImage(logoBiasBase64, 'PNG', x + width - 24, y + 14, 18, 12);
+          } catch (error) {
+            // Fallback institucional
+            doc.setFillColor(34, 139, 34);
+            doc.circle(x + width - 15, y + 20, 7, 'F');
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(8);
             doc.setFont('helvetica', 'bold');
-            doc.text('SIGEB', x + 10, y + 17);
+            doc.text('BF', x + width - 18, y + 22);
           }
         } else {
-          // Fallback elegante
-          doc.setFillColor(52, 144, 220);
-          doc.rect(x + 6, y + 10, 16, 10, 'F');
+          doc.setFillColor(34, 139, 34);
+          doc.circle(x + width - 15, y + 20, 7, 'F');
           doc.setTextColor(255, 255, 255);
           doc.setFontSize(8);
           doc.setFont('helvetica', 'bold');
-          doc.text('SIGEB', x + 10, y + 17);
+          doc.text('BF', x + width - 18, y + 22);
         }
 
-        // Logo da escola no topo direito
-        if (logoBiasBase64) {
-          try {
-            doc.addImage(logoBiasBase64, 'PNG', x + width - 22, y + 10, 16, 11);
-          } catch (error) {
-            console.warn('Erro ao adicionar logo da escola, usando fallback:', error);
-            // Fallback elegante
-            doc.setFillColor(52, 144, 220);
-            doc.circle(x + width - 14, y + 15, 6, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(7);
-            doc.setFont('helvetica', 'bold');
-            doc.text('BF', x + width - 16, y + 17);
-          }
-        } else {
-          // Fallback elegante
-          doc.setFillColor(52, 144, 220);
-          doc.circle(x + width - 14, y + 15, 6, 'F');
-          doc.setTextColor(255, 255, 255);
-          doc.setFontSize(7);
-          doc.setFont('helvetica', 'bold');
-          doc.text('BF', x + width - 16, y + 17);
-        }
-
-        // === TÍTULOS PRINCIPAIS ===
+        // === TÍTULOS CENTRALIZADOS E FORMATADOS ===
         
-        // Título "CARTÃO DE LEITOR"
-        doc.setTextColor(52, 144, 220);
-        doc.setFontSize(11);
+        // Título principal centralizado
+        doc.setTextColor(34, 139, 34);
+        doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text('CARTÃO DE LEITOR', x + 26, y + 16);
+        const tituloTexto = 'CARTÃO DE LEITOR';
+        const tituloWidth = doc.getTextWidth(tituloTexto);
+        doc.text(tituloTexto, x + (width - tituloWidth) / 2, y + 19);
 
-        // Subtítulo da escola
-        doc.setFontSize(7);
+        // Subtítulo institucional centralizado
+        doc.setFontSize(7.5);
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(100, 100, 100);
-        doc.text('Escola Estadual Governador Bias Fortes', x + 26, y + 21);
+        doc.setTextColor(60, 60, 60);
+        const subtituloTexto = 'Escola Estadual Governador Bias Fortes';
+        const subtituloWidth = doc.getTextWidth(subtituloTexto);
+        doc.text(subtituloTexto, x + (width - subtituloWidth) / 2, y + 24);
 
-        // === LINHA SEPARADORA ELEGANTE ===
+        // === SEPARADOR ELEGANTE ===
         
-        // Linha principal
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.3);
-        doc.line(x + 6, y + 25, x + width - 6, y + 25);
+        // Linha separadora principal
+        doc.setDrawColor(220, 220, 220);
+        doc.setLineWidth(0.4);
+        doc.line(x + 8, y + 28, x + width - 8, y + 28);
         
-        // Pequenos detalhes decorativos
-        doc.setFillColor(52, 144, 220);
-        doc.circle(x + 6, y + 25, 0.8, 'F');
-        doc.circle(x + width - 6, y + 25, 0.8, 'F');
+        // Elementos decorativos
+        doc.setFillColor(34, 139, 34);
+        doc.circle(x + 8, y + 28, 1, 'F');
+        doc.circle(x + width - 8, y + 28, 1, 'F');
 
-        // === INFORMAÇÕES DO USUÁRIO ===
+        // === INFORMAÇÕES DO USUÁRIO ORGANIZADAS ===
         
-        // Nome do usuário (destaque principal)
-        doc.setTextColor(30, 30, 30);
-        doc.setFontSize(11);
+        // Nome em destaque centralizado
+        doc.setTextColor(20, 20, 20);
+        doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        const nomeMaxLength = 28;
+        const nomeMaxLength = 26;
         const nomeDisplay = nomeSeguro.length > nomeMaxLength ? nomeSeguro.substring(0, nomeMaxLength) + '...' : nomeSeguro;
-        doc.text(nomeDisplay.toUpperCase(), x + 8, y + 32);
+        const nomeWidth = doc.getTextWidth(nomeDisplay.toUpperCase());
+        doc.text(nomeDisplay.toUpperCase(), x + (width - nomeWidth) / 2, y + 35);
 
-        // Informações secundárias em layout organizado
-        doc.setTextColor(70, 70, 70);
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
+        // === LAYOUT DE INFORMAÇÕES EM COLUNAS ===
         
-        // Matrícula
+        // Coluna esquerda
+        doc.setTextColor(50, 50, 50);
+        doc.setFontSize(7.5);
         doc.setFont('helvetica', 'bold');
-        doc.text('MATRÍCULA:', x + 8, y + 38);
+        doc.text('MATRÍCULA:', x + 6, y + 41);
         doc.setFont('helvetica', 'normal');
-        doc.text(matriculaSegura, x + 28, y + 38);
+        doc.setTextColor(20, 20, 20);
+        doc.text(matriculaSegura, x + 6, y + 45);
         
-        // Função/Categoria
+        // Coluna direita
+        doc.setTextColor(50, 50, 50);
         doc.setFont('helvetica', 'bold');
-        doc.text('CATEGORIA:', x + 8, y + 42);
+        doc.text('CATEGORIA:', x + width - 32, y + 41);
         doc.setFont('helvetica', 'normal');
-        doc.text(funcaoSegura, x + 28, y + 42);
+        doc.setTextColor(20, 20, 20);
+        const categoriaDisplay = funcaoSegura.length > 10 ? funcaoSegura.substring(0, 10) : funcaoSegura;
+        doc.text(categoriaDisplay, x + width - 32, y + 45);
 
-        // Email (se disponível)
-        const emailMaxLength = 32;
-        const emailDisplay = usuario.email && usuario.email.length > emailMaxLength ? usuario.email.substring(0, emailMaxLength) + '...' : (usuario.email || '');
-        if (emailDisplay) {
-          doc.setTextColor(100, 100, 100);
+        // Email centralizado (se disponível)
+        if (usuario.email) {
+          const emailMaxLength = 34;
+          const emailDisplay = usuario.email.length > emailMaxLength ? usuario.email.substring(0, emailMaxLength) + '...' : usuario.email;
+          doc.setTextColor(80, 80, 80);
           doc.setFontSize(6.5);
           doc.setFont('helvetica', 'italic');
-          doc.text(emailDisplay, x + 8, y + 46);
+          const emailWidth = doc.getTextWidth(emailDisplay);
+          doc.text(emailDisplay, x + (width - emailWidth) / 2, y + 49);
         }
 
-        // === CÓDIGO DE BARRAS ESTILIZADO ===
+        // === CÓDIGO DE BARRAS PROFISSIONAL ===
         
-        doc.setFillColor(0, 0, 0); // Cor preta para o código de barras
-        const barStartX = x + 8;
-        const barY = y + height - 10;
-        const barWidth = width - 16;
-        const numBars = 20;
+        doc.setFillColor(0, 0, 0);
+        const barStartX = x + 10;
+        const barY = y + height - 12;
+        const barWidth = width - 20;
+        const numBars = 24;
         
+        // Padrão mais uniforme para o código de barras
         for (let i = 0; i < numBars; i++) {
           const barPosX = barStartX + (i * (barWidth / numBars));
-          const barHeight = Math.random() > 0.5 ? 5 : 3;
-          const barThickness = Math.random() > 0.3 ? 0.8 : 0.4;
-          doc.rect(barPosX, barY + (5 - barHeight), barThickness, barHeight, 'F');
+          const isWide = (i + parseInt(matriculaSegura)) % 3 === 0;
+          const barHeight = isWide ? 6 : 4;
+          const barThickness = isWide ? 1.2 : 0.8;
+          doc.rect(barPosX, barY + (6 - barHeight), barThickness, barHeight, 'F');
         }
 
-        // === RODAPÉ COM INFORMAÇÕES ===
+        // === RODAPÉ ORGANIZADO ===
         
-        // Data de validade
+        // Data de validade (esquerda)
         const dataValidade = new Date();
         dataValidade.setFullYear(dataValidade.getFullYear() + 1);
-        doc.setTextColor(120, 120, 120);
+        doc.setTextColor(100, 100, 100);
         doc.setFontSize(6);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Válido até: ${dataValidade.toLocaleDateString('pt-BR')}`, x + 8, y + height - 2);
+        doc.text(`Válido até: ${dataValidade.toLocaleDateString('pt-BR')}`, x + 6, y + height - 3);
 
-        // Número do cartão
-        doc.setTextColor(52, 144, 220);
+        // Número do cartão (direita)
+        doc.setTextColor(34, 139, 34);
         doc.setFont('helvetica', 'bold');
-        doc.text(`#${matriculaSegura}`, x + width - 25, y + height - 2);
+        const numeroCartao = `#${matriculaSegura}`;
+        const numeroWidth = doc.getTextWidth(numeroCartao);
+        doc.text(numeroCartao, x + width - numeroWidth - 6, y + height - 3);
         
-        // Pequeno selo de autenticidade
-        doc.setFillColor(52, 144, 220);
-        doc.circle(x + width - 8, y + height - 8, 2, 'F');
+        // Selo de autenticidade otimizado
+        doc.setFillColor(34, 139, 34);
+        doc.circle(x + width - 6, y + height - 10, 2.5, 'F');
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(4);
-        doc.text('✓', x + width - 9, y + height - 7);
+        doc.setFontSize(5);
+        doc.setFont('helvetica', 'bold');
+        doc.text('✓', x + width - 7.2, y + height - 8.5);
         
       } catch (error) {
         console.error('Erro ao criar cartão do usuário:', error);

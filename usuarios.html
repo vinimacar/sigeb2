@@ -1833,9 +1833,68 @@
       });
     });
 
-    // SISTEMA DE CARTÃO DE LEITOR    // Função para gerar cartão de um usuário individual (após cadastro)
+    // SISTEMA DE CARTÃO DE LEITOR
+    
+    // Função para converter imagem para base64
+    function imageToBase64(imagePath) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = this.width;
+          canvas.height = this.height;
+          ctx.drawImage(this, 0, 0);
+          try {
+            const dataURL = canvas.toDataURL('image/png');
+            resolve(dataURL);
+          } catch (error) {
+            reject(error);
+          }
+        };
+        img.onerror = function() {
+          reject(new Error(`Erro ao carregar imagem: ${imagePath}`));
+        };
+        img.src = imagePath;
+      });
+    }
+
+    // Cache para as imagens em base64
+    let logoSigebBase64 = null;
+    let logoBiasBase64 = null;
+
+    // Função para carregar logos uma vez
+    async function carregarLogos() {
+      if (!logoSigebBase64 || !logoBiasBase64) {
+        try {
+          // Tenta carregar as imagens
+          const promises = [
+            imageToBase64('./SISTEMA DE GERENCIAMENTO DE BIBLIOTECA.png').catch(() => null),
+            imageToBase64('./logobias.png').catch(() => null)
+          ];
+          
+          const [sigeb, bias] = await Promise.all(promises);
+          logoSigebBase64 = sigeb;
+          logoBiasBase64 = bias;
+          
+          console.log('Logos carregados:', {
+            sigeb: !!logoSigebBase64,
+            bias: !!logoBiasBase64
+          });
+        } catch (error) {
+          console.warn('Erro ao carregar logos:', error);
+        }
+      }
+      return { logoSigebBase64, logoBiasBase64 };
+    }
+
+    // Função para gerar cartão de um usuário individual (após cadastro)
     async function gerarCartaoUsuarioIndividual(userData) {
       try {
+        // Carrega os logos antes de gerar o cartão
+        await carregarLogos();
+        
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF({
           orientation: 'landscape',
@@ -1913,6 +1972,9 @@
       }
 
       try {
+        // Carrega os logos antes de gerar os cartões
+        await carregarLogos();
+        
         // Coleta dados dos usuários selecionados
         const usuariosSelecionados = [];
         
@@ -2046,38 +2108,69 @@
         doc.setLineWidth(1);
         doc.rect(x, y, width, height);
 
-        // Adiciona logo SIGEB (SVG desenhado) no topo esquerdo
-        doc.setFillColor(79, 172, 254); // Azul SIGEB
-        doc.circle(x + 10, y + 12, 8, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text('S', x + 7, y + 16);
+        // Adiciona logo SIGEB (imagem real) no topo esquerdo
+        if (logoSigebBase64) {
+          try {
+            doc.addImage(logoSigebBase64, 'PNG', x + 5, y + 6, 20, 12);
+          } catch (error) {
+            console.warn('Erro ao adicionar logo SIGEB, usando fallback:', error);
+            // Fallback: desenho vetorial
+            doc.setFillColor(79, 172, 254);
+            doc.circle(x + 10, y + 12, 6, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('S', x + 8, y + 15);
+          }
+        } else {
+          // Fallback: desenho vetorial se imagem não carregou
+          doc.setFillColor(79, 172, 254);
+          doc.circle(x + 10, y + 12, 6, 'F');
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'bold');
+          doc.text('S', x + 8, y + 15);
+        }
 
-        // Logo da escola no topo direito (desenho vetorial simples)
-        // Desenha um círculo com as iniciais "BF" (Bias Fortes)
-        doc.setFillColor(79, 172, 254);
-        doc.circle(x + width - 15, y + 12, 8, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text('BF', x + width - 19, y + 16);
+        // Logo da escola (imagem real) no topo direito
+        if (logoBiasBase64) {
+          try {
+            doc.addImage(logoBiasBase64, 'PNG', x + width - 24, y + 6, 18, 12);
+          } catch (error) {
+            console.warn('Erro ao adicionar logo da escola, usando fallback:', error);
+            // Fallback: desenho vetorial
+            doc.setFillColor(79, 172, 254);
+            doc.circle(x + width - 15, y + 12, 6, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
+            doc.text('BF', x + width - 18, y + 15);
+          }
+        } else {
+          // Fallback: desenho vetorial se imagem não carregou
+          doc.setFillColor(79, 172, 254);
+          doc.circle(x + width - 15, y + 12, 6, 'F');
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'bold');
+          doc.text('BF', x + width - 18, y + 15);
+        }
 
         // Título SIGEB
         doc.setTextColor(79, 172, 254);
         doc.setFontSize(13);
         doc.setFont('helvetica', 'bold');
-        doc.text('SIGEB', x + 28, y + 15);
+        doc.text('SIGEB', x + 30, y + 15);
 
         // Nome da escola abaixo do título
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(60, 60, 60);
-        doc.text('Escola Estadual Governador Bias Fortes', x + 28, y + 20);
+        doc.text('Escola Estadual Governador Bias Fortes', x + 30, y + 20);
 
         // Linha separadora
         doc.setDrawColor(220, 220, 220);
-        doc.line(x + 5, y + 23, x + width - 5, y + 23);
+        doc.line(x + 5, y + 25, x + width - 5, y + 25);
 
         // Informações do usuário
         doc.setTextColor(40, 40, 40);
@@ -2085,19 +2178,19 @@
         doc.setFont('helvetica', 'bold');
         const nomeMaxLength = 25;
         const nomeDisplay = nomeSeguro.length > nomeMaxLength ? nomeSeguro.substring(0, nomeMaxLength) + '...' : nomeSeguro;
-        doc.text(nomeDisplay, x + 8, y + 30);
+        doc.text(nomeDisplay, x + 8, y + 32);
 
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Matrícula: ${matriculaSegura}`, x + 8, y + 36);
-        doc.text(`Função: ${funcaoSegura}`, x + 8, y + 41);
+        doc.text(`Matrícula: ${matriculaSegura}`, x + 8, y + 38);
+        doc.text(`Função: ${funcaoSegura}`, x + 8, y + 43);
 
         // Email (truncado se muito longo)
         const emailMaxLength = 30;
         const emailDisplay = usuario.email && usuario.email.length > emailMaxLength ? usuario.email.substring(0, emailMaxLength) + '...' : (usuario.email || '');
         if (emailDisplay) {
           doc.setFontSize(7);
-          doc.text(emailDisplay, x + 8, y + 46);
+          doc.text(emailDisplay, x + 8, y + 48);
         }
 
         // Código de barras visual clean
@@ -2136,7 +2229,13 @@
     // Event listener para o botão de gerar cartão
     document.getElementById('gerarCartaoBtn').addEventListener('click', gerarCartoesLeitor);
 
-    document.addEventListener('DOMContentLoaded', loadUsers);
+    document.addEventListener('DOMContentLoaded', function() {
+      loadUsers();
+      // Pré-carrega os logos para melhor performance
+      carregarLogos().catch(error => {
+        console.warn('Logos não puderam ser pré-carregados:', error);
+      });
+    });
   </script>
 </body>
 </html>

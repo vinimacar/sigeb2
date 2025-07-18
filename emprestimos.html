@@ -12,6 +12,40 @@
 <script type="text/javascript">
   (function(){
     emailjs.init("z2336X6tKP2xg_f9D"); // Chave pública do EmailJS configurada
+    
+    /* 
+    CONFIGURAÇÃO DO TEMPLATE EMAIL:
+    
+    1. Acesse: https://dashboard.emailjs.com/admin/templates
+    2. Crie um template com ID: "template_emprestimo"
+    3. Subject: "Confirmação de Empréstimo - {{schoolName}}"
+    4. Inclua estas variáveis no template:
+       - {{to_name}} - Nome do usuário
+       - {{registroNumero}} - Número do registro
+       - {{booksList}} - Lista de livros
+       - {{loanDate}} - Data do empréstimo
+       - {{returnDate}} - Data de devolução
+       - {{schoolName}} - Nome da escola
+    
+    Exemplo de template:
+    ---
+    Olá {{to_name}},
+    
+    Seu empréstimo foi registrado com sucesso!
+    
+    📚 Detalhes do Empréstimo:
+    • Registro: {{registroNumero}}
+    • Livros: {{booksList}}
+    • Data do Empréstimo: {{loanDate}}
+    • Data de Devolução: {{returnDate}}
+    
+    ⚠️ Importante: Devolva os livros até a data prevista.
+    
+    Atenciosamente,
+    {{schoolName}}
+    Sistema SIGEB
+    ---
+    */
   })();
 </script>
 <style>
@@ -1301,13 +1335,33 @@ message: `Seu empréstimo foi registrado com sucesso! Por favor, devolva os livr
 // Envia o email usando EmailJS
 showAlert('info', 'Enviando email de notificação...');
 
-const response = await emailjs.send('service_70cadf4', 'template_emprestimo', templateParams);
+// Tenta primeiro com o template específico, depois com template genérico
+let templateId = 'template_emprestimo';
+try {
+const response = await emailjs.send('service_70cadf4', templateId, templateParams);
 console.log('Email enviado com sucesso:', response);
 showAlert('success', `Email de notificação enviado para ${userEmail}!`);
+} catch (templateError) {
+console.warn('Template específico não encontrado, tentando template genérico:', templateError);
+// Fallback para template genérico se o específico não existir
+try {
+const response = await emailjs.send('service_70cadf4', 'template_default', templateParams);
+console.log('Email enviado com template genérico:', response);
+showAlert('success', `Email de notificação enviado para ${userEmail}!`);
+} catch (fallbackError) {
+console.error('Erro ao enviar email mesmo com fallback:', fallbackError);
+throw fallbackError;
+}
+}
 
 } catch (error) {
 console.error('Erro ao enviar email:', error);
-if (error.text) {
+if (error.text && error.text.includes('template ID not found')) {
+showAlert('warning', `Template de email não configurado. Instruções:<br>
+1. Acesse: https://dashboard.emailjs.com/admin/templates<br>
+2. Crie um template com ID: "template_emprestimo"<br>
+3. Use as variáveis: {{to_name}}, {{registroNumero}}, {{booksList}}, {{loanDate}}, {{returnDate}}, {{schoolName}}`);
+} else if (error.text) {
 showAlert('danger', `Erro ao enviar email: ${error.text}`);
 } else {
 showAlert('danger', 'Erro ao enviar email de notificação. Verifique as configurações.');

@@ -751,7 +751,7 @@
       let ultimoUsuarioCadastrado = null;
 
       // Função para gerar ficha cadastral em PDF
-      function gerarFichaCadastral(dadosUsuario) {
+      async function gerarFichaCadastral(dadosUsuario) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
@@ -761,46 +761,20 @@
         const contentWidth = pageWidth - (margin * 2);
         let yPosition = margin;
         
-        // Função para criar logo SIGEB
-        const criarLogoSIGEB = (x, y, tamanho = 1) => {
-          // Salva estado atual
-          const currentLineWidth = doc.getLineWidth();
-          
-          // Logo - Círculo com "S" estilizado
-          doc.setFillColor(79, 172, 254); // Azul do SIGEB
-          doc.circle(x + 10 * tamanho, y + 10 * tamanho, 8 * tamanho, 'F');
-          
-          // Letra "S" no centro do círculo
-          doc.setTextColor(255, 255, 255);
-          doc.setFontSize(12 * tamanho);
-          doc.setFont('helvetica', 'bold');
-          doc.text('S', x + 7 * tamanho, y + 13 * tamanho);
-          
-          // Texto "SIGEB" ao lado
-          doc.setTextColor(26, 26, 46);
-          doc.setFontSize(16 * tamanho);
-          doc.setFont('helvetica', 'bold');
-          doc.text('SIGEB', x + 22 * tamanho, y + 13 * tamanho);
-          
-          // Texto "Sistema de Gerenciamento de Biblioteca" abaixo
-          doc.setTextColor(100, 100, 100);
-          doc.setFontSize(8 * tamanho);
-          doc.setFont('helvetica', 'normal');
-          doc.text('Sistema de Gerenciamento de Biblioteca', x + 22 * tamanho, y + 18 * tamanho);
-          
-          // Restaura cor do texto
-          doc.setTextColor(0, 0, 0);
-          doc.setLineWidth(currentLineWidth);
-        };
+        // Carrega os logos antes de gerar a ficha
+        await carregarLogos();
         
         // Função auxiliar para adicionar texto
         const addText = (text, x, y, options = {}) => {
           if (options.fontSize) doc.setFontSize(options.fontSize);
           if (options.fontStyle) doc.setFont('helvetica', options.fontStyle);
+          if (options.textColor) doc.setTextColor(options.textColor[0], options.textColor[1], options.textColor[2]);
           doc.text(text, x, y);
-          if (options.fontSize || options.fontStyle) {
+          // Reset para padrão
+          if (options.fontSize || options.fontStyle || options.textColor) {
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
           }
         };
         
@@ -809,9 +783,80 @@
           doc.line(x1, y1, x2, y2);
         };
         
-        // Adiciona logo no cabeçalho
-        criarLogoSIGEB(margin, yPosition);
-        yPosition += 30;
+        // === CABEÇALHO COM LOGOS ===
+        
+        // Logo SIGEB (esquerda)
+        if (logoSigebBase64) {
+          try {
+            doc.addImage(logoSigebBase64, 'PNG', margin, yPosition, 40, 25);
+          } catch (error) {
+            console.warn('Erro ao adicionar logo SIGEB na ficha, usando fallback:', error);
+            // Fallback elegante
+            doc.setFillColor(34, 139, 34);
+            doc.rect(margin, yPosition, 35, 20, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('SIGEB', margin + 8, yPosition + 12);
+            doc.setTextColor(0, 0, 0);
+          }
+        } else {
+          // Fallback com design profissional
+          doc.setFillColor(34, 139, 34);
+          doc.rect(margin, yPosition, 35, 20, 'F');
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(14);
+          doc.setFont('helvetica', 'bold');
+          doc.text('SIGEB', margin + 8, yPosition + 12);
+          doc.setTextColor(0, 0, 0);
+        }
+
+        // Logo da Escola (direita)
+        if (logoBiasBase64) {
+          try {
+            doc.addImage(logoBiasBase64, 'PNG', pageWidth - margin - 40, yPosition, 40, 25);
+          } catch (error) {
+            console.warn('Erro ao adicionar logo da escola na ficha, usando fallback:', error);
+            // Fallback elegante
+            doc.setFillColor(34, 139, 34);
+            doc.circle(pageWidth - margin - 20, yPosition + 12, 12, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('BF', pageWidth - margin - 23, yPosition + 15);
+            doc.setTextColor(0, 0, 0);
+          }
+        } else {
+          // Fallback com design profissional
+          doc.setFillColor(34, 139, 34);
+          doc.circle(pageWidth - margin - 20, yPosition + 12, 12, 'F');
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(12);
+          doc.setFont('helvetica', 'bold');
+          doc.text('BF', pageWidth - margin - 23, yPosition + 15);
+          doc.setTextColor(0, 0, 0);
+        }
+        
+        // Título centralizado entre os logos
+        addText('ESCOLA ESTADUAL GOVERNADOR BIAS FORTES', margin + 50, yPosition + 8, {
+          fontSize: 12,
+          fontStyle: 'bold',
+          textColor: [34, 139, 34]
+        });
+        
+        addText('Sistema de Gerenciamento de Biblioteca', margin + 50, yPosition + 16, {
+          fontSize: 10,
+          fontStyle: 'normal',
+          textColor: [100, 100, 100]
+        });
+        
+        addText('FICHA CADASTRAL DE USUÁRIO', margin + 50, yPosition + 24, {
+          fontSize: 14,
+          fontStyle: 'bold',
+          textColor: [50, 50, 50]
+        });
+        
+        yPosition += 35;
         
         // Cabeçalho principal
         doc.setFillColor(26, 26, 46);
@@ -975,14 +1020,14 @@
       }
       
       // Função para imprimir ficha cadastral
-      function imprimirFichaCadastral() {
+      async function imprimirFichaCadastral() {
         if (!ultimoUsuarioCadastrado) {
           showAlert('warning', 'Nenhum usuário foi cadastrado para impressão.');
           return;
         }
         
         try {
-          const doc = gerarFichaCadastral(ultimoUsuarioCadastrado);
+          const doc = await gerarFichaCadastral(ultimoUsuarioCadastrado);
           
           // Gerar nome do arquivo
           const nomeArquivo = `ficha_cadastral_${ultimoUsuarioCadastrado.nome?.replace(/\s+/g, '_').toLowerCase() || 'usuario'}.pdf`;
@@ -1817,8 +1862,8 @@
       // Event listener para botão de impressão
       const btnImprimir = document.getElementById('btnImprimirFicha');
       if (btnImprimir) {
-        btnImprimir.addEventListener('click', function() {
-          imprimirFichaCadastral();
+        btnImprimir.addEventListener('click', async function() {
+          await imprimirFichaCadastral();
         });
       }
     });

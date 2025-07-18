@@ -16,16 +16,20 @@
     /* 
     CONFIGURAÇÃO DO TEMPLATE EMAIL:
     
-    1. Acesse: https://dashboard.emailjs.com/admin/templates
-    2. Crie um template com ID: "template_emprestimo"
-    3. Subject: "Confirmação de Empréstimo - {{schoolName}}"
-    4. Inclua estas variáveis no template:
+    Template ID atual: "template_6f2r7op"
+    Service ID: "service_70cadf4"
+    
+    Variáveis disponíveis no template:
        - {{to_name}} - Nome do usuário
-       - {{registroNumero}} - Número do registro
-       - {{booksList}} - Lista de livros
-       - {{loanDate}} - Data do empréstimo
-       - {{returnDate}} - Data de devolução
-       - {{schoolName}} - Nome da escola
+       - {{to_email}} - Email do usuário
+       - {{user_name}} - Nome do usuário
+       - {{user_matricula}} - Matrícula do usuário
+       - {{registro_numero}} - Número do registro
+       - {{loan_date}} - Data do empréstimo
+       - {{return_date}} - Data de devolução
+       - {{books_list}} - Lista de livros (texto simples)
+       - {{books_list_html}} - Lista de livros (HTML formatado)
+       - {{school_name}} - Nome da escola
     
     Exemplo de template:
     ---
@@ -34,15 +38,16 @@
     Seu empréstimo foi registrado com sucesso!
     
     📚 Detalhes do Empréstimo:
-    • Registro: {{registroNumero}}
-    • Livros: {{booksList}}
-    • Data do Empréstimo: {{loanDate}}
-    • Data de Devolução: {{returnDate}}
+    • Registro: {{registro_numero}}
+    • Matrícula: {{user_matricula}}
+    • Livros: {{books_list}}
+    • Data do Empréstimo: {{loan_date}}
+    • Data de Devolução: {{return_date}}
     
     ⚠️ Importante: Devolva os livros até a data prevista.
     
     Atenciosamente,
-    {{schoolName}}
+    {{school_name}}
     Sistema SIGEB
     ---
     */
@@ -1336,7 +1341,7 @@ message: `Seu empréstimo foi registrado com sucesso! Por favor, devolva os livr
 showAlert('info', 'Enviando email de notificação...');
 
 // Tenta primeiro com o template específico, depois com template genérico
-let templateId = 'template_emprestimo';
+let templateId = 'template_6f2r7op';
 try {
 const response = await emailjs.send('service_70cadf4', templateId, templateParams);
 console.log('Email enviado com sucesso:', response);
@@ -1357,10 +1362,9 @@ throw fallbackError;
 } catch (error) {
 console.error('Erro ao enviar email:', error);
 if (error.text && error.text.includes('template ID not found')) {
-showAlert('warning', `Template de email não configurado. Instruções:<br>
-1. Acesse: https://dashboard.emailjs.com/admin/templates<br>
-2. Crie um template com ID: "template_emprestimo"<br>
-3. Use as variáveis: {{to_name}}, {{registroNumero}}, {{booksList}}, {{loanDate}}, {{returnDate}}, {{schoolName}}`);
+showAlert('warning', `Template de email não encontrado. Verifique se o template "template_6f2r7op" existe em:<br>
+https://dashboard.emailjs.com/admin/templates<br>
+Variáveis necessárias: {{to_name}}, {{registro_numero}}, {{books_list}}, {{loan_date}}, {{return_date}}, {{school_name}}`);
 } else if (error.text) {
 showAlert('danger', `Erro ao enviar email: ${error.text}`);
 } else {

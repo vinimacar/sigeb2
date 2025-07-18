@@ -1854,7 +1854,7 @@
         
       } catch (error) {
         console.error('Erro ao gerar cartão:', error);
-        showAlert('danger', 'Erro ao gerar cartão de leitor.');
+        showAlert('danger', 'Erro ao gerar cartão de leitor. Verifique os dados do usuário.');
       }
     }
 
@@ -1974,122 +1974,163 @@
 
     // Função para criar PDF com múltiplos cartões
     async function criarPDFCartoes(usuarios) {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      
-      // Configurações do cartão
-      const cartaoWidth = 85.6; // Tamanho padrão de cartão de crédito em mm
-      const cartaoHeight = 53.98;
-      const margem = 10;
-      const cartoesPerRow = 2;
-      const cartoesPerPage = 4; // 2x2
-      
-      let cartaoAtual = 0;
-      
-      for (let i = 0; i < usuarios.length; i++) {
-        const usuario = usuarios[i];
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
         
-        // Calcula posição do cartão na página
-        const row = Math.floor(cartaoAtual % cartoesPerPage / cartoesPerRow);
-        const col = cartaoAtual % cartoesPerRow;
+        // Configurações do cartão
+        const cartaoWidth = 85.6; // Tamanho padrão de cartão de crédito em mm
+        const cartaoHeight = 53.98;
+        const margem = 10;
+        const cartoesPerRow = 2;
+        const cartoesPerPage = 4; // 2x2
         
-        const x = margem + (col * (cartaoWidth + margem));
-        const y = margem + (row * (cartaoHeight + margem * 2));
+        let cartaoAtual = 0;
         
-        // Nova página se necessário
-        if (cartaoAtual > 0 && cartaoAtual % cartoesPerPage === 0) {
-          doc.addPage();
+        for (let i = 0; i < usuarios.length; i++) {
+          const usuario = usuarios[i];
+          
+          // Calcula posição do cartão na página
+          const row = Math.floor(cartaoAtual % cartoesPerPage / cartoesPerRow);
+          const col = cartaoAtual % cartoesPerRow;
+          
+          const x = margem + (col * (cartaoWidth + margem));
+          const y = margem + (row * (cartaoHeight + margem * 2));
+          
+          // Nova página se necessário
+          if (cartaoAtual > 0 && cartaoAtual % cartoesPerPage === 0) {
+            doc.addPage();
+          }
+          
+          // Desenha o cartão com tratamento de erro individual
+          try {
+            criarCartaoUsuario(doc, usuario, x, y, cartaoWidth, cartaoHeight);
+          } catch (cardError) {
+            console.error(`Erro ao criar cartão para usuário ${usuario.nome}:`, cardError);
+            // Continua para o próximo usuário
+          }
+          
+          cartaoAtual++;
         }
         
-        // Desenha o cartão
-        criarCartaoUsuario(doc, usuario, x, y, cartaoWidth, cartaoHeight);
+        // Salva o PDF
+        const dataAtual = new Date().toISOString().split('T')[0];
+        doc.save(`cartoes-leitor-${dataAtual}.pdf`);
         
-        cartaoAtual++;
+        showAlert('success', `Cartões de leitor gerados com sucesso! ${usuarios.length} cartão(ões) criado(s).`);
+        
+      } catch (error) {
+        console.error('Erro ao criar PDF dos cartões:', error);
+        showAlert('danger', 'Erro ao gerar cartões de leitor. Verifique os dados dos usuários.');
+        throw error;
       }
-      
-      // Salva o PDF
-      const dataAtual = new Date().toISOString().split('T')[0];
-      doc.save(`cartoes-leitor-${dataAtual}.pdf`);
-      
-      showAlert('success', `Cartões de leitor gerados com sucesso! ${usuarios.length} cartão(ões) criado(s).`);
     }
 
     // Função para criar um cartão individual
     function criarCartaoUsuario(doc, usuario, x, y, width, height) {
-      // Fundo do cartão com cor clean (branco com borda azul clara)
-      doc.setFillColor(255, 255, 255); // Fundo branco
-      doc.rect(x, y, width, height, 'F');
-      doc.setDrawColor(79, 172, 254); // Azul SIGEB
-      doc.setLineWidth(1);
-      doc.rect(x, y, width, height);
+      try {
+        // Validação dos dados do usuário
+        if (!usuario || typeof usuario !== 'object') {
+          throw new Error('Dados do usuário inválidos');
+        }
 
-      // Adiciona logo SIGEB (SVG desenhado) no topo esquerdo
-      doc.setFillColor(79, 172, 254); // Azul SIGEB
-      doc.circle(x + 10, y + 12, 8, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('S', x + 7, y + 16);
+        // Dados seguros com fallbacks
+        const nomeSeguro = usuario.nome || 'Nome não informado';
+        const matriculaSegura = usuario.matricula || 'N/A';
+        const funcaoSegura = usuario.funcao || 'USUÁRIO';
 
-      // Adiciona logo da escola (logobias.png) no topo direito
-      // ATENÇÃO: logobias.png precisa estar disponível via URL absoluta ou base64
-      // Exemplo usando base64 (substitua pelo seu base64 real):
-      const logoBiasBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...'; // <--- coloque seu base64 aqui
-      doc.addImage(logoBiasBase64, 'PNG', x + width - 24, y + 6, 18, 18);
+        // Fundo do cartão com cor clean (branco com borda azul clara)
+        doc.setFillColor(255, 255, 255); // Fundo branco
+        doc.rect(x, y, width, height, 'F');
+        doc.setDrawColor(79, 172, 254); // Azul SIGEB
+        doc.setLineWidth(1);
+        doc.rect(x, y, width, height);
 
-      // Título SIGEB
-      doc.setTextColor(79, 172, 254);
-      doc.setFontSize(13);
-      doc.setFont('helvetica', 'bold');
-      doc.text('SIGEB', x + 28, y + 15);
+        // Adiciona logo SIGEB (SVG desenhado) no topo esquerdo
+        doc.setFillColor(79, 172, 254); // Azul SIGEB
+        doc.circle(x + 10, y + 12, 8, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('S', x + 7, y + 16);
 
-      // Nome da escola abaixo do título
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(60, 60, 60);
-      doc.text('Escola Estadual Governador Bias Fortes', x + 28, y + 20);
+        // Logo da escola no topo direito (desenho vetorial simples)
+        // Desenha um círculo com as iniciais "BF" (Bias Fortes)
+        doc.setFillColor(79, 172, 254);
+        doc.circle(x + width - 15, y + 12, 8, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('BF', x + width - 19, y + 16);
 
-      // Linha separadora
-      doc.setDrawColor(220, 220, 220);
-      doc.line(x + 5, y + 23, x + width - 5, y + 23);
+        // Título SIGEB
+        doc.setTextColor(79, 172, 254);
+        doc.setFontSize(13);
+        doc.setFont('helvetica', 'bold');
+        doc.text('SIGEB', x + 28, y + 15);
 
-      // Informações do usuário
-      doc.setTextColor(40, 40, 40);
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      const nomeMaxLength = 25;
-      const nomeDisplay = usuario.nome.length > nomeMaxLength ? usuario.nome.substring(0, nomeMaxLength) + '...' : usuario.nome;
-      doc.text(nomeDisplay, x + 8, y + 30);
+        // Nome da escola abaixo do título
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(60, 60, 60);
+        doc.text('Escola Estadual Governador Bias Fortes', x + 28, y + 20);
 
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Matrícula: ${usuario.matricula || 'N/A'}`, x + 8, y + 36);
-      doc.text(`Função: ${usuario.funcao || 'USUÁRIO'}`, x + 8, y + 41);
+        // Linha separadora
+        doc.setDrawColor(220, 220, 220);
+        doc.line(x + 5, y + 23, x + width - 5, y + 23);
 
-      // Email (truncado se muito longo)
-      const emailMaxLength = 30;
-      const emailDisplay = usuario.email && usuario.email.length > emailMaxLength ? usuario.email.substring(0, emailMaxLength) + '...' : (usuario.email || '');
-      if (emailDisplay) {
-        doc.setFontSize(7);
-        doc.text(emailDisplay, x + 8, y + 46);
+        // Informações do usuário
+        doc.setTextColor(40, 40, 40);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        const nomeMaxLength = 25;
+        const nomeDisplay = nomeSeguro.length > nomeMaxLength ? nomeSeguro.substring(0, nomeMaxLength) + '...' : nomeSeguro;
+        doc.text(nomeDisplay, x + 8, y + 30);
+
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Matrícula: ${matriculaSegura}`, x + 8, y + 36);
+        doc.text(`Função: ${funcaoSegura}`, x + 8, y + 41);
+
+        // Email (truncado se muito longo)
+        const emailMaxLength = 30;
+        const emailDisplay = usuario.email && usuario.email.length > emailMaxLength ? usuario.email.substring(0, emailMaxLength) + '...' : (usuario.email || '');
+        if (emailDisplay) {
+          doc.setFontSize(7);
+          doc.text(emailDisplay, x + 8, y + 46);
+        }
+
+        // Código de barras visual clean
+        doc.setFillColor(79, 172, 254);
+        for (let i = 0; i < 15; i++) {
+          const barWidth = Math.random() > 0.5 ? 1 : 0.5;
+          doc.rect(x + 8 + (i * 2), y + height - 10, barWidth, 6, 'F');
+        }
+
+        // Data de validade
+        const dataValidade = new Date();
+        dataValidade.setFullYear(dataValidade.getFullYear() + 1);
+        doc.setTextColor(120, 120, 120);
+        doc.setFontSize(6);
+        doc.text(`Válido até: ${dataValidade.toLocaleDateString('pt-BR')}`, x + 8, y + height - 2);
+
+        // Número do cartão (baseado na matrícula)
+        doc.text(`Card: ${matriculaSegura}`, x + width - 30, y + height - 2);
+        
+      } catch (error) {
+        console.error('Erro ao criar cartão do usuário:', error);
+        // Em caso de erro, desenha um cartão básico
+        doc.setFillColor(240, 240, 240);
+        doc.rect(x, y, width, height, 'F');
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(1);
+        doc.rect(x, y, width, height);
+        
+        doc.setTextColor(100, 100, 100);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Erro ao gerar cartão', x + 8, y + height/2);
       }
-
-      // Código de barras visual clean
-      doc.setFillColor(79, 172, 254);
-      for (let i = 0; i < 15; i++) {
-        const barWidth = Math.random() > 0.5 ? 1 : 0.5;
-        doc.rect(x + 8 + (i * 2), y + height - 10, barWidth, 6, 'F');
-      }
-
-      // Data de validade
-      const dataValidade = new Date();
-      dataValidade.setFullYear(dataValidade.getFullYear() + 1);
-      doc.setTextColor(120, 120, 120);
-      doc.setFontSize(6);
-      doc.text(`Válido até: ${dataValidade.toLocaleDateString('pt-BR')}`, x + 8, y + height - 2);
-
-      // Número do cartão (baseado na matrícula)
-      doc.text(`Card: ${usuario.matricula || '000000'}`, x + width - 30, y + height - 2);
     }
 
     // Event listener para o botão de gerar cartão

@@ -3239,6 +3239,12 @@ width: 60px;
 height: 60px;
 object-fit: contain;
 }
+.system-logo {
+width: 100px;
+height: auto;
+object-fit: contain;
+margin: 10px 0;
+}
 .alert { 
 border: 1px solid #dc3545 !important;
 background-color: #f8d7da !important;
@@ -3260,18 +3266,18 @@ font-weight: bold;
 padding: 12px;
 }
 .signature-area {
-border: 2px solid #dc3545;
-height: 80px;
-margin: 10px 0;
+border-top: 2px solid #000;
+height: 60px;
+margin: 0 0 10px 0;
 background-image: url('${warningSignaturePad.toDataURL()}');
 background-size: contain;
 background-repeat: no-repeat;
 background-position: center;
 }
 .librarian-signature-area {
-border: 2px solid #dc3545;
-height: 80px;
-margin: 10px 0;
+border-top: 2px solid #000;
+height: 60px;
+margin: 0 0 10px 0;
 background-image: url('${librarianSignaturePad.toDataURL()}');
 background-size: contain;
 background-repeat: no-repeat;
@@ -3316,6 +3322,7 @@ background-position: center;
 <div class="print-header-content">
 <h3 style="color: #dc3545; margin: 0;">ADVERTÊNCIA POR ATRASO</h3>
 <h5 style="margin: 5px 0 0 0;">${SYSTEM_CONFIG.schoolName}</h5>
+<img src="SISTEMA DE GERENCIAMENTO DE BIBLIOTECA.png" alt="Logo do Sistema" class="system-logo" onerror="this.style.display='none'">
 <p style="margin: 5px 0 0 0;">Sistema de Gerenciamento de Biblioteca</p>
 </div>
 <img src="logobias.png" alt="Logo da Escola" class="logo" onerror="this.style.display='none'" style="opacity: 0.3;">
@@ -3324,14 +3331,14 @@ ${printArea.querySelector('.modal-body').innerHTML}
 <div style="margin-top: 30px; display: flex; justify-content: space-between;">
 <div style="text-align: center; width: 45%;">
 <div class="signature-area"></div>
-<p style="margin: 5px 0; border-top: 1px solid #000; padding-top: 5px;">
-<strong>Assinatura do Usuário</strong>
+<p style="margin: 5px 0 0 0; font-weight: bold;">
+Assinatura do Usuário
 </p>
 </div>
 <div style="text-align: center; width: 45%;">
 <div class="librarian-signature-area"></div>
-<p style="margin: 5px 0; border-top: 1px solid #000; padding-top: 5px;">
-<strong>Assinatura do Responsável</strong>
+<p style="margin: 5px 0 0 0; font-weight: bold;">
+Assinatura do Responsável
 </p>
 </div>
 </div>
@@ -3705,11 +3712,37 @@ width: 80px;
 height: 80px;
 object-fit: contain;
 }
+.system-logo {
+width: 120px;
+height: auto;
+object-fit: contain;
+margin: 10px 0;
+}
 .warning-box { border: 2px solid #dc3545; padding: 15px; margin: 20px 0; background-color: #fff5f5; }
 .info-box { background-color: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin: 15px 0; }
-.signature-line { border-bottom: 1px solid #000; margin-top: 40px; text-align: center; padding-top: 5px; }
+.signature-section { 
+margin-top: 60px; 
+display: flex; 
+justify-content: space-between; 
+gap: 30px;
+}
+.signature-box { 
+width: 45%; 
+text-align: center;
+}
+.signature-line { 
+border-top: 1px solid #000; 
+margin-bottom: 5px; 
+height: 60px;
+margin-top: 0;
+}
+.signature-label {
+font-weight: bold;
+margin-top: 10px;
+}
 @media print {
 .logo { width: 60px; height: 60px; }
+.system-logo { width: 100px; }
 }
 </style>
 </head>
@@ -3719,6 +3752,7 @@ object-fit: contain;
 <div class="header-content">
 <h2 style="color: #dc3545; margin: 0;">ADVERTÊNCIA POR ATRASO</h2>
 <h4 style="margin: 5px 0;">${SYSTEM_CONFIG.schoolName}</h4>
+<img src="SISTEMA DE GERENCIAMENTO DE BIBLIOTECA.png" alt="Logo do Sistema" class="system-logo" onerror="this.style.display='none'">
 <p style="margin: 5px 0;">Sistema de Gerenciamento de Biblioteca</p>
 <p style="margin: 5px 0;">Data: ${currentDate}</p>
 </div>
@@ -3754,14 +3788,14 @@ ${bookTitles.map(title => `<li>${title}</li>`).join('')}
 <p>O não cumprimento desta advertência poderá resultar em suspensão de novos empréstimos.</p>
 </div>
 
-<div style="margin-top: 60px;">
-<div style="display: flex; justify-content: space-between;">
-<div style="width: 45%;">
-<div class="signature-line">Assinatura do Usuário</div>
+<div class="signature-section">
+<div class="signature-box">
+<div class="signature-line"></div>
+<div class="signature-label">Assinatura do Usuário</div>
 </div>
-<div style="width: 45%;">
-<div class="signature-line">Assinatura do Responsável</div>
-</div>
+<div class="signature-box">
+<div class="signature-line"></div>
+<div class="signature-label">Assinatura do Responsável</div>
 </div>
 </div>
 

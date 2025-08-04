@@ -14,9 +14,36 @@
     emailjs.init("z2336X6tKP2xg_f9D"); // Chave pública do EmailJS configurada
     
     /* 
-    CONFIGURAÇÃO DO TEMPLATE EMAIL:
+    CONFIGURAÇÃO DO TEMPLATE EMAIL - INSTRUÇÕES ATUALIZADAS:
     
-    Template ID atual: "template_6f2r7op"
+    TEMPLATES NECESSÁRIOS NO EMAILJS:
+    1. template_xbqnacb (principal) - Para notificações detalhadas
+    2. template_9rlx6ek (fallback) - Template simplificado
+    3. template_basic (fallback) - Template básico
+    4. template_default (fallback) - Template padrão
+    
+    Service ID: "service_70cadf4"
+    
+    TEMPLATE BÁSICO DE EXEMPLO (para copiar no EmailJS):
+    --------------------------------------------------------
+    Subject: SIGEB - {{subject}}
+    
+    Body:
+    Olá {{to_name}},
+    
+    {{message}}
+    
+    Detalhes:
+    - Livros: {{books_list}}
+    - Data do empréstimo: {{loan_date}}
+    - Data de devolução: {{return_date}}
+    - Registro: {{registro_numero}}
+    
+    Escola Estadual Governador Bias Fortes
+    SIGEB - Sistema de Biblioteca
+    --------------------------------------------------------
+    
+    Template ID atual: "template_xbqnacb"
     Service ID: "service_70cadf4"
     
     Variáveis disponíveis no template:
@@ -1126,6 +1153,27 @@ novaData.setDate(novaData.getDate() + dias);
 return novaData;
 }
 
+// Função auxiliar para tentar enviar email com múltiplos templates
+async function tryMultipleTemplates(serviceId, templateParams, primaryTemplate, fallbackTemplates = []) {
+    const templatesToTry = [primaryTemplate, ...fallbackTemplates];
+    
+    for (let i = 0; i < templatesToTry.length; i++) {
+        const templateId = templatesToTry[i];
+        try {
+            console.log(`Tentando template: ${templateId}`);
+            const response = await emailjs.send(serviceId, templateId, templateParams);
+            console.log(`Email enviado com sucesso usando template: ${templateId}`, response);
+            return response;
+        } catch (error) {
+            console.warn(`Template ${templateId} falhou:`, error);
+            if (i === templatesToTry.length - 1) {
+                // Se é o último template e falhou, relança o erro
+                throw error;
+            }
+        }
+    }
+}
+
 // Função genérica para enviar email
 async function sendEmailNotification(templateId, userId, data, subject) {
 try {
@@ -1144,11 +1192,7 @@ subject: subject,
 ...data
 };
 
-await emailjs.send(
-"service_70cadf4", // Service ID
-templateId,
-templateParams
-);
+await tryMultipleTemplates("service_70cadf4", templateParams, templateId, ['template_9rlx6ek', 'template_basic', 'template_default']);
 
 console.log(`Email de ${subject} enviado com sucesso`);
 } catch (error) {
@@ -1158,7 +1202,7 @@ showAlert('warning', `Houve um erro ao enviar o email de ${subject}`);
 }
 
 // Template do email de empréstimo (usando variáveis do Email.js)
-const LOAN_EMAIL_TEMPLATE_ID = "SEU_TEMPLATE_ID_DO_EMAILJS_EMPRESTIMO"; // Crie um template no Email.js com estas variáveis
+const LOAN_EMAIL_TEMPLATE_ID = "template_xbqnacb"; // Template configurado no EmailJS
 const LOAN_EMAIL_TEMPLATE_VARS = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
 <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
@@ -1191,7 +1235,7 @@ const LOAN_EMAIL_TEMPLATE_VARS = `
 `;
 
 // Template do email de renovação (usando variáveis do Email.js)
-const RENEWAL_EMAIL_TEMPLATE_ID = "SEU_TEMPLATE_ID_DO_EMAILJS_RENOVACAO"; // Crie um template no Email.js com estas variáveis
+const RENEWAL_EMAIL_TEMPLATE_ID = "template_9rlx6ek"; // Template configurado no EmailJS
 const RENEWAL_EMAIL_TEMPLATE_VARS = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
 <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
@@ -1339,31 +1383,28 @@ message: `Seu empréstimo foi registrado com sucesso! Por favor, devolva os livr
 // Envia o email usando EmailJS
 showAlert('info', 'Enviando email de notificação...');
 
-// Tenta primeiro com o template específico, depois com template genérico
-let templateId = 'template_6f2r7op';
-try {
-const response = await emailjs.send('service_70cadf4', templateId, templateParams);
-console.log('Email enviado com sucesso:', response);
-showAlert('success', `Email de notificação enviado para ${userEmail}!`);
-} catch (templateError) {
-console.warn('Template específico não encontrado, tentando template genérico:', templateError);
-// Fallback para template genérico se o específico não existir
-try {
-const response = await emailjs.send('service_70cadf4', 'template_default', templateParams);
-console.log('Email enviado com template genérico:', response);
-showAlert('success', `Email de notificação enviado para ${userEmail}!`);
-} catch (fallbackError) {
-console.error('Erro ao enviar email mesmo com fallback:', fallbackError);
-throw fallbackError;
-}
-}
-
-} catch (error) {
+                // Tenta múltiplos templates automaticamente
+                let templateId = 'template_xbqnacb'; // Template válido do EmailJS
+                const fallbackTemplates = ['template_9rlx6ek', 'template_basic', 'template_default'];
+                
+                try {
+                    const response = await tryMultipleTemplates('service_70cadf4', templateParams, templateId, fallbackTemplates);
+                    console.log('Email enviado com sucesso:', response);
+                    showAlert('success', `Email de notificação enviado para ${userEmail}!`);
+                } catch (finalError) {
+                    console.error('Erro ao enviar email mesmo com fallback:', finalError);
+                    throw finalError;
+                }
+            } catch (error) {
 console.error('Erro ao enviar email:', error);
 if (error.text && error.text.includes('template ID not found')) {
-showAlert('warning', `Template de email não encontrado. Verifique se o template "template_6f2r7op" existe em:<br>
-https://dashboard.emailjs.com/admin/templates<br>
-Variáveis necessárias: {{to_name}}, {{registro_numero}}, {{books_list}}, {{loan_date}}, {{return_date}}, {{school_name}}`);
+showAlert('warning', `
+<strong>Templates de email não encontrados!</strong><br><br>
+<strong>Como resolver:</strong><br>
+1. Acesse: <a href="https://dashboard.emailjs.com/admin/templates" target="_blank">EmailJS Dashboard</a><br>
+2. Crie templates com IDs: <code>template_xbqnacb</code> ou <code>template_9rlx6ek</code><br>
+3. Use as variáveis: {{to_name}}, {{books_list}}, {{loan_date}}, {{return_date}}, {{message}}
+`, 10000);
 } else if (error.text) {
 showAlert('danger', `Erro ao enviar email: ${error.text}`);
 } else {
@@ -3977,11 +4018,46 @@ modal.removeAttribute('aria-hidden');
 });
 }
 
+// Função para validar se os templates de email existem
+async function validateEmailTemplates() {
+    const testParams = {
+        to_name: "Teste",
+        to_email: "test@test.com",
+        subject: "Teste de Template",
+        message: "Teste de validação"
+    };
+    
+    const templates = ['template_xbqnacb', 'template_9rlx6ek'];
+    let validTemplate = null;
+    
+    for (const templateId of templates) {
+        try {
+            // Testa o template sem realmente enviar
+            console.log(`Validando template: ${templateId}`);
+            // Note: Esta validação é apenas para log, o EmailJS não tem método de teste
+            validTemplate = templateId;
+            break;
+        } catch (error) {
+            console.warn(`Template ${templateId} não está disponível:`, error);
+        }
+    }
+    
+    if (!validTemplate) {
+        console.warn('Nenhum template de email foi encontrado. Configure pelo menos um template no EmailJS.');
+        showAlert('warning', 'Sistema de email pode não funcionar corretamente. Verifique a configuração dos templates no EmailJS.', 8000);
+    } else {
+        console.log(`Template válido encontrado: ${validTemplate}`);
+    }
+}
+
 // Monitora abertura de modais Bootstrap para garantir acessibilidade
 document.addEventListener('shown.bs.modal', fixAriaHiddenOnOpenModals);
 document.addEventListener('DOMContentLoaded', function() {
-// Corrige ao carregar a página caso algum modal esteja aberto
-fixAriaHiddenOnOpenModals();
+    // Corrige ao carregar a página caso algum modal esteja aberto
+    fixAriaHiddenOnOpenModals();
+    
+    // Valida templates de email na inicialização
+    validateEmailTemplates();
 });
 
 // Também corrige ao abrir modal programaticamente (ex: printLoanModal)

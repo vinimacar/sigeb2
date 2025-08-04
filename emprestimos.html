@@ -11,18 +11,19 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="text/javascript">
   (function(){
-    emailjs.init("z2336X6tKP2xg_f9D"); // Chave pública do EmailJS configurada
+    emailjs.init("iq-JAf8NigdPPO6S4"); // Chave pública do EmailJS configurada
     
     /* 
     CONFIGURAÇÃO DO TEMPLATE EMAIL - INSTRUÇÕES ATUALIZADAS:
+    
+    CHAVE PÚBLICA: "iq-JAf8NigdPPO6S4"
+    SERVICE ID: "service_70cadf4"
     
     TEMPLATES NECESSÁRIOS NO EMAILJS:
     1. template_xbqnacb (principal) - Para notificações detalhadas
     2. template_9rlx6ek (fallback) - Template simplificado
     3. template_basic (fallback) - Template básico
     4. template_default (fallback) - Template padrão
-    
-    Service ID: "service_70cadf4"
     
     TEMPLATE BÁSICO DE EXEMPLO (para copiar no EmailJS):
     --------------------------------------------------------
@@ -4042,7 +4043,7 @@ modal.removeAttribute('aria-hidden');
 
 // Função para testar configuração de email manualmente
 async function testEmailConfig() {
-    showAlert('info', '🔍 Testando configuração de email...', 3000);
+    showAlert('info', '🔍 Testando configuração de email...<br><small>Chave atualizada: iq-JAf8NigdPPO6S4</small>', 3000);
     
     // Re-executa a validação
     await validateEmailTemplates();
@@ -4142,6 +4143,9 @@ function updateEmailButtonStatus() {
 // Monitora abertura de modais Bootstrap para garantir acessibilidade
 document.addEventListener('shown.bs.modal', fixAriaHiddenOnOpenModals);
 document.addEventListener('DOMContentLoaded', function() {
+    // Log da configuração atual
+    console.log('🔧 EmailJS inicializado com chave: iq-JAf8NigdPPO6S4');
+    
     // Corrige ao carregar a página caso algum modal esteja aberto
     fixAriaHiddenOnOpenModals();
     

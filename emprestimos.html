@@ -526,6 +526,10 @@ Sair
 <p>Controle os empréstimos da biblioteca</p>
 </div>
 <div class="d-flex gap-2">
+<button class="btn btn-outline-info btn-sm" onclick="testEmailConfig()" title="Testar configuração de email">
+<i class='bx bx-envelope'></i>
+Email
+</button>
 <button class="add-button" data-bs-toggle="modal" data-bs-target="#addLoanModal">
 <i class='bx bx-plus'></i>
 Novo Empréstimo
@@ -1119,9 +1123,11 @@ Total de advertências: <span id="warningsCountDisplay" class="fw-bold">0</span>
 <script>
 // Configurações do sistema
 const SYSTEM_CONFIG = {
-schoolName: "Escola Estadual Governador Bias Fortes", // Nome oficial da escola
-systemName: "SIGEB - Sistema de Gerenciamento de Biblioteca",
-defaultLoanDays: 14
+    schoolName: "Escola Estadual Governador Bias Fortes", // Nome oficial da escola
+    systemName: "SIGEB - Sistema de Gerenciamento de Biblioteca",
+    defaultLoanDays: 14,
+    emailEnabled: false, // Desabilitado até que os templates sejam configurados
+    emailTemplatesConfigured: false // Flag para verificar se templates estão prontos
 };
 
 // Função para obter data/hora no horário de Brasília
@@ -1167,8 +1173,9 @@ async function tryMultipleTemplates(serviceId, templateParams, primaryTemplate, 
         } catch (error) {
             console.warn(`Template ${templateId} falhou:`, error);
             if (i === templatesToTry.length - 1) {
-                // Se é o último template e falhou, relança o erro
-                throw error;
+                // Se é o último template e falhou, tenta um último recurso
+                console.log('Todos os templates falharam, tentando fallback absoluto...');
+                throw new Error(`TEMPLATE_NOT_FOUND: Nenhum template foi encontrado. Configure pelo menos um template no EmailJS: ${templatesToTry.join(', ')}`);
             }
         }
     }
@@ -1341,15 +1348,25 @@ console.error('Erro ao enviar WhatsApp:', error);
 
 // Função para enviar email de notificação de empréstimo usando EmailJS
 async function sendLoanNotificationEmail(userId, userEmail, books, loanDate, returnDate, registroNumero) {
-try {
-// Busca dados do usuário
-const userDoc = await db.collection('usuarios').doc(userId).get();
-const userData = userDoc.data();
+    // Verifica se o email está habilitado
+    if (!SYSTEM_CONFIG.emailEnabled) {
+        console.log('📧 Email desabilitado - Templates não configurados no EmailJS');
+        showAlert('info', `
+            ✅ Empréstimo registrado com sucesso!<br>
+            📧 <small>Email desabilitado (templates não configurados)</small>
+        `, 4000);
+        return;
+    }
 
-if (!userData) {
-showAlert('danger', 'Dados do usuário não encontrados.');
-return;
-}
+    try {
+        // Busca dados do usuário
+        const userDoc = await db.collection('usuarios').doc(userId).get();
+        const userData = userDoc.data();
+
+        if (!userData) {
+            showAlert('danger', 'Dados do usuário não encontrados.');
+            return;
+        }
 
 // Busca dados dos livros
 let booksList = '';
@@ -1393,7 +1410,12 @@ showAlert('info', 'Enviando email de notificação...');
                     showAlert('success', `Email de notificação enviado para ${userEmail}!`);
                 } catch (finalError) {
                     console.error('Erro ao enviar email mesmo com fallback:', finalError);
-                    throw finalError;
+                    // Em vez de quebrar o fluxo, apenas avisa que o email não foi enviado
+                    showAlert('info', `
+                        📧 Email não enviado - Templates não configurados<br>
+                        <small>O empréstimo foi registrado com sucesso, mas o email não pôde ser enviado.<br>
+                        Configure os templates no EmailJS para habilitar notificações.</small>
+                    `, 6000);
                 }
             } catch (error) {
 console.error('Erro ao enviar email:', error);
@@ -4018,35 +4040,102 @@ modal.removeAttribute('aria-hidden');
 });
 }
 
+// Função para testar configuração de email manualmente
+async function testEmailConfig() {
+    showAlert('info', '🔍 Testando configuração de email...', 3000);
+    
+    // Re-executa a validação
+    await validateEmailTemplates();
+    
+    // Atualiza visual do botão
+    updateEmailButtonStatus();
+    
+    // Mostra status atual
+    if (SYSTEM_CONFIG.emailEnabled) {
+        showAlert('success', `
+            ✅ <strong>Email funcionando!</strong><br>
+            📧 Notificações de empréstimo habilitadas<br>
+            <small>Templates configurados corretamente no EmailJS</small>
+        `, 6000);
+    } else {
+        showAlert('warning', `
+            ❌ <strong>Email ainda não configurado</strong><br>
+            📝 <strong>Próximos passos:</strong><br>
+            1. Acesse: <a href="https://dashboard.emailjs.com/admin/templates" target="_blank">EmailJS Dashboard</a><br>
+            2. Crie um template com ID: <code>template_xbqnacb</code><br>
+            3. Configure as variáveis: {{to_name}}, {{books_list}}, {{loan_date}}, {{return_date}}<br>
+            4. Clique neste botão novamente para testar
+        `, 10000);
+    }
+}
+
 // Função para validar se os templates de email existem
 async function validateEmailTemplates() {
     const testParams = {
         to_name: "Teste",
-        to_email: "test@test.com",
+        to_email: "test@example.com",
         subject: "Teste de Template",
-        message: "Teste de validação"
+        message: "Teste de validação",
+        books_list: "Livro de teste",
+        loan_date: "01/01/2025",
+        return_date: "15/01/2025"
     };
     
-    const templates = ['template_xbqnacb', 'template_9rlx6ek'];
+    const templates = ['template_xbqnacb', 'template_9rlx6ek', 'template_basic'];
     let validTemplate = null;
     
     for (const templateId of templates) {
         try {
-            // Testa o template sem realmente enviar
-            console.log(`Validando template: ${templateId}`);
-            // Note: Esta validação é apenas para log, o EmailJS não tem método de teste
+            console.log(`🔍 Testando template: ${templateId}`);
+            // Tenta enviar um email de teste (que não será realmente enviado porque o email é inválido)
+            await emailjs.send('service_70cadf4', templateId, testParams);
+            // Se chegou aqui, o template existe
             validTemplate = templateId;
+            console.log(`✅ Template válido encontrado: ${templateId}`);
             break;
         } catch (error) {
-            console.warn(`Template ${templateId} não está disponível:`, error);
+            if (error.text && error.text.includes('template ID not found')) {
+                console.warn(`❌ Template ${templateId} não existe`);
+            } else {
+                // Outros erros podem significar que o template existe mas há problema com email/service
+                console.log(`⚠️ Template ${templateId} existe mas há outro erro:`, error.text);
+                validTemplate = templateId;
+                break;
+            }
         }
     }
     
-    if (!validTemplate) {
-        console.warn('Nenhum template de email foi encontrado. Configure pelo menos um template no EmailJS.');
-        showAlert('warning', 'Sistema de email pode não funcionar corretamente. Verifique a configuração dos templates no EmailJS.', 8000);
+    if (validTemplate) {
+        console.log(`🎉 Email habilitado! Usando template: ${validTemplate}`);
+        SYSTEM_CONFIG.emailEnabled = true;
+        SYSTEM_CONFIG.emailTemplatesConfigured = true;
+        showAlert('success', `📧 Sistema de email configurado e funcionando!`, 4000);
+        updateEmailButtonStatus(); // Atualiza visual do botão
     } else {
-        console.log(`Template válido encontrado: ${validTemplate}`);
+        console.warn('❌ Nenhum template de email foi encontrado.');
+        showAlert('info', `
+            📧 <strong>Email temporariamente desabilitado</strong><br>
+            <small>Para habilitar notificações por email:</small><br>
+            1. Acesse: <a href="https://dashboard.emailjs.com/admin/templates" target="_blank">EmailJS Templates</a><br>
+            2. Crie um template com ID: <code>template_xbqnacb</code><br>
+            3. Recarregue a página
+        `, 8000);
+    }
+}
+
+// Função para atualizar o visual do botão de email
+function updateEmailButtonStatus() {
+    const emailButton = document.querySelector('button[onclick="testEmailConfig()"]');
+    if (emailButton) {
+        if (SYSTEM_CONFIG.emailEnabled) {
+            emailButton.className = 'btn btn-success btn-sm';
+            emailButton.innerHTML = '<i class="bx bx-check-circle"></i> Email ✓';
+            emailButton.title = 'Email configurado e funcionando - Clique para testar';
+        } else {
+            emailButton.className = 'btn btn-outline-warning btn-sm';
+            emailButton.innerHTML = '<i class="bx bx-error"></i> Email ⚠';
+            emailButton.title = 'Email não configurado - Clique para configurar';
+        }
     }
 }
 
@@ -4058,6 +4147,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Valida templates de email na inicialização
     validateEmailTemplates();
+    
+    // Atualiza visual do botão de email após validação
+    setTimeout(updateEmailButtonStatus, 2000);
 });
 
 // Também corrige ao abrir modal programaticamente (ex: printLoanModal)

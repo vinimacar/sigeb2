@@ -1757,19 +1757,6 @@ actionBtns += `
 <i class="bx bx-refresh"></i>
 </button>
 `;
-
-// Adiciona botão de advertência para qualquer atraso
-if (statusAtual === 'ATRASADO' && diffDays > 0) {
-const hasWarning = data.hasWarning ? 'text-warning' : 'text-danger';
-const warningTitle = data.hasWarning ? 
-`Advertência já emitida em ${data.warningDate || 'data não disponível'}` : 
-`Atraso de ${diffDays} dias - Emitir advertência`;
-
-actionBtns += `
-<button class="btn btn-sm btn-outline-warning" title="${warningTitle}" onclick="openWarningModal('${doc.id}')">
-<i class="bx bx-error ${hasWarning}"></i>
-</button>
-`;
 }
 }
 actionBtns += `
@@ -2821,19 +2808,6 @@ actionBtns += `
 </button>
 <button class="btn btn-sm btn-outline-success renew-button" title="Renovar" onclick="renewLoan('${doc.id}')">
 <i class="bx bx-refresh"></i>
-</button>
-`;
-
-// Adiciona botão de advertência para qualquer atraso
-if (data.status === 'ATRASADO' && diffDays > 0) {
-const hasWarning = data.hasWarning ? 'text-warning' : 'text-danger';
-const warningTitle = data.hasWarning ? 
-`Advertência já emitida em ${data.warningDate || 'data não disponível'}` : 
-`Atraso de ${diffDays} dias - Emitir advertência`;
-
-actionBtns += `
-<button class="btn btn-sm btn-outline-warning" title="${warningTitle}" onclick="openWarningModal('${doc.id}')">
-<i class="bx bx-error ${hasWarning}"></i>
 </button>
 `;
 }

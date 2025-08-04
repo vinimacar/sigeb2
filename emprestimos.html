@@ -1092,7 +1092,7 @@ Total de advertências: <span id="warningsCountDisplay" class="fw-bold">0</span>
 <script>
 // Configurações do sistema
 const SYSTEM_CONFIG = {
-schoolName: "Escola Estadual Professor Álvaro Brandão de Andrade", // Altere para o nome da sua escola
+schoolName: "Escola Estadual Governador Bias Fortes", // Nome oficial da escola
 systemName: "SIGEB - Sistema de Gerenciamento de Biblioteca",
 defaultLoanDays: 14
 };
@@ -3226,6 +3226,18 @@ text-align: center;
 border-bottom: 2px solid #dc3545;
 padding-bottom: 15px;
 margin-bottom: 20px;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 20px;
+}
+.print-header-content {
+flex: 1;
+}
+.logo {
+width: 60px;
+height: 60px;
+object-fit: contain;
 }
 .alert { 
 border: 1px solid #dc3545 !important;
@@ -3300,9 +3312,13 @@ background-position: center;
 </head>
 <body>
 <div class="print-header">
+<img src="logobias.png" alt="Logo da Escola" class="logo" onerror="this.style.display='none'">
+<div class="print-header-content">
 <h3 style="color: #dc3545; margin: 0;">ADVERTÊNCIA POR ATRASO</h3>
 <h5 style="margin: 5px 0 0 0;">${SYSTEM_CONFIG.schoolName}</h5>
 <p style="margin: 5px 0 0 0;">Sistema de Gerenciamento de Biblioteca</p>
+</div>
+<img src="logobias.png" alt="Logo da Escola" class="logo" onerror="this.style.display='none'" style="opacity: 0.3;">
 </div>
 ${printArea.querySelector('.modal-body').innerHTML}
 <div style="margin-top: 30px; display: flex; justify-content: space-between;">
@@ -3671,18 +3687,42 @@ const printContent = `
 <title>Advertência - ${SYSTEM_CONFIG.schoolName}</title>
 <style>
 body { font-family: Arial, sans-serif; margin: 20px; font-size: 14px; }
-.header { text-align: center; border-bottom: 2px solid #dc3545; padding-bottom: 15px; margin-bottom: 20px; }
+.header { 
+text-align: center; 
+border-bottom: 2px solid #dc3545; 
+padding-bottom: 15px; 
+margin-bottom: 20px; 
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 20px;
+}
+.header-content {
+flex: 1;
+}
+.logo {
+width: 80px;
+height: 80px;
+object-fit: contain;
+}
 .warning-box { border: 2px solid #dc3545; padding: 15px; margin: 20px 0; background-color: #fff5f5; }
 .info-box { background-color: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin: 15px 0; }
 .signature-line { border-bottom: 1px solid #000; margin-top: 40px; text-align: center; padding-top: 5px; }
+@media print {
+.logo { width: 60px; height: 60px; }
+}
 </style>
 </head>
 <body>
 <div class="header">
+<img src="logobias.png" alt="Logo da Escola" class="logo" onerror="this.style.display='none'">
+<div class="header-content">
 <h2 style="color: #dc3545; margin: 0;">ADVERTÊNCIA POR ATRASO</h2>
 <h4 style="margin: 5px 0;">${SYSTEM_CONFIG.schoolName}</h4>
 <p style="margin: 5px 0;">Sistema de Gerenciamento de Biblioteca</p>
 <p style="margin: 5px 0;">Data: ${currentDate}</p>
+</div>
+<img src="logobias.png" alt="Logo da Escola" class="logo" onerror="this.style.display='none'" style="opacity: 0.3;">
 </div>
 
 <div class="warning-box">
@@ -3726,7 +3766,8 @@ ${bookTitles.map(title => `<li>${title}</li>`).join('')}
 </div>
 
 <p style="text-align: center; margin-top: 30px; font-size: 12px; color: #666;">
-Este documento foi gerado automaticamente pelo Sistema SIGEB
+Este documento foi gerado automaticamente pelo Sistema SIGEB<br>
+${SYSTEM_CONFIG.schoolName}
 </p>
 </body>
 </html>

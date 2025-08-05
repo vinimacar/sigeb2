@@ -513,6 +513,16 @@ Novo Empréstimo
 </div>
 <div class="pie-label">Advertências</div>
 </div>
+<div class="pie-btn shadow-lg" onclick="showBlockedUsersModal()">
+<div class="pie-chart pie-blocked">
+<span id="countBlockedUsers">0</span>
+<svg class="pie-svg" width="90" height="90">
+<circle class="pie-bg" cx="45" cy="45" r="38"/>
+<circle class="pie-fg pie-fg-blocked" cx="45" cy="45" r="38"/>
+</svg>
+</div>
+<div class="pie-label">Bloqueados</div>
+</div>
 </div>
 <style>
 #loanStats {
@@ -586,6 +596,7 @@ transition: stroke-dasharray 0.7s cubic-bezier(.4,2,.6,1), stroke 0.3s;
 .pie-fg-atrasado { stroke: #c62828; }
 .pie-fg-devolvido { stroke: #2e7d32; }
 .pie-fg-warnings { stroke: #ff9800; }
+.pie-fg-blocked { stroke: #9c27b0; }
 .pie-label {
 font-size: 1.13rem;
 font-weight: 600;
@@ -1028,6 +1039,66 @@ Total de advertências: <span id="warningsCountDisplay" class="fw-bold">0</span>
 <tbody id="simpleWarningsTableBody">
 <tr>
 <td colspan="6" class="text-center">Carregando advertências...</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+<i class="bx bx-x me-2"></i>Fechar
+</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Modal de Usuários Bloqueados -->
+<div class="modal fade" id="blockedUsersModal" tabindex="-1" aria-labelledby="blockedUsersModalLabel" aria-hidden="true">
+<div class="modal-dialog modal-xl">
+<div class="modal-content">
+<div class="modal-header bg-purple text-white" style="background-color: #9c27b0 !important;">
+<h5 class="modal-title" id="blockedUsersModalLabel">
+<i class="bx bx-block me-2"></i>Usuários Bloqueados por Atraso
+</h5>
+<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+</div>
+<div class="modal-body">
+<div class="row mb-3">
+<div class="col-md-6">
+<div class="input-group">
+<span class="input-group-text"><i class="bx bx-search"></i></span>
+<input type="text" class="form-control" id="blockedUsersSearchInput" placeholder="Buscar por nome do usuário...">
+</div>
+</div>
+<div class="col-md-3">
+<button class="btn btn-primary w-100" onclick="loadBlockedUsers()">
+<i class="bx bx-refresh me-1"></i>Atualizar
+</button>
+</div>
+<div class="col-md-3">
+<button class="btn btn-success w-100" onclick="exportBlockedUsersReport()">
+<i class="bx bx-download me-1"></i>Exportar
+</button>
+</div>
+</div>
+
+<div class="table-responsive">
+<table class="table table-hover table-striped">
+<thead class="table-light">
+<tr>
+<th>Usuário</th>
+<th>Livro(s) em Atraso</th>
+<th>Dias de Atraso</th>
+<th>Data de Empréstimo</th>
+<th>Data de Devolução</th>
+<th>Contato</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody id="blockedUsersTableBody">
+<tr>
+<td colspan="7" class="text-center">Carregando usuários bloqueados...</td>
 </tr>
 </tbody>
 </table>
@@ -2525,14 +2596,61 @@ document.getElementById('countAtrasado').textContent = atrasadoCount;
 document.getElementById('countDevolvido').textContent = devolvidoCount;
 document.getElementById('countWarnings').textContent = warningsCount;
 
+// Atualiza contador de usuários bloqueados
+await updateBlockedUsersCount();
+
 // Atualiza os gráficos de pizza
 updatePieChart('emprestado', emprestadoCount, snapshot.size);
 updatePieChart('atrasado', atrasadoCount, snapshot.size);
 updatePieChart('devolvido', devolvidoCount, snapshot.size);
 updatePieChart('warnings', warningsCount, snapshot.size);
+updatePieChart('blocked', await getBlockedUsersCount(), snapshot.size);
 
 } catch (error) {
 console.error('Erro ao atualizar estatísticas de empréstimos:', error);
+}
+}
+
+// Função para contar usuários bloqueados
+async function getBlockedUsersCount() {
+try {
+const snapshot = await db.collection('emprestimos')
+.where('status', '==', 'ATRASADO')
+.get();
+
+const today = getDataBrasilia();
+today.setHours(0, 0, 0, 0);
+
+const uniqueUsers = new Set();
+
+for (const doc of snapshot.docs) {
+const loanData = doc.data();
+const returnDate = loanData.dataDevolucao?.toDate();
+if (!returnDate) continue;
+
+const daysLate = Math.ceil((today - returnDate) / (1000 * 60 * 60 * 24));
+if (daysLate > 0) {
+uniqueUsers.add(loanData.userId);
+}
+}
+
+return uniqueUsers.size;
+} catch (error) {
+console.error('Erro ao contar usuários bloqueados:', error);
+return 0;
+}
+}
+
+// Função para atualizar contador de usuários bloqueados
+async function updateBlockedUsersCount() {
+try {
+const count = await getBlockedUsersCount();
+const countElement = document.getElementById('countBlockedUsers');
+if (countElement) {
+countElement.textContent = count;
+}
+} catch (error) {
+console.error('Erro ao atualizar contador de usuários bloqueados:', error);
 }
 }
 
@@ -3653,6 +3771,386 @@ document.getElementById('simpleWarningsTableBody').innerHTML =
 }
 }
 
+// Função para mostrar modal de usuários bloqueados
+function showBlockedUsersModal() {
+const blockedModal = new bootstrap.Modal(document.getElementById('blockedUsersModal'));
+blockedModal.show();
+loadBlockedUsers();
+}
+
+// Função para carregar usuários bloqueados
+async function loadBlockedUsers() {
+try {
+const tbody = document.getElementById('blockedUsersTableBody');
+tbody.innerHTML = '<tr><td colspan="7" class="text-center">Carregando...</td></tr>';
+
+// Obter termo de busca
+const searchTerm = document.getElementById('blockedUsersSearchInput')?.value.toLowerCase().trim() || '';
+
+// Busca todos os empréstimos atrasados
+const snapshot = await db.collection('emprestimos')
+.where('status', '==', 'ATRASADO')
+.get();
+
+tbody.innerHTML = '';
+let count = 0;
+const today = getDataBrasilia();
+today.setHours(0, 0, 0, 0);
+
+// Map para agrupar empréstimos por usuário
+const userLoansMap = new Map();
+
+for (const doc of snapshot.docs) {
+const loanData = doc.data();
+const returnDate = loanData.dataDevolucao?.toDate();
+if (!returnDate) continue;
+
+const daysLate = Math.ceil((today - returnDate) / (1000 * 60 * 60 * 24));
+if (daysLate <= 0) continue;
+
+// Se o usuário já existe no mapa, adiciona este empréstimo
+if (userLoansMap.has(loanData.userId)) {
+const userData = userLoansMap.get(loanData.userId);
+userData.loans.push({
+...loanData,
+id: doc.id,
+daysLate: daysLate
+});
+userData.maxDaysLate = Math.max(userData.maxDaysLate, daysLate);
+} else {
+// Busca dados do usuário
+const userDoc = await db.collection('usuarios').doc(loanData.userId).get();
+const userData = userDoc.exists ? userDoc.data() : {};
+
+userLoansMap.set(loanData.userId, {
+...userData,
+loans: [{
+...loanData,
+id: doc.id,
+daysLate: daysLate
+}],
+maxDaysLate: daysLate
+});
+}
+}
+
+// Ordena usuários por dias de atraso (maior primeiro)
+const sortedUsers = Array.from(userLoansMap.values())
+.sort((a, b) => b.maxDaysLate - a.maxDaysLate);
+
+for (const userData of sortedUsers) {
+// Busca títulos dos livros para todos os empréstimos do usuário
+let allBookTitles = [];
+let allLoanDates = [];
+let allReturnDates = [];
+
+for (const loan of userData.loans) {
+if (Array.isArray(loan.books)) {
+for (const book of loan.books) {
+try {
+const bookDoc = await db.collection('livros').doc(book.bookId).get();
+if (bookDoc.exists) {
+allBookTitles.push(`${bookDoc.data().titulo} (${book.quantity})`);
+}
+} catch (error) {
+console.error('Erro ao buscar livro:', error);
+allBookTitles.push(`Livro não encontrado (${book.quantity})`);
+}
+}
+}
+allLoanDates.push(formatarDataBrasil(loan.dataEmprestimo.toDate()));
+allReturnDates.push(formatarDataBrasil(loan.dataDevolucao.toDate()));
+}
+
+// Formatação para WhatsApp
+const telefone = userData.telefone || '';
+const whatsappNumber = telefone.replace(/\D/g, ''); // Remove caracteres não numéricos
+const userName = userData.nome || 'Usuário não encontrado';
+const userClass = userData.turma || 'Turma não informada';
+const maxDaysLate = userData.maxDaysLate;
+
+// Aplicar filtro de busca
+if (searchTerm && !userName.toLowerCase().includes(searchTerm)) {
+continue; // Pula este usuário se não corresponder à busca
+}
+
+// Mensagem personalizada para WhatsApp
+const whatsappMessage = encodeURIComponent(
+`Olá ${userName}!\n\n` +
+`A biblioteca da ${SYSTEM_CONFIG.schoolName} está entrando em contato para informar que você possui livro(s) em atraso:\n\n` +
+`📚 Livro(s): ${allBookTitles.join(', ')}\n` +
+`📅 Dias de atraso: ${maxDaysLate} dias\n` +
+`⚠️ Status: Usuário bloqueado para novos empréstimos\n\n` +
+`Por favor, compareça à biblioteca o mais breve possível para regularizar a situação.\n\n` +
+`Obrigado!\nBiblioteca ${SYSTEM_CONFIG.schoolName}`
+);
+
+count++;
+tbody.innerHTML += `
+<tr>
+<td>
+<div class="d-flex align-items-center">
+<div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center me-2">
+<i class="bx bx-user text-muted"></i>
+</div>
+<div>
+<div class="fw-bold">${userName}</div>
+<small class="text-muted">${userClass}</small>
+</div>
+</div>
+</td>
+<td>
+<div class="d-flex flex-wrap gap-1">
+${allBookTitles.map(title => `<span class="badge bg-secondary">${title}</span>`).join('')}
+</div>
+</td>
+<td><span class="badge bg-danger fs-6">${maxDaysLate} dias</span></td>
+<td><small>${allLoanDates.join('<br>')}</small></td>
+<td><small>${allReturnDates.join('<br>')}</small></td>
+<td>
+${telefone ? `
+<small class="text-muted d-block">
+<i class="bx bx-phone me-1"></i>${telefone}
+</small>
+` : '<small class="text-muted">Sem telefone</small>'}
+</td>
+<td>
+<div class="btn-group btn-group-sm">
+${whatsappNumber ? `
+<a href="https://wa.me/55${whatsappNumber}?text=${whatsappMessage}" 
+   target="_blank" 
+   class="btn btn-success" 
+   title="Enviar WhatsApp">
+<i class="bx bxl-whatsapp"></i>
+</a>
+` : ''}
+<button class="btn btn-outline-primary" 
+        onclick="printBlockedUserReport('${userData.loans.map(l => l.id).join(',')}')" 
+        title="Imprimir Relatório">
+<i class="bx bx-printer"></i>
+</button>
+</div>
+</td>
+</tr>
+`;
+}
+
+if (count === 0) {
+tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nenhum usuário bloqueado</td></tr>';
+}
+
+// Atualiza contador no card
+document.getElementById('countBlockedUsers').textContent = count;
+
+} catch (error) {
+console.error('Erro ao carregar usuários bloqueados:', error);
+document.getElementById('blockedUsersTableBody').innerHTML = 
+'<tr><td colspan="7" class="text-center text-danger">Erro ao carregar usuários bloqueados</td></tr>';
+}
+}
+
+// Função para exportar relatório de usuários bloqueados
+async function exportBlockedUsersReport() {
+try {
+const { jsPDF } = window.jspdf;
+const doc = new jsPDF('l', 'mm', 'a4'); // Formato paisagem para mais espaço
+
+// Cabeçalho
+doc.setFontSize(16);
+doc.setFont(undefined, 'bold');
+doc.text(SYSTEM_CONFIG.schoolName, 20, 20);
+doc.setFontSize(14);
+doc.text('Relatório de Usuários Bloqueados por Atraso', 20, 30);
+
+// Data do relatório
+doc.setFontSize(10);
+doc.setFont(undefined, 'normal');
+doc.text(`Gerado em: ${formatarDataBrasil(getDataBrasilia())}`, 20, 40);
+
+// Preparar dados
+const snapshot = await db.collection('emprestimos')
+.where('status', '==', 'ATRASADO')
+.get();
+
+const today = getDataBrasilia();
+today.setHours(0, 0, 0, 0);
+
+const userLoansMap = new Map();
+
+for (const docSnap of snapshot.docs) {
+const loanData = docSnap.data();
+const returnDate = loanData.dataDevolucao?.toDate();
+if (!returnDate) continue;
+
+const daysLate = Math.ceil((today - returnDate) / (1000 * 60 * 60 * 24));
+if (daysLate <= 0) continue;
+
+if (userLoansMap.has(loanData.userId)) {
+const userData = userLoansMap.get(loanData.userId);
+userData.loans.push({ ...loanData, id: docSnap.id, daysLate });
+userData.maxDaysLate = Math.max(userData.maxDaysLate, daysLate);
+} else {
+const userDoc = await db.collection('usuarios').doc(loanData.userId).get();
+const userData = userDoc.exists ? userDoc.data() : {};
+userLoansMap.set(loanData.userId, {
+...userData,
+loans: [{ ...loanData, id: docSnap.id, daysLate }],
+maxDaysLate: daysLate
+});
+}
+}
+
+// Dados da tabela
+const tableData = [];
+for (const userData of userLoansMap.values()) {
+let bookTitles = [];
+for (const loan of userData.loans) {
+if (Array.isArray(loan.books)) {
+for (const book of loan.books) {
+try {
+const bookDoc = await db.collection('livros').doc(book.bookId).get();
+if (bookDoc.exists) {
+bookTitles.push(`${bookDoc.data().titulo} (${book.quantity})`);
+}
+} catch (error) {
+bookTitles.push(`Livro não encontrado (${book.quantity})`);
+}
+}
+}
+}
+
+tableData.push([
+userData.nome || 'Nome não informado',
+userData.turma || 'Turma não informada',
+bookTitles.join(', '),
+`${userData.maxDaysLate} dias`,
+userData.telefone || 'Não informado'
+]);
+}
+
+// Tabela
+doc.autoTable({
+head: [['Nome', 'Turma', 'Livros em Atraso', 'Dias de Atraso', 'Telefone']],
+body: tableData,
+startY: 50,
+styles: { fontSize: 8 },
+headStyles: { fillColor: [156, 39, 176] }, // Cor roxa
+columnStyles: {
+2: { cellWidth: 80 }, // Coluna dos livros mais larga
+},
+margin: { left: 20, right: 20 }
+});
+
+// Salvar PDF
+doc.save(`Usuarios_Bloqueados_${formatarDataBrasil(getDataBrasilia()).replace(/\//g, '-')}.pdf`);
+
+showAlert('success', 'Relatório exportado com sucesso!');
+
+} catch (error) {
+console.error('Erro ao exportar relatório:', error);
+showAlert('danger', 'Erro ao exportar relatório.');
+}
+}
+
+// Função para imprimir relatório de usuário bloqueado específico
+async function printBlockedUserReport(loanIds) {
+try {
+const { jsPDF } = window.jspdf;
+const doc = new jsPDF();
+
+// Cabeçalho
+doc.setFontSize(16);
+doc.setFont(undefined, 'bold');
+doc.text(SYSTEM_CONFIG.schoolName, 20, 20);
+doc.setFontSize(14);
+doc.text('Notificação de Bloqueio por Atraso', 20, 30);
+
+// Buscar dados dos empréstimos
+const loanIdArray = loanIds.split(',');
+let userData = null;
+let allBooks = [];
+
+for (const loanId of loanIdArray) {
+const loanDoc = await db.collection('emprestimos').doc(loanId).get();
+if (loanDoc.exists) {
+const loanData = loanDoc.data();
+
+if (!userData) {
+const userDoc = await db.collection('usuarios').doc(loanData.userId).get();
+userData = userDoc.exists ? userDoc.data() : {};
+}
+
+if (Array.isArray(loanData.books)) {
+for (const book of loanData.books) {
+const bookDoc = await db.collection('livros').doc(book.bookId).get();
+if (bookDoc.exists) {
+allBooks.push({
+...bookDoc.data(),
+quantity: book.quantity,
+returnDate: loanData.dataDevolucao.toDate()
+});
+}
+}
+}
+}
+}
+
+if (!userData) {
+showAlert('danger', 'Usuário não encontrado.');
+return;
+}
+
+// Conteúdo da notificação
+doc.setFontSize(12);
+doc.setFont(undefined, 'normal');
+doc.text(`Data: ${formatarDataBrasil(getDataBrasilia())}`, 20, 50);
+doc.text(`Usuário: ${userData.nome || 'Nome não informado'}`, 20, 60);
+doc.text(`Turma: ${userData.turma || 'Turma não informada'}`, 20, 70);
+
+doc.setFont(undefined, 'bold');
+doc.text('SITUAÇÃO: USUÁRIO BLOQUEADO PARA NOVOS EMPRÉSTIMOS', 20, 90);
+
+doc.setFont(undefined, 'normal');
+doc.text('Motivo: Atraso na devolução de livro(s)', 20, 100);
+
+let yPosition = 120;
+doc.text('Livro(s) em atraso:', 20, yPosition);
+yPosition += 10;
+
+allBooks.forEach(book => {
+const returnDate = formatarDataBrasil(book.returnDate);
+const today = getDataBrasilia();
+today.setHours(0, 0, 0, 0);
+const daysLate = Math.ceil((today - book.returnDate) / (1000 * 60 * 60 * 24));
+
+doc.text(`• ${book.titulo} (Qtd: ${book.quantity}) - Deveria ter sido devolvido em: ${returnDate} (${daysLate} dias de atraso)`, 25, yPosition);
+yPosition += 10;
+});
+
+yPosition += 10;
+doc.setFont(undefined, 'bold');
+doc.text('ORIENTAÇÕES:', 20, yPosition);
+yPosition += 10;
+doc.setFont(undefined, 'normal');
+doc.text('1. Compareça à biblioteca para regularizar a situação', 20, yPosition);
+yPosition += 10;
+doc.text('2. Novos empréstimos só serão liberados após a devolução', 20, yPosition);
+yPosition += 10;
+doc.text('3. Em caso de perda ou dano, procure a coordenação', 20, yPosition);
+
+// Rodapé
+doc.setFontSize(10);
+doc.text('Biblioteca - ' + SYSTEM_CONFIG.schoolName, 20, 280);
+
+// Salvar PDF
+doc.save(`Notificacao_Bloqueio_${userData.nome?.replace(/\s+/g, '_') || 'Usuario'}.pdf`);
+
+} catch (error) {
+console.error('Erro ao imprimir relatório:', error);
+showAlert('danger', 'Erro ao imprimir relatório.');
+}
+}
+
 // Função para imprimir advertência simples
 async function printSimpleWarning(loanId, daysLate, warningType) {
 try {
@@ -3915,6 +4413,14 @@ document.getElementById('warningsSearchInput').addEventListener('input', functio
 clearTimeout(this.searchTimeout);
 this.searchTimeout = setTimeout(() => {
 loadSimpleWarnings();
+}, 500);
+});
+
+// Configurar busca em tempo real para usuários bloqueados
+document.getElementById('blockedUsersSearchInput').addEventListener('input', function() {
+clearTimeout(this.searchTimeout);
+this.searchTimeout = setTimeout(() => {
+loadBlockedUsers();
 }, 500);
 });
 

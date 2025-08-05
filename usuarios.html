@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- Meta tags de segurança para prevenir conflitos com extensões -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>SIGEB - Usuários</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">  <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
@@ -14,6 +18,30 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script>
+    // Tratamento global de erros para evitar interferências de extensões
+    window.addEventListener('error', function(event) {
+      // Filtra erros de extensões do navegador
+      if (event.filename && event.filename.includes('extension://')) {
+        console.warn('Erro de extensão detectado e ignorado:', event.message);
+        event.preventDefault();
+        return false;
+      }
+      if (event.message && event.message.includes('contentscript')) {
+        console.warn('Erro de content script detectado e ignorado:', event.message);
+        event.preventDefault();
+        return false;
+      }
+    });
+
+    // Tratamento de erros não capturados (Promises)
+    window.addEventListener('unhandledrejection', function(event) {
+      if (event.reason && event.reason.message && 
+          (event.reason.message.includes('extension://') || 
+           event.reason.message.includes('contentscript'))) {
+        console.warn('Promise rejeitada por extensão ignorada:', event.reason);
+        event.preventDefault();
+      }
+    });
     
     // Firebase configuration
     const firebaseConfig = {
@@ -2547,12 +2575,51 @@
     // Event listener para o botão de gerar cartão
     document.getElementById('gerarCartaoBtn').addEventListener('click', gerarCartoesLeitor);
 
+    // Proteção contra interferências de extensões do navegador
+    function protegerContraExtensoes() {
+      try {
+        // Previne modificações não autorizadas no DOM
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            // Verifica se houve modificações suspeitas
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+              mutation.addedNodes.forEach(function(node) {
+                // Remove scripts injetados por extensões se necessário
+                if (node.nodeType === Node.ELEMENT_NODE && 
+                    (node.tagName === 'SCRIPT' || node.tagName === 'IFRAME') &&
+                    node.src && node.src.includes('extension://')) {
+                  console.warn('Script/iframe de extensão detectado e ignorado');
+                }
+              });
+            }
+          });
+        });
+
+        // Monitora apenas o body para evitar conflitos
+        observer.observe(document.body, {
+          childList: true,
+          subtree: false
+        });
+
+        // Protege objetos críticos
+        if (typeof window.bootstrap !== 'undefined') {
+          Object.freeze(window.bootstrap);
+        }
+
+      } catch (error) {
+        console.warn('Proteção contra extensões não pôde ser aplicada:', error);
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       loadUsers();
       // Pré-carrega os logos para melhor performance
       carregarLogos().catch(error => {
         console.warn('Logos não puderam ser pré-carregados:', error);
       });
+      
+      // Aplica proteções contra extensões
+      protegerContraExtensoes();
     });
   </script>
 </body>

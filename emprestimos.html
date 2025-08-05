@@ -726,9 +726,6 @@ min-width: 0;
         <button type="button" class="btn btn-success" id="btnEnviarWhatsappForm">
             <i class="bx bxl-whatsapp"></i> WhatsApp
         </button>
-        <button type="button" class="btn btn-info" id="btnEnviarEmailForm" style="display: none;">
-            <i class="bx bx-envelope"></i> Enviar Email
-        </button>
     </div>
     <div>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -1077,151 +1074,6 @@ novaData.setDate(novaData.getDate() + dias);
 return novaData;
 }
 
-// Função auxiliar para tentar enviar email com múltiplos templates
-async function tryMultipleTemplates(serviceId, templateParams, primaryTemplate, fallbackTemplates = []) {
-    const templatesToTry = [primaryTemplate, ...fallbackTemplates];
-    
-    for (let i = 0; i < templatesToTry.length; i++) {
-        const templateId = templatesToTry[i];
-        try {
-            console.log(`Tentando template: ${templateId}`);
-            const response = await emailjs.send(serviceId, templateId, templateParams);
-            console.log(`Email enviado com sucesso usando template: ${templateId}`, response);
-            return response;
-        } catch (error) {
-            console.warn(`Template ${templateId} falhou:`, error);
-            if (i === templatesToTry.length - 1) {
-                // Se é o último template e falhou, tenta um último recurso
-                console.log('Todos os templates falharam, tentando fallback absoluto...');
-                throw new Error(`TEMPLATE_NOT_FOUND: Nenhum template foi encontrado. Configure pelo menos um template no EmailJS: ${templatesToTry.join(', ')}`);
-            }
-        }
-    }
-}
-
-// Função genérica para enviar email
-async function sendEmailNotification(templateId, userId, data, subject) {
-try {
-const userDoc = await db.collection('usuarios').doc(userId).get();
-const userData = userDoc.data();
-
-if (!userData || !userData.email) {
-console.error('Email do usuário não encontrado ou dados do usuário inválidos');
-return;
-}
-
-const templateParams = {
-to_email: userData.email,
-to_name: userData.nome,
-subject: subject,
-...data
-};
-
-await tryMultipleTemplates("service_70cadf4", templateParams, templateId, ['template_9rlx6ek', 'template_basic', 'template_default']);
-
-console.log(`Email de ${subject} enviado com sucesso`);
-} catch (error) {
-console.error(`Erro ao enviar email de ${subject}:`, error);
-showAlert('warning', `Houve um erro ao enviar o email de ${subject}`);
-}
-}
-
-// Template do email de empréstimo (usando variáveis do Email.js)
-
-const LOAN_EMAIL_TEMPLATE_VARS = `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-<h1 style="color: white; margin: 0; text-align: center;">${SYSTEM_CONFIG.systemName}</h1>
-<h2 style="color: white; margin: 10px 0 0; text-align: center; font-size: 1.2em;">${SYSTEM_CONFIG.schoolName}</h2>
-</div>
-
-<div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-<h2 style="color: #1a1a2e; margin-top: 0;">Comprovante de Empréstimo</h2>
-<p><strong>Usuário:</strong> {{userName}}</p>
-<p><strong>Email:</strong> {{userEmail}}</p>
-<p><strong>Livros:</strong></p>
-<ul>{{booksList}}</ul>
-<p><strong>Data do Empréstimo:</strong> {{loanDate}}</p>
-<p><strong>Data de Devolução:</strong> {{returnDate}}</p>
-</div>
-
-<div style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-<p style="color: #2e7d32; margin: 0;">
-⚠️ Por favor, mantenha este comprovante para referência futura.
-</p>
-</div>
-
-<div style="text-align: center; color: #666;">
-<p>Este é um email automático, por favor não responda.</p>
-<p>${SYSTEM_CONFIG.schoolName}</p>
-<p>${SYSTEM_CONFIG.systemName}</p>
-</div>
-</div>
-`;
-
-// Template do email de renovação (usando variáveis do Email.js)
-
-const RENEWAL_EMAIL_TEMPLATE_VARS = `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-<h1 style="color: white; margin: 0; text-align: center;">${SYSTEM_CONFIG.systemName}</h1>
-<h2 style="color: white; margin: 10px 0 0; text-align: center; font-size: 1.2em;">${SYSTEM_CONFIG.schoolName}</h2>
-</div>
-
-<div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-<h2 style="color: #1a1a2e; margin-top: 0;">Confirmação de Renovação</h2>
-<p><strong>Usuário:</strong> {{userName}}</p>
-<p><strong>Email:</strong> {{userEmail}}</p>
-<p><strong>Livro:</strong> {{bookTitle}}</p>
-<p><strong>Nova Data de Devolução:</strong> {{newReturnDate}}</p>
-</div>
-
-<div style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-<p style="color: #2e7d32; margin: 0;">
-⚠️ Por favor, anote a nova data de devolução.
-</p>
-</div>
-
-<div style="text-align: center; color: #666;">
-<p>Este é um email automático, por favor não responda.</p>
-<p>${SYSTEM_CONFIG.schoolName}</p>
-<p>${SYSTEM_CONFIG.systemName}</p>
-</div>
-</div>
-`;
-
-// Função para enviar email de empréstimo (agora usando a função genérica)
-async function sendLoanConfirmationEmail(userId, books, loanDate, returnDate) {
-let booksList = '';
-for (const item of books) {
-const bookDoc = await db.collection('livros').doc(item.bookId).get();
-const bookData = bookDoc.data();
-booksList += `<li>${bookData.titulo} - Quantidade: ${item.quantity}</li>`;
-}
-
-const emailData = {
-userName: (await db.collection('usuarios').doc(userId).get()).data().nome,
-userEmail: (await db.collection('usuarios').doc(userId).get()).data().email,
-booksList: booksList,
-loanDate: loanDate,
-returnDate: returnDate
-};
-
-
-}
-
-// Função para enviar email de renovação (agora usando a função genérica)
-async function sendRenewalConfirmationEmail(userId, bookTitle, newReturnDate) {
-const emailData = {
-userName: (await db.collection('usuarios').doc(userId).get()).data().nome,
-userEmail: (await db.collection('usuarios').doc(userId).get()).data().email,
-bookTitle: bookTitle,
-newReturnDate: newReturnDate
-};
-
-
-}
-
 // Função para enviar mensagem WhatsApp ao registrar novo empréstimo
 async function sendWhatsAppOnLoan(userId, books, loanDate, returnDate) {
 try {
@@ -1261,95 +1113,6 @@ const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
 window.open(url, '_blank');
 } catch (error) {
 console.error('Erro ao enviar WhatsApp:', error);
-}
-}
-
-// Função para enviar email de notificação de empréstimo usando EmailJS
-async function sendLoanNotificationEmail(userId, userEmail, books, loanDate, returnDate, registroNumero) {
-    // Verifica se o email está habilitado
-    if (!SYSTEM_CONFIG.emailEnabled) {
-        console.log('📧 Email desabilitado - Templates não configurados no EmailJS');
-        showAlert('info', `
-            ✅ Empréstimo registrado com sucesso!<br>
-            📧 <small>Email desabilitado (templates não configurados)</small>
-        `, 4000);
-        return;
-    }
-
-    try {
-        // Busca dados do usuário
-        const userDoc = await db.collection('usuarios').doc(userId).get();
-        const userData = userDoc.data();
-
-        if (!userData) {
-            showAlert('danger', 'Dados do usuário não encontrados.');
-            return;
-        }
-
-// Busca dados dos livros
-let booksList = '';
-let booksListHtml = '';
-for (const item of books) {
-const bookDoc = await db.collection('livros').doc(item.bookId).get();
-const bookData = bookDoc.data();
-const bookTitle = bookData ? bookData.titulo : 'Livro não encontrado';
-const bookAuthor = bookData ? (bookData.autor || 'Autor não informado') : '';
-
-booksList += `\n• ${bookTitle} (Quantidade: ${item.quantity})`;
-booksListHtml += `<li><strong>${bookTitle}</strong>${bookAuthor ? ` - ${bookAuthor}` : ''} (Quantidade: ${item.quantity})</li>`;
-}
-
-// Monta os dados para o template do EmailJS
-const templateParams = {
-to_email: userEmail,
-to_name: userData.nome,
-user_name: userData.nome,
-user_matricula: userData.matricula || 'N/A',
-registro_numero: registroNumero,
-loan_date: loanDate,
-return_date: returnDate,
-books_list: booksList,
-books_list_html: booksListHtml,
-school_name: SYSTEM_CONFIG.schoolName || 'Escola Estadual Governador Bias Fortes',
-from_name: 'SIGEB - Sistema de Biblioteca',
-message: `Seu empréstimo foi registrado com sucesso! Por favor, devolva os livros na data indicada.`
-};
-
-// Envia o email usando EmailJS
-showAlert('info', 'Enviando email de notificação...');
-
-                // Tenta múltiplos templates automaticamente
-                let templateId = 'template_xbqnacb'; // Template válido do EmailJS
-                const fallbackTemplates = ['template_9rlx6ek', 'template_basic', 'template_default'];
-                
-                try {
-                    const response = await tryMultipleTemplates('service_70cadf4', templateParams, templateId, fallbackTemplates);
-                    console.log('Email enviado com sucesso:', response);
-                    showAlert('success', `Email de notificação enviado para ${userEmail}!`);
-                } catch (finalError) {
-                    console.error('Erro ao enviar email mesmo com fallback:', finalError);
-                    // Em vez de quebrar o fluxo, apenas avisa que o email não foi enviado
-                    showAlert('info', `
-                        📧 Email não enviado - Templates não configurados<br>
-                        <small>O empréstimo foi registrado com sucesso, mas o email não pôde ser enviado.<br>
-                        Configure os templates no EmailJS para habilitar notificações.</small>
-                    `, 6000);
-                }
-            } catch (error) {
-console.error('Erro ao enviar email:', error);
-if (error.text && error.text.includes('template ID not found')) {
-showAlert('warning', `
-<strong>Templates de email não encontrados!</strong><br><br>
-<strong>Como resolver:</strong><br>
-1. Acesse: <a href="https://dashboard.emailjs.com/admin/templates" target="_blank">EmailJS Dashboard</a><br>
-2. Crie templates com IDs: <code>template_xbqnacb</code> ou <code>template_9rlx6ek</code><br>
-3. Use as variáveis: {{to_name}}, {{books_list}}, {{loan_date}}, {{return_date}}, {{message}}
-`, 10000);
-} else if (error.text) {
-showAlert('danger', `Erro ao enviar email: ${error.text}`);
-} else {
-showAlert('danger', 'Erro ao enviar email de notificação. Verifique as configurações.');
-}
 }
 }
 
@@ -1614,10 +1377,6 @@ document.getElementById('userSearchResults').innerHTML = '';
 document.getElementById('emailSection').style.display = 'none';
 document.getElementById('userEmail').value = '';
 
-
-// Esconde botões de comunicação
-document.getElementById('btnEnviarEmailForm').style.display = 'none';
-
 // Limpa bloco de detalhes do usuário
 const userDetailsBlock = document.getElementById('userDetailsBlock');
 if (userDetailsBlock) {
@@ -1830,15 +1589,12 @@ document.getElementById('selectedUserEmail').value = userData.email || '';
 // Mostrar seção de email se o usuário tiver email
 const emailSection = document.getElementById('emailSection');
 const userEmailInput = document.getElementById('userEmail');
-const btnEnviarEmail = document.getElementById('btnEnviarEmailForm');
 
 if (userData.email && userData.email.trim() !== '') {
 userEmailInput.value = userData.email;
 emailSection.style.display = 'block';
-btnEnviarEmail.style.display = 'inline-block';
 } else {
 emailSection.style.display = 'none';
-btnEnviarEmail.style.display = 'none';
 // Desmarca o checkbox se não há email
 
 }
@@ -2145,28 +1901,8 @@ document.getElementById('btnEnviarWhatsappForm').onclick = function() {
 sendWhatsAppOnLoan(userId, books, loanDate, returnDate);
 };
 
-// Verifica se deve enviar email automático
-const userEmail = document.getElementById('selectedUserEmail').value;
 
 
-if (userEmail && sendEmailAuto) {
-// Envia email automaticamente
-try {
-
-showAlert('info', 'Email de notificação enviado automaticamente!');
-} catch (error) {
-console.error('Erro ao enviar email automático:', error);
-showAlert('warning', 'Empréstimo registrado, mas não foi possível enviar o email automático.');
-}
-}
-
-// Configura botão de email manual
-if (userEmail) {
-document.getElementById('btnEnviarEmailForm').style.display = 'inline-block';
-document.getElementById('btnEnviarEmailForm').onclick = function() {
-
-};
-}
 const addLoanModal = bootstrap.Modal.getInstance(document.getElementById('addLoanModal'));
 if (addLoanModal) addLoanModal.hide();
 setTimeout(() => {
@@ -3803,16 +3539,6 @@ showAlert('danger', 'Erro ao gerar advertência para impressão.');
 }
 }
 
-// Função para enviar advertência por email
-async function sendWarningEmail(loanId) {
-try {
-showAlert('info', 'Funcionalidade de email em desenvolvimento...');
-} catch (error) {
-console.error('Erro ao enviar email:', error);
-showAlert('danger', 'Erro ao enviar email.');
-}
-}
-
 // Função para exportar relatório simples
 async function exportSimpleWarningsReport() {
 try {
@@ -3956,105 +3682,6 @@ modal.removeAttribute('aria-hidden');
 }
 }
 });
-}
-
-// Função para testar configuração de email manualmente
-async function testEmailConfig() {
-    showAlert('info', '🔍 Testando configuração de email...<br><small>Chave atualizada: iq-JAf8NigdPPO6S4</small>', 3000);
-    
-    // Re-executa a validação
-    await validateEmailTemplates();
-    
-    // Atualiza visual do botão
-    updateEmailButtonStatus();
-    
-    // Mostra status atual
-    if (SYSTEM_CONFIG.emailEnabled) {
-        showAlert('success', `
-            ✅ <strong>Email funcionando!</strong><br>
-            📧 Notificações de empréstimo habilitadas<br>
-            <small>Templates configurados corretamente no EmailJS</small>
-        `, 6000);
-    } else {
-        showAlert('warning', `
-            ❌ <strong>Email ainda não configurado</strong><br>
-            📝 <strong>Próximos passos:</strong><br>
-            1. Acesse: <a href="https://dashboard.emailjs.com/admin/templates" target="_blank">EmailJS Dashboard</a><br>
-            2. Crie um template com ID: <code>template_xbqnacb</code><br>
-            3. Configure as variáveis: {{to_name}}, {{books_list}}, {{loan_date}}, {{return_date}}<br>
-            4. Clique neste botão novamente para testar
-        `, 10000);
-    }
-}
-
-// Função para validar se os templates de email existem
-async function validateEmailTemplates() {
-    const testParams = {
-        to_name: "Teste",
-        to_email: "test@example.com",
-        subject: "Teste de Template",
-        message: "Teste de validação",
-        books_list: "Livro de teste",
-        loan_date: "01/01/2025",
-        return_date: "15/01/2025"
-    };
-    
-    const templates = ['template_xbqnacb', 'template_9rlx6ek', 'template_basic'];
-    let validTemplate = null;
-    
-    for (const templateId of templates) {
-        try {
-            console.log(`🔍 Testando template: ${templateId}`);
-            // Tenta enviar um email de teste (que não será realmente enviado porque o email é inválido)
-            await emailjs.send('service_70cadf4', templateId, testParams);
-            // Se chegou aqui, o template existe
-            validTemplate = templateId;
-            console.log(`✅ Template válido encontrado: ${templateId}`);
-            break;
-        } catch (error) {
-            if (error.text && error.text.includes('template ID not found')) {
-                console.warn(`❌ Template ${templateId} não existe`);
-            } else {
-                // Outros erros podem significar que o template existe mas há problema com email/service
-                console.log(`⚠️ Template ${templateId} existe mas há outro erro:`, error.text);
-                validTemplate = templateId;
-                break;
-            }
-        }
-    }
-    
-    if (validTemplate) {
-        console.log(`🎉 Email habilitado! Usando template: ${validTemplate}`);
-        SYSTEM_CONFIG.emailEnabled = true;
-        SYSTEM_CONFIG.emailTemplatesConfigured = true;
-        showAlert('success', `📧 Sistema de email configurado e funcionando!`, 4000);
-        updateEmailButtonStatus(); // Atualiza visual do botão
-    } else {
-        console.warn('❌ Nenhum template de email foi encontrado.');
-        showAlert('info', `
-            📧 <strong>Email temporariamente desabilitado</strong><br>
-            <small>Para habilitar notificações por email:</small><br>
-            1. Acesse: <a href="https://dashboard.emailjs.com/admin/templates" target="_blank">EmailJS Templates</a><br>
-            2. Crie um template com ID: <code>template_xbqnacb</code><br>
-            3. Recarregue a página
-        `, 8000);
-    }
-}
-
-// Função para atualizar o visual do botão de email
-function updateEmailButtonStatus() {
-    const emailButton = document.querySelector('button[onclick="testEmailConfig()"]');
-    if (emailButton) {
-        if (SYSTEM_CONFIG.emailEnabled) {
-            emailButton.className = 'btn btn-success btn-sm';
-            emailButton.innerHTML = '<i class="bx bx-check-circle"></i> Email ✓';
-            emailButton.title = 'Email configurado e funcionando - Clique para testar';
-        } else {
-            emailButton.className = 'btn btn-outline-warning btn-sm';
-            emailButton.innerHTML = '<i class="bx bx-error"></i> Email ⚠';
-            emailButton.title = 'Email não configurado - Clique para configurar';
-        }
-    }
 }
 
 // Monitora abertura de modais Bootstrap para garantir acessibilidade

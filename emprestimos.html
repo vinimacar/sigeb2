@@ -194,6 +194,24 @@ animation: marquee-bar 40s linear infinite;
 50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(25, 135, 84, 0.6); }
 100% { transform: scale(1); box-shadow: 0 0 5px rgba(25, 135, 84, 0.3); }
 }
+
+/* Estilo para badges de atraso */
+.badge-atraso {
+background: linear-gradient(45deg, #c62828, #d32f2f) !important;
+color: white !important;
+font-weight: bold;
+font-size: 0.75rem !important;
+padding: 0.375rem 0.75rem;
+border-radius: 0.375rem;
+box-shadow: 0 2px 4px rgba(198, 40, 40, 0.3);
+animation: pulse-danger 2s infinite;
+}
+
+@keyframes pulse-danger {
+0% { box-shadow: 0 2px 4px rgba(198, 40, 40, 0.3); }
+50% { box-shadow: 0 4px 8px rgba(198, 40, 40, 0.6); }
+100% { box-shadow: 0 2px 4px rgba(198, 40, 40, 0.3); }
+}
 </style>
 
 <!-- Firebase SDK -->
@@ -2793,7 +2811,10 @@ tbody.innerHTML += `
 <td>${userName}</td>
 <td>${data.loanDate}</td>
 <td>${data.returnDate}</td>
-<td><span class="loan-status status-atrasado">ATRASADO (${diffDays} dias)</span></td>
+<td>
+<span class="loan-status status-atrasado">ATRASADO</span><br>
+<span class="badge badge-atraso">${diffDays} ${diffDays === 1 ? 'dia' : 'dias'} de atraso</span>
+</td>
 <td>
 <div class="action-buttons">
 ${actionBtns}
@@ -2898,8 +2919,13 @@ actionBtns += `
 
 // Monta o texto do status com informações de atraso
 let statusText = data.status;
+let statusDisplay = `<span class="loan-status ${statusClass}">${statusText}</span>`;
+
 if (data.status === 'ATRASADO' && diffDays > 0) {
-statusText = `ATRASADO (${diffDays} ${diffDays === 1 ? 'dia' : 'dias'})`;
+statusDisplay = `
+<span class="loan-status ${statusClass}">ATRASADO</span><br>
+<span class="badge badge-atraso">${diffDays} ${diffDays === 1 ? 'dia' : 'dias'} de atraso</span>
+`;
 }
 
 tbody.innerHTML += `
@@ -2908,7 +2934,7 @@ tbody.innerHTML += `
 <td>${userName}</td>
 <td>${data.loanDate}</td>
 <td>${data.returnDate}</td>
-<td><span class="loan-status ${statusClass}">${statusText}</span></td>
+<td>${statusDisplay}</td>
 <td>
 <div class="action-buttons">
 ${actionBtns}

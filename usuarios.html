@@ -2209,62 +2209,62 @@
         doc.setFillColor(0, 188, 212); // Ciano
         doc.rect(x, y, width, 3, 'F');
 
-        // === POSICIONAMENTO OTIMIZADO DOS LOGOS ===
+        // === POSICIONAMENTO DOS LOGOS NO CABEÇALHO ===
         
-        // Logo SIGEB (esquerda) com background moderno - agora usando icone.png
+        // Logo icone.png (esquerda) - posicionado no cabeçalho azul
         if (logoSigebBase64) {
           try {
-            doc.addImage(logoSigebBase64, 'PNG', x + 4, y + 18, 20, 12);
+            doc.addImage(logoSigebBase64, 'PNG', x + 3, y + 2, 12, 12);
           } catch (error) {
             // Fallback moderno
             doc.setFillColor(255, 255, 255);
-            doc.rect(x + 4, y + 18, 18, 10, 'F');
-            doc.setDrawColor(0, 188, 212);
+            doc.circle(x + 9, y + 8, 5, 'F');
+            doc.setDrawColor(255, 255, 255);
             doc.setLineWidth(0.5);
-            doc.rect(x + 4, y + 18, 18, 10);
+            doc.circle(x + 9, y + 8, 5);
             doc.setTextColor(26, 35, 126);
-            doc.setFontSize(8);
+            doc.setFontSize(6);
             doc.setFont('helvetica', 'bold');
-            doc.text('ICON', x + 8, y + 24);
+            doc.text('ICON', x + 6, y + 9);
           }
         } else {
           doc.setFillColor(255, 255, 255);
-          doc.rect(x + 4, y + 18, 18, 10, 'F');
-          doc.setDrawColor(0, 188, 212);
+          doc.circle(x + 9, y + 8, 5, 'F');
+          doc.setDrawColor(255, 255, 255);
           doc.setLineWidth(0.5);
-          doc.rect(x + 4, y + 18, 18, 10);
+          doc.circle(x + 9, y + 8, 5);
           doc.setTextColor(26, 35, 126);
-          doc.setFontSize(8);
+          doc.setFontSize(6);
           doc.setFont('helvetica', 'bold');
-          doc.text('ICON', x + 8, y + 24);
+          doc.text('ICON', x + 6, y + 9);
         }
 
-        // Logo da escola (direita) com design circular moderno
+        // Logo da escola Bias Fortes (direita) - posicionado no cabeçalho azul
         if (logoBiasBase64) {
           try {
-            doc.addImage(logoBiasBase64, 'PNG', x + width - 24, y + 18, 18, 12);
+            doc.addImage(logoBiasBase64, 'PNG', x + width - 15, y + 2, 12, 12);
           } catch (error) {
             // Fallback circular moderno
             doc.setFillColor(255, 255, 255);
-            doc.circle(x + width - 15, y + 24, 8, 'F');
-            doc.setDrawColor(0, 188, 212);
+            doc.circle(x + width - 9, y + 8, 5, 'F');
+            doc.setDrawColor(255, 255, 255);
             doc.setLineWidth(0.5);
-            doc.circle(x + width - 15, y + 24, 8);
+            doc.circle(x + width - 9, y + 8, 5);
             doc.setTextColor(26, 35, 126);
-            doc.setFontSize(7);
+            doc.setFontSize(5);
             doc.setFont('helvetica', 'bold');
-            doc.text('BF', x + width - 17.5, y + 26);
+            doc.text('BF', x + width - 10.5, y + 9);
           }
         } else {
           doc.setFillColor(255, 255, 255);
-          doc.circle(x + width - 15, y + 24, 8, 'F');
-          doc.setDrawColor(0, 188, 212);
+          doc.circle(x + width - 9, y + 8, 5, 'F');
+          doc.setDrawColor(255, 255, 255);
           doc.setLineWidth(0.5);
-          doc.circle(x + width - 15, y + 24, 8);
+          doc.circle(x + width - 9, y + 8, 5);
           doc.setTextColor(26, 35, 126);
-          doc.setFontSize(7);
+          doc.setFontSize(5);
           doc.setFont('helvetica', 'bold');
-          doc.text('BF', x + width - 17.5, y + 26);
+          doc.text('BF', x + width - 10.5, y + 9);
         }
 
         // === TÍTULOS MODERNOS E CENTRALIZADOS ===
@@ -2285,109 +2285,104 @@
         const subtituloWidth = doc.getTextWidth(subtituloTexto);
         doc.text(subtituloTexto, x + (width - subtituloWidth) / 2, y + 14);
 
-        // === SEPARADOR MODERNO ===
+        // === SEPARADOR COMPACTO ===
         
-        // Linha separadora com gradiente
-        const gradientY = y + 32;
+        // Linha separadora com gradiente (posição ajustada)
+        const gradientY = y + 30;
         doc.setDrawColor(0, 188, 212);
-        doc.setLineWidth(0.8);
+        doc.setLineWidth(0.6);
         doc.line(x + 8, gradientY, x + width - 8, gradientY);
         
-        // Elementos decorativos modernos
+        // Elementos decorativos menores
         doc.setFillColor(0, 188, 212);
-        doc.circle(x + 12, gradientY, 1.5, 'F');
-        doc.circle(x + width - 12, gradientY, 1.5, 'F');
-        
-        // Micro detalhes decorativos
-        doc.setFillColor(45, 156, 219);
-        doc.circle(x + 16, gradientY, 0.8, 'F');
-        doc.circle(x + width - 16, gradientY, 0.8, 'F');
+        doc.circle(x + 12, gradientY, 1, 'F');
+        doc.circle(x + width - 12, gradientY, 1, 'F');
 
         // === INFORMAÇÕES DO USUÁRIO COM DESIGN CARD ===
         
-        // Card para o nome com fundo sutil (mais compacto)
+        // Card para o nome com fundo sutil (mais compacto ainda)
         doc.setFillColor(248, 250, 252);
-        doc.rect(x + 6, y + 36, width - 12, 8, 'F');
+        doc.rect(x + 6, y + 33, width - 12, 7, 'F');
         doc.setDrawColor(230, 235, 240);
         doc.setLineWidth(0.3);
-        doc.rect(x + 6, y + 36, width - 12, 8);
+        doc.rect(x + 6, y + 33, width - 12, 7);
         
-        // Nome em destaque centralizado (fonte menor para caber melhor)
+        // Nome em destaque centralizado (fonte ajustada)
         doc.setTextColor(26, 35, 126);
-        doc.setFontSize(9);
+        doc.setFontSize(8.5);
         doc.setFont('helvetica', 'bold');
-        const nomeMaxLength = 26;
+        const nomeMaxLength = 28;
         const nomeDisplay = nomeSeguro.length > nomeMaxLength ? nomeSeguro.substring(0, nomeMaxLength) + '...' : nomeSeguro;
         const nomeWidth = doc.getTextWidth(nomeDisplay.toUpperCase());
-        doc.text(nomeDisplay.toUpperCase(), x + (width - nomeWidth) / 2, y + 41);
+        doc.text(nomeDisplay.toUpperCase(), x + (width - nomeWidth) / 2, y + 37.5);
 
-        // === LAYOUT OTIMIZADO DE INFORMAÇÕES ===
+        // === LAYOUT ULTRA COMPACTO DE INFORMAÇÕES ===
         
         // Container para informações mais compacto
-        const infoY = y + 47;
+        const infoY = y + 42;
         
-        // Tag de matrícula moderna (reduzida)
+        // Tag de matrícula moderna (ainda menor)
         doc.setFillColor(0, 188, 212);
-        doc.rect(x + 6, infoY, 22, 6, 'F');
+        doc.rect(x + 6, infoY, 20, 5, 'F');
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(5.5);
+        doc.setFontSize(5);
         doc.setFont('helvetica', 'bold');
-        doc.text('MATRÍCULA', x + 7, infoY + 3.5);
+        doc.text('MATRÍCULA', x + 6.5, infoY + 3);
         
         doc.setTextColor(26, 35, 126);
-        doc.setFontSize(7.5);
+        doc.setFontSize(7);
         doc.setFont('helvetica', 'bold');
-        doc.text(matriculaSegura, x + 30, infoY + 3.5);
+        doc.text(matriculaSegura, x + 28, infoY + 3);
         
-        // Tag de categoria moderna (reduzida)
+        // Tag de categoria moderna (ainda menor)
         doc.setFillColor(45, 156, 219);
-        doc.rect(x + width - 25, infoY, 19, 6, 'F');
+        doc.rect(x + width - 23, infoY, 17, 5, 'F');
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(5.5);
+        doc.setFontSize(5);
         doc.setFont('helvetica', 'bold');
-        doc.text('CATEGORIA', x + width - 24, infoY + 3.5);
+        doc.text('CATEGORIA', x + width - 22, infoY + 3);
         
-        const categoriaDisplay = funcaoSegura.length > 8 ? funcaoSegura.substring(0, 8) : funcaoSegura;
+        const categoriaDisplay = funcaoSegura.length > 9 ? funcaoSegura.substring(0, 9) : funcaoSegura;
         doc.setTextColor(26, 35, 126);
-        doc.setFontSize(6.5);
+        doc.setFontSize(6);
         doc.setFont('helvetica', 'bold');
         const catWidth = doc.getTextWidth(categoriaDisplay);
-        doc.text(categoriaDisplay, x + width - 6 - catWidth, infoY + 9);
+        doc.text(categoriaDisplay, x + width - 6 - catWidth, infoY + 8);
 
-        // Email com ícone (mais compacto)
+        // Email com ícone (bem compacto e posicionado)
         if (usuario.email) {
-          const emailMaxLength = 32;
+          const emailMaxLength = 36;
           const emailDisplay = usuario.email.length > emailMaxLength ? usuario.email.substring(0, emailMaxLength) + '...' : usuario.email;
           
           // Ícone de email menor
           doc.setFillColor(100, 100, 100);
-          doc.rect(x + 8, y + 55, 2.5, 1.5, 'F');
+          doc.rect(x + 8, y + 52, 2.5, 1.5, 'F');
           doc.setLineWidth(0.15);
           doc.setDrawColor(100, 100, 100);
-          doc.line(x + 8, y + 55, x + 9.25, y + 55.75);
-          doc.line(x + 10.5, y + 55, x + 9.25, y + 55.75);
+          doc.line(x + 8, y + 52, x + 9.25, y + 52.75);
+          doc.line(x + 10.5, y + 52, x + 9.25, y + 52.75);
           
           doc.setTextColor(80, 80, 80);
-          doc.setFontSize(5.5);
+          doc.setFontSize(4.5);
           doc.setFont('helvetica', 'normal');
-          doc.text(emailDisplay, x + 12, y + 56);
+          doc.text(emailDisplay, x + 12, y + 53);
         }
 
-        // === CÓDIGO DE BARRAS MODERNO (baseado na matrícula) ===
+        // === CÓDIGO DE BARRAS COMPACTO (baseado na matrícula) ===
         
-        // Área para código de barras
-        const barcodeStartX = x + 6;
-        const barcodeY = y + height - 18;
-        const barcodeWidth = width - 12;
-        const barcodeHeight = 8;
+        // Área para código de barras menor
+        const barcodeStartX = x + 8;
+        const barcodeY = y + height - 14;
+        const barcodeWidth = width - 16;
+        const barcodeHeight = 5; // Reduzido de 8 para 5
         
         // Fundo branco para o código de barras
         doc.setFillColor(255, 255, 255);
-        doc.rect(barcodeStartX - 1, barcodeY - 1, barcodeWidth + 2, barcodeHeight + 4, 'F');
+        doc.rect(barcodeStartX - 1, barcodeY - 1, barcodeWidth + 2, barcodeHeight + 3, 'F');
         
         // Gerar padrão de código de barras baseado na matrícula
         const matriculaNumeros = matriculaSegura.replace(/\D/g, ''); // Remove não-números
-        const codigoCompleto = matriculaNumeros.padStart(8, '0'); // Garante 8 dígitos
+        const codigoCompleto = matriculaNumeros.padStart(6, '0'); // Reduzido para 6 dígitos
         
         // Padrões de código de barras (Code 128 simplificado)
         const patterns = {
@@ -2396,11 +2391,11 @@
           '8': '10010', '9': '01010'
         };
         
-        let barcodePattern = '1010'; // Start pattern
+        let barcodePattern = '101'; // Start pattern mais curto
         for (let digit of codigoCompleto) {
           barcodePattern += patterns[digit] || '00110';
         }
-        barcodePattern += '1010'; // End pattern
+        barcodePattern += '101'; // End pattern mais curto
         
         // Desenhar código de barras
         doc.setFillColor(0, 0, 0);
@@ -2418,18 +2413,18 @@
           }
         }
         
-        // Texto da matrícula abaixo do código de barras
+        // Texto da matrícula abaixo do código de barras (menor)
         doc.setTextColor(60, 60, 60);
-        doc.setFontSize(6);
+        doc.setFontSize(5);
         doc.setFont('helvetica', 'normal');
         const matriculaTextWidth = doc.getTextWidth(matriculaSegura);
-        doc.text(matriculaSegura, x + (width - matriculaTextWidth) / 2, barcodeY + barcodeHeight + 3);
+        doc.text(matriculaSegura, x + (width - matriculaTextWidth) / 2, barcodeY + barcodeHeight + 2);
 
-        // === RODAPÉ COMPACTO E ELEGANTE ===
+        // === RODAPÉ ULTRA COMPACTO ===
         
-        // Barra inferior com gradiente (mais estreita)
+        // Barra inferior com gradiente (muito estreita)
         doc.setFillColor(240, 245, 248);
-        doc.rect(x, y + height - 6, width, 6, 'F');
+        doc.rect(x, y + height - 4, width, 4, 'F');
         
         // Accent line inferior
         doc.setFillColor(0, 188, 212);
@@ -2439,25 +2434,19 @@
         const dataValidade = new Date();
         dataValidade.setFullYear(dataValidade.getFullYear() + 1);
         doc.setTextColor(80, 80, 80);
-        doc.setFontSize(5);
+        doc.setFontSize(4);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Válido: ${dataValidade.toLocaleDateString('pt-BR')}`, x + 4, y + height - 3);
+        doc.text(`Válido: ${dataValidade.toLocaleDateString('pt-BR')}`, x + 2, y + height - 1.5);
 
-        // Selo de autenticidade compacto
+        // Selo de autenticidade bem compacto
         doc.setFillColor(0, 188, 212);
-        doc.circle(x + width - 8, y + height - 15, 2.5, 'F');
+        doc.circle(x + width - 6, y + height - 8, 2, 'F');
         
         // Ícone de verificação
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(5);
-        doc.setFont('helvetica', 'bold');
-        doc.text('✓', x + width - 9, y + height - 13.5);
-        
-        // Texto de autenticidade compacto
-        doc.setTextColor(0, 188, 212);
         doc.setFontSize(4);
-        doc.setFont('helvetica', 'normal');
-        doc.text('VÁLIDO', x + width - 15, y + height - 18);
+        doc.setFont('helvetica', 'bold');
+        doc.text('✓', x + width - 6.8, y + height - 7);
       } catch (error) {
         console.error('Erro ao criar cartão do usuário:', error);
         // Em caso de erro, desenha um cartão básico moderno

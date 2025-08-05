@@ -634,29 +634,43 @@
         let totalEmprestimos = 0;
         let totalAtrasados = 0;
         const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0); // Zera horário para comparação apenas de data
+        
         snapshot.forEach(child => {
           const data = child.data();
-          let booksArray = [];
-          if (Array.isArray(data.books)) {
-            booksArray = data.books;
-          } else if (data.bookId && data.quantity) {
-            booksArray = [{ bookId: data.bookId, quantity: data.quantity }];
-          }
-          if (data.status === 'EMPRESTADO') {
+          
+          // Processa apenas empréstimos que não foram devolvidos
+          if (data.status === 'EMPRESTADO' || data.status === 'ATRASADO') {
+            let booksArray = [];
+            if (Array.isArray(data.books)) {
+              booksArray = data.books;
+            } else if (data.bookId && data.quantity) {
+              booksArray = [{ bookId: data.bookId, quantity: data.quantity }];
+            }
+            
             let totalQtd = 0;
             booksArray.forEach(item => {
               totalQtd += item.quantity || 1;
             });
+            
             totalEmprestimos += totalQtd;
+            
+            // Verifica se está atrasado baseado na data de devolução prevista
             if (data.returnDate) {
-              const [d, m, y] = data.returnDate.split('/');
-              const dataDevolucao = new Date(`${y}-${m}-${d}`);
-              if (dataDevolucao.setHours(0,0,0,0) < hoje.setHours(0,0,0,0)) {
-                totalAtrasados += totalQtd;
+              const dateParts = data.returnDate.split('/');
+              if (dateParts.length === 3) {
+                const dataDevolucao = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                dataDevolucao.setHours(0, 0, 0, 0);
+                
+                // Se a data de devolução já passou, está atrasado
+                if (dataDevolucao < hoje) {
+                  totalAtrasados += totalQtd;
+                }
               }
             }
           }
         });
+        
         document.getElementById('totalEmprestimos').textContent = totalEmprestimos;
         document.getElementById('totalAtrasados').textContent = totalAtrasados;
       });
@@ -694,16 +708,40 @@
             let desc = '';
             let dataMov = '';
 
-            // Busca usuário e livro para detalhar a atividade
-            let user = 'Usuario';
-            let book = 'Livro';
+            // Busca nome do usuário
+            let user = 'Usuário';
             try {
-              const [userSnap, bookSnap] = await Promise.all([
-                db.collection('usuarios').doc(data.userId).get(),
-                db.collection('livros').doc(data.bookId).get()
-              ]);
+              const userSnap = await db.collection('usuarios').doc(data.userId).get();
               if (userSnap.exists && userSnap.data().nome) user = userSnap.data().nome;
-              if (bookSnap.exists && bookSnap.data().titulo) book = bookSnap.data().titulo;
+            } catch {}
+
+            // Busca informações dos livros (suporta múltiplos livros)
+            let livrosInfo = 'Livro(s)';
+            try {
+              if (Array.isArray(data.books) && data.books.length > 0) {
+                // Empréstimo com múltiplos livros
+                if (data.books.length === 1) {
+                  const bookSnap = await db.collection('livros').doc(data.books[0].bookId).get();
+                  if (bookSnap.exists && bookSnap.data().titulo) {
+                    livrosInfo = `"${bookSnap.data().titulo}"`;
+                    if (data.books[0].quantity > 1) {
+                      livrosInfo += ` (${data.books[0].quantity} exemplares)`;
+                    }
+                  }
+                } else {
+                  // Múltiplos livros diferentes
+                  livrosInfo = `${data.books.length} livros diferentes`;
+                }
+              } else if (data.bookId) {
+                // Formato antigo com bookId único
+                const bookSnap = await db.collection('livros').doc(data.bookId).get();
+                if (bookSnap.exists && bookSnap.data().titulo) {
+                  livrosInfo = `"${bookSnap.data().titulo}"`;
+                  if (data.quantity > 1) {
+                    livrosInfo += ` (${data.quantity} exemplares)`;
+                  }
+                }
+              }
             } catch {}
 
             // Data da movimentação
@@ -715,17 +753,17 @@
             if (data.status === 'EMPRESTADO') {
               icon = 'bxs-bookmark';
               title = 'Empréstimo realizado';
-              desc = `${user} pegou emprestado "${book}"`;
+              desc = `${user} pegou emprestado ${livrosInfo}`;
             } else if (data.status === 'DEVOLVIDO') {
               icon = 'bxs-book';
               title = 'Livro devolvido';
-              desc = `${user} devolveu "${book}"`;
+              desc = `${user} devolveu ${livrosInfo}`;
             } else if (data.status === 'RESERVADO') {
               icon = 'bxs-time';
               title = 'Reserva realizada';
-              desc = `${user} reservou "${book}"`;
+              desc = `${user} reservou ${livrosInfo}`;
             } else {
-              desc = `${user} movimentou "${book}"`;
+              desc = `${user} movimentou ${livrosInfo}`;
             }
 
             container.innerHTML += `
@@ -788,24 +826,30 @@
 
         snapshot.forEach(doc => {
           const data = doc.data();
-          if (data.status === 'EMPRESTADO') {
+          
+          if (data.status === 'DEVOLVIDO') {
+            devolvidos++;
+          } else if (data.status === 'EMPRESTADO' || data.status === 'ATRASADO') {
+            // Verifica se está realmente atrasado baseado na data
             if (data.returnDate) {
-              const [d, m, y] = data.returnDate.split('/');
-              const dataRetorno = new Date(y, m - 1, d);
-              dataRetorno.setHours(0, 0, 0, 0);
-              
-              if (dataRetorno < hoje) {
-                atrasados++;
+              const dateParts = data.returnDate.split('/');
+              if (dateParts.length === 3) {
+                const dataRetorno = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                dataRetorno.setHours(0, 0, 0, 0);
+                
+                if (dataRetorno < hoje) {
+                  atrasados++;
+                } else {
+                  emprestados++;
+                }
               } else {
+                // Se não conseguir interpretar a data, considera como emprestado
                 emprestados++;
               }
             } else {
+              // Se não há data de devolução, considera como emprestado
               emprestados++;
             }
-          } else if (data.status === 'ATRASADO') {
-            atrasados++;
-          } else if (data.status === 'DEVOLVIDO') {
-            devolvidos++;
           }
         });
 
@@ -1216,24 +1260,36 @@
       // Atualiza dados em tempo real
       db.collection('emprestimos').onSnapshot(snapshot => {
         const atrasosPorMes = new Array(12).fill(0);
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        
         snapshot.forEach(doc => {
           const data = doc.data();
+          
+          // Verifica apenas empréstimos que não foram devolvidos
           if (data.status === 'EMPRESTADO' || data.status === 'ATRASADO') {
             if (data.returnDate) {
-              // Espera formato dd/mm/yyyy
-              const [d, m, y] = data.returnDate.split('/');
-              const dataRetorno = new Date(y, m - 1, d);
-              const hoje = new Date();
-              if (dataRetorno < hoje) {
-                // Está atrasado
-                const diffMeses = (hoje.getFullYear() - dataRetorno.getFullYear()) * 12 + (hoje.getMonth() - dataRetorno.getMonth());
-                if (diffMeses >= 0 && diffMeses < 12) {
-                  atrasosPorMes[11 - diffMeses]++;
+              const dateParts = data.returnDate.split('/');
+              if (dateParts.length === 3) {
+                const dataRetorno = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                dataRetorno.setHours(0, 0, 0, 0);
+                
+                // Se está atrasado (data de retorno já passou)
+                if (dataRetorno < hoje) {
+                  // Calcula em qual mês dos últimos 12 o empréstimo deveria ter sido devolvido
+                  const diffAnos = hoje.getFullYear() - dataRetorno.getFullYear();
+                  const diffMeses = diffAnos * 12 + (hoje.getMonth() - dataRetorno.getMonth());
+                  
+                  // Se o atraso está dentro dos últimos 12 meses
+                  if (diffMeses >= 0 && diffMeses < 12) {
+                    atrasosPorMes[11 - diffMeses]++;
+                  }
                 }
               }
             }
           }
         });
+        
         lateChart.data.datasets[0].data = atrasosPorMes;
         lateChart.update();
       });

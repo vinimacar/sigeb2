@@ -462,47 +462,180 @@
 
       if (reportType.value === 'advertencias') {
         try {
-          const snapshot = await db.collection('advertencias').orderBy('createdAt', 'desc').get();
-          if (snapshot.empty) {
-            html = '<p>Nenhuma advertência encontrada.</p>';
+          const snapshotEmprestimos = await db.collection('emprestimos').get();
+          if (snapshotEmprestimos.empty) {
+            html = '<p>Nenhum empréstimo encontrado para verificar advertências.</p>';
           } else {
             html = `
               <table class="table table-bordered table-sm">
                 <thead>
                   <tr>
-                    <th>Data</th>
+                    <th>Data Empréstimo</th>
+                    <th>Data Prevista Devolução</th>
                     <th>Usuário</th>
-                    <th>Registro Empréstimo</th>
+                    <th>Livro(s)</th>
                     <th>Dias de Atraso</th>
                     <th>Status</th>
+                    <th>Multa Acumulada</th>
                   </tr>
                 </thead>
                 <tbody>
             `;
-            for (const doc of snapshot.docs) {
-              const adv = doc.data();
-              let nomeUsuario = 'Usuário não encontrado';
-              try {
-                if (adv.loanId) {
-                  const loanDoc = await db.collection('emprestimos').doc(adv.loanId).get();
-                  if (loanDoc.exists && loanDoc.data().userId) {
-                    const userDoc = await db.collection('usuarios').doc(loanDoc.data().userId).get();
-                    if (userDoc.exists) nomeUsuario = userDoc.data().nome || 'Nome não informado';
+            
+            const hoje = new Date();
+            hoje.setHours(23, 59, 59, 999); // Fim do dia atual
+            
+            let totalAdvertencias = 0;
+            let totalMultaAcumulada = 0;
+            
+            for (const doc of snapshotEmprestimos.docs) {
+              const emprestimo = doc.data();
+              
+              // Verificar apenas empréstimos ativos ou já marcados como atrasados
+              if (emprestimo.status === 'DEVOLVIDO') {
+                continue;
+              }
+              
+              // Calcular dias de atraso
+              let diasAtraso = 0;
+              let dataVencimento = null;
+              let statusEmprestimo = emprestimo.status || 'EMPRESTADO';
+              
+              if (emprestimo.returnDate) {
+                const dateParts = emprestimo.returnDate.split('/');
+                if (dateParts.length === 3) {
+                  dataVencimento = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                  dataVencimento.setHours(23, 59, 59, 999);
+                  
+                  if (hoje > dataVencimento) {
+                    const diffTime = hoje.getTime() - dataVencimento.getTime();
+                    diasAtraso = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    statusEmprestimo = 'ATRASADO';
                   }
                 }
-              } catch {}
+              }
+              
+              // Só exibe se houver atraso (advertência)
+              if (diasAtraso > 0) {
+                totalAdvertencias++;
+                
+                // Buscar nome do usuário
+                let nomeUsuario = 'Usuário não encontrado';
+                let matriculaUsuario = '';
+                try {
+                  if (emprestimo.userId) {
+                    const userDoc = await db.collection('usuarios').doc(emprestimo.userId).get();
+                    if (userDoc.exists) {
+                      const userData = userDoc.data();
+                      nomeUsuario = userData.nome || 'Nome não informado';
+                      matriculaUsuario = userData.matricula ? ` (Mat: ${userData.matricula})` : '';
+                    }
+                  }
+                } catch (error) {
+                  console.error('Erro ao buscar usuário:', error);
+                }
+
+                // Buscar nomes dos livros
+                let nomesLivros = 'Livros não encontrados';
+                try {
+                  if (Array.isArray(emprestimo.books)) {
+                    const livrosPromises = emprestimo.books.map(async (book) => {
+                      const livroDoc = await db.collection('livros').doc(book.bookId).get();
+                      const livroData = livroDoc.exists ? livroDoc.data() : null;
+                      const titulo = livroData ? livroData.titulo : book.bookId;
+                      return `${titulo} (Qtd: ${book.quantity})`;
+                    });
+                    const livrosArray = await Promise.all(livrosPromises);
+                    nomesLivros = livrosArray.join('<br>');
+                  }
+                } catch (error) {
+                  console.error('Erro ao buscar livros:', error);
+                }
+
+                // Calcular multa (R$ 0,50 por dia por livro)
+                const quantidadeLivros = Array.isArray(emprestimo.books) 
+                  ? emprestimo.books.reduce((total, book) => total + (book.quantity || 1), 0)
+                  : 1;
+                const multaIndividual = diasAtraso * 0.50 * quantidadeLivros;
+                totalMultaAcumulada += multaIndividual;
+
+                // Definir cor do badge baseado nos dias de atraso
+                let badgeClass = 'bg-warning';
+                if (diasAtraso > 15) badgeClass = 'bg-danger';
+                else if (diasAtraso > 7) badgeClass = 'bg-warning';
+                else badgeClass = 'bg-info';
+
+                html += `
+                  <tr class="${diasAtraso > 15 ? 'table-danger' : diasAtraso > 7 ? 'table-warning' : ''}">
+                    <td>${emprestimo.loanDate || 'Data não informada'}</td>
+                    <td>${emprestimo.returnDate || 'Data não informada'}</td>
+                    <td>
+                      <strong>${nomeUsuario}</strong>${matriculaUsuario}
+                    </td>
+                    <td style="max-width: 200px;">${nomesLivros}</td>
+                    <td>
+                      <span class="badge ${badgeClass} fs-6">
+                        ${diasAtraso} dia${diasAtraso > 1 ? 's' : ''}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge bg-danger">ATRASADO</span>
+                    </td>
+                    <td>
+                      <strong>R$ ${multaIndividual.toFixed(2)}</strong>
+                      <br><small class="text-muted">(R$ 0,50/dia × ${quantidadeLivros} livro${quantidadeLivros > 1 ? 's' : ''})</small>
+                    </td>
+                  </tr>
+                `;
+              }
+            }
+            
+            if (totalAdvertencias === 0) {
+              html = `
+                <div class="alert alert-success">
+                  <h5><i class='bx bx-check-circle'></i> Parabéns!</h5>
+                  <p class="mb-0">Não há empréstimos em atraso no momento. Todos os usuários estão em dia com suas devoluções.</p>
+                </div>
+              `;
+            } else {
+              html += '</tbody></table>';
+              
+              // Adiciona estatísticas resumidas com alertas coloridos
               html += `
-                <tr>
-                  <td>${adv.warningDate || '-'}</td>
-                  <td>${nomeUsuario}</td>
-                  <td>${adv.loanId || '-'}</td>
-                  <td>${adv.daysLate || '-'}</td>
-                  <td><span class="badge bg-warning">${adv.status || '-'}</span></td>
-                </tr>
+                <div class="row mt-4">
+                  <div class="col-md-4">
+                    <div class="alert alert-danger">
+                      <h6><i class='bx bx-error-circle'></i> Total de Advertências</h6>
+                      <h4 class="mb-0">${totalAdvertencias}</h4>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="alert alert-warning">
+                      <h6><i class='bx bx-money'></i> Multa Total Acumulada</h6>
+                      <h4 class="mb-0">R$ ${totalMultaAcumulada.toFixed(2)}</h4>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="alert alert-info">
+                      <h6><i class='bx bx-calendar'></i> Data da Consulta</h6>
+                      <h6 class="mb-0">${hoje.toLocaleDateString('pt-BR')}</h6>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mt-3">
+                  <h5>Legenda de Gravidade:</h5>
+                  <div class="d-flex flex-wrap gap-3">
+                    <span><span class="badge bg-info">1-7 dias</span> Atraso Leve</span>
+                    <span><span class="badge bg-warning">8-15 dias</span> Atraso Moderado</span>
+                    <span><span class="badge bg-danger">16+ dias</span> Atraso Grave</span>
+                  </div>
+                  <small class="text-muted mt-2 d-block">
+                    <strong>Nota:</strong> Multa de R$ 0,50 por dia de atraso, por livro emprestado.
+                  </small>
+                </div>
               `;
             }
-            html += '</tbody></table>';
-            html += `<div class="mt-3"><strong>Total de advertências:</strong> ${snapshot.size}</div>`;
           }
         } catch (error) {
           html = `<p class="text-danger">Erro ao carregar advertências: ${error.message}</p>`;
@@ -542,7 +675,7 @@
       if (reportType === 'livros') titulo = 'Relatório de Livros';
       if (reportType === 'usuarios') titulo = 'Relatório de Usuários';
       if (reportType === 'emprestimos') titulo = 'Relatório de Empréstimos';
-      if (reportType === 'advertencias') titulo = 'Relatório de Advertências';
+      if (reportType === 'advertencias') titulo = 'Relatório de Advertências e Multas';
 
       // Adiciona informações de filtro ao título
       if (reportType === 'emprestimos') {
@@ -557,6 +690,10 @@
           if (dataFim) filtros.push(`Até: ${new Date(dataFim).toLocaleDateString('pt-BR')}`);
           titulo += ` (${filtros.join(', ')})`;
         }
+      }
+
+      if (reportType === 'advertencias') {
+        titulo += ` - Gerado em ${new Date().toLocaleDateString('pt-BR')}`;
       }
 
       // Função para adicionar logo e cabeçalho
@@ -593,13 +730,61 @@
             // Gerar tabela
             const table = reportResult.querySelector('table');
             if (table) {
-              doc.autoTable({ 
+              // Configurações especiais para o relatório de advertências
+              let autoTableConfig = { 
                 html: table, 
                 startY: 60,
                 styles: { fontSize: 8 },
                 headStyles: { fillColor: [13, 40, 71] },
                 theme: 'striped'
-              });
+              };
+
+              // Para relatório de advertências, ajustar configurações
+              if (reportType === 'advertencias') {
+                autoTableConfig.styles.fontSize = 7;
+                autoTableConfig.columnStyles = {
+                  3: { cellWidth: 40 }, // Coluna Livro(s) mais larga
+                  4: { halign: 'center' }, // Dias de atraso centralizado
+                  6: { halign: 'right' } // Multa alinhada à direita
+                };
+                
+                // Processar dados para remover HTML das células
+                autoTableConfig.didParseCell = function(data) {
+                  if (data.cell.text && Array.isArray(data.cell.text)) {
+                    data.cell.text = data.cell.text.map(text => {
+                      // Remove tags HTML
+                      return text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+                    });
+                  }
+                };
+              }
+
+              doc.autoTable(autoTableConfig);
+              
+              // Adicionar resumo específico para advertências
+              if (reportType === 'advertencias') {
+                const finalY = doc.lastAutoTable.finalY + 10;
+                
+                // Buscar dados do resumo da tela
+                const alertasResumo = reportResult.querySelectorAll('.alert h4');
+                if (alertasResumo.length >= 2) {
+                  doc.setFontSize(12);
+                  doc.setFont('helvetica', 'bold');
+                  doc.text('RESUMO EXECUTIVO', 14, finalY);
+                  
+                  doc.setFontSize(10);
+                  doc.setFont('helvetica', 'normal');
+                  doc.text(`• Total de Advertências: ${alertasResumo[0].textContent}`, 14, finalY + 10);
+                  doc.text(`• Multa Total Acumulada: ${alertasResumo[1].textContent}`, 14, finalY + 18);
+                  doc.text('• Multa: R$ 0,50 por dia de atraso, por livro emprestado', 14, finalY + 26);
+                  
+                  doc.setFontSize(9);
+                  doc.setFont('helvetica', 'bold');
+                  doc.text('Legenda de Gravidade:', 14, finalY + 36);
+                  doc.setFont('helvetica', 'normal');
+                  doc.text('1-7 dias: Atraso Leve  |  8-15 dias: Atraso Moderado  |  16+ dias: Atraso Grave', 14, finalY + 44);
+                }
+              }
             } else {
               doc.text('Nenhum dado para exportar.', 14, 70);
             }
@@ -654,13 +839,61 @@
 
         const table = reportResult.querySelector('table');
         if (table) {
-          doc.autoTable({ 
+          // Configurações especiais para o relatório de advertências
+          let autoTableConfig = { 
             html: table, 
             startY: 58,
             styles: { fontSize: 8 },
             headStyles: { fillColor: [13, 40, 71] },
             theme: 'striped'
-          });
+          };
+
+          // Para relatório de advertências, ajustar configurações
+          if (reportType === 'advertencias') {
+            autoTableConfig.styles.fontSize = 7;
+            autoTableConfig.columnStyles = {
+              3: { cellWidth: 40 }, // Coluna Livro(s) mais larga
+              4: { halign: 'center' }, // Dias de atraso centralizado
+              6: { halign: 'right' } // Multa alinhada à direita
+            };
+            
+            // Processar dados para remover HTML das células
+            autoTableConfig.didParseCell = function(data) {
+              if (data.cell.text && Array.isArray(data.cell.text)) {
+                data.cell.text = data.cell.text.map(text => {
+                  // Remove tags HTML
+                  return text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+                });
+              }
+            };
+          }
+
+          doc.autoTable(autoTableConfig);
+          
+          // Adicionar resumo específico para advertências
+          if (reportType === 'advertencias') {
+            const finalY = doc.lastAutoTable.finalY + 10;
+            
+            // Buscar dados do resumo da tela
+            const alertasResumo = reportResult.querySelectorAll('.alert h4');
+            if (alertasResumo.length >= 2) {
+              doc.setFontSize(12);
+              doc.setFont('helvetica', 'bold');
+              doc.text('RESUMO EXECUTIVO', 14, finalY);
+              
+              doc.setFontSize(10);
+              doc.setFont('helvetica', 'normal');
+              doc.text(`• Total de Advertências: ${alertasResumo[0].textContent}`, 14, finalY + 10);
+              doc.text(`• Multa Total Acumulada: ${alertasResumo[1].textContent}`, 14, finalY + 18);
+              doc.text('• Multa: R$ 0,50 por dia de atraso, por livro emprestado', 14, finalY + 26);
+              
+              doc.setFontSize(9);
+              doc.setFont('helvetica', 'bold');
+              doc.text('Legenda de Gravidade:', 14, finalY + 36);
+              doc.setFont('helvetica', 'normal');
+              doc.text('1-7 dias: Atraso Leve  |  8-15 dias: Atraso Moderado  |  16+ dias: Atraso Grave', 14, finalY + 44);
+            }
+          }
         } else {
           doc.text('Nenhum dado para exportar.', 14, 68);
         }

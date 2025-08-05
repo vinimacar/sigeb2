@@ -188,6 +188,12 @@ animation: marquee-bar 40s linear infinite;
 0% { transform: translateX(100%);}
 100% { transform: translateX(-100%);}
 }
+
+@keyframes pulse {
+0% { transform: scale(1); box-shadow: 0 0 5px rgba(25, 135, 84, 0.3); }
+50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(25, 135, 84, 0.6); }
+100% { transform: scale(1); box-shadow: 0 0 5px rgba(25, 135, 84, 0.3); }
+}
 </style>
 
 <!-- Firebase SDK -->
@@ -723,7 +729,7 @@ min-width: 0;
 <!-- Rodapé do modal com opções de notificação -->
 <div class="modal-footer d-flex justify-content-between align-items-center">
     <div class="btn-group" role="group">
-        <button type="button" class="btn btn-success" id="btnEnviarWhatsappForm">
+        <button type="button" class="btn btn-success" id="btnEnviarWhatsappForm" style="display: none;">
             <i class="bx bxl-whatsapp"></i> WhatsApp
         </button>
     </div>
@@ -1280,6 +1286,9 @@ addQuantityValidation();
 const addLoanModal = document.getElementById('addLoanModal');
 if (addLoanModal) {
 addLoanModal.addEventListener('show.bs.modal', async function () {
+// Oculta botão WhatsApp inicialmente
+document.getElementById('btnEnviarWhatsappForm').style.display = 'none';
+
 // Gera um número sequencial simples (pode ser melhorado para produção)
 const snapshot = await db.collection('emprestimos').orderBy('createdAt', 'desc').limit(1).get();
 let nextNumber = 1;
@@ -1376,6 +1385,9 @@ document.getElementById('userSearchResults').innerHTML = '';
 // Esconde seção de email
 document.getElementById('emailSection').style.display = 'none';
 document.getElementById('userEmail').value = '';
+
+// Oculta botão WhatsApp
+document.getElementById('btnEnviarWhatsappForm').style.display = 'none';
 
 // Limpa bloco de detalhes do usuário
 const userDetailsBlock = document.getElementById('userDetailsBlock');
@@ -1892,22 +1904,25 @@ emprestados: firebase.firestore.FieldValue.increment(book.quantity)
 // Executa todas as atualizações de estoque em paralelo
 await Promise.all(updatePromises);
 
-// Fecha o modal e mostra mensagem de sucesso
-showAlert('success', 'Empréstimo registrado com sucesso!');
-
-// Configura botões de comunicação
-document.getElementById('btnEnviarWhatsappForm').style.display = 'inline-block';
-document.getElementById('btnEnviarWhatsappForm').onclick = function() {
+// Configura botões de comunicação ANTES de fechar o modal
+const whatsappBtn = document.getElementById('btnEnviarWhatsappForm');
+whatsappBtn.style.display = 'inline-block';
+whatsappBtn.style.animation = 'pulse 1s infinite';
+whatsappBtn.onclick = function() {
 sendWhatsAppOnLoan(userId, books, loanDate, returnDate);
+// Remove a animação após clicar
+whatsappBtn.style.animation = '';
 };
 
+// Mostra mensagem de sucesso
+showAlert('success', 'Empréstimo registrado com sucesso! Clique no botão WhatsApp para notificar o usuário.', 5000);
 
-
+// Aguarda 3 segundos antes de fechar o modal para dar tempo de ver o botão WhatsApp
+setTimeout(() => {
 const addLoanModal = bootstrap.Modal.getInstance(document.getElementById('addLoanModal'));
 if (addLoanModal) addLoanModal.hide();
-setTimeout(() => {
-document.getElementById('btnEnviarWhatsapp').focus();
-}, 500);
+}, 3000);
+
 loadLoans();
 updateLoanStats();
 updateNotReturnedBar();

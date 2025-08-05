@@ -1289,6 +1289,13 @@ addLoanModal.addEventListener('show.bs.modal', async function () {
 // Oculta botão WhatsApp inicialmente
 document.getElementById('btnEnviarWhatsappForm').style.display = 'none';
 
+// Remove alertas anteriores de pendências/atrasos
+const modalBody = document.querySelector('#addLoanModal .modal-body');
+if (modalBody) {
+const existingAlerts = modalBody.querySelectorAll('.alert-danger, .alert-warning, .alert-info');
+existingAlerts.forEach(alert => alert.remove());
+}
+
 // Gera um número sequencial simples (pode ser melhorado para produção)
 const snapshot = await db.collection('emprestimos').orderBy('createdAt', 'desc').limit(1).get();
 let nextNumber = 1;
@@ -1598,6 +1605,9 @@ e.preventDefault();
 document.getElementById('selectedUserId').value = doc.id;
 document.getElementById('selectedUserEmail').value = userData.email || '';
 
+// Verificar pendências do usuário imediatamente
+verificarEmprestimosPendentesAoSelecionar(doc.id);
+
 // Mostrar seção de email se o usuário tiver email
 const emailSection = document.getElementById('emailSection');
 const userEmailInput = document.getElementById('userEmail');
@@ -1785,6 +1795,129 @@ function removeBookRow(button) {
 button.closest('.loan-book-row').remove();
 }
 
+// Função para verificar pendências quando usuário é selecionado (não bloqueia, apenas informa)
+async function verificarEmprestimosPendentesAoSelecionar(userId) {
+try {
+const verificacao = await verificarEmprestimosPendentes(userId);
+
+// Remove alertas anteriores
+const modalBody = document.querySelector('#addLoanModal .modal-body');
+if (modalBody) {
+const existingAlerts = modalBody.querySelectorAll('.alert-danger, .alert-warning, .alert-info');
+existingAlerts.forEach(alert => alert.remove());
+}
+
+if (verificacao.temAtrasos) {
+let mensagemAtraso = '<div class="alert alert-danger mb-3"><h5><i class="bx bx-error-circle"></i> ⚠️ Usuário com Livros em Atraso</h5>';
+mensagemAtraso += '<p><strong>Este usuário possui livros em atraso e não poderá retirar novos materiais.</strong></p>';
+mensagemAtraso += '<h6>Livros em Atraso:</h6><ul class="mb-2">';
+
+verificacao.emprestimosAtrasados.forEach(emp => {
+mensagemAtraso += `<li class="mb-2"><strong>Registro:</strong> ${emp.registro}<br>`;
+mensagemAtraso += `<strong>Vencimento:</strong> ${emp.dataVencimento}<br>`;
+mensagemAtraso += `<strong>Atraso:</strong> <span class="text-danger fw-bold">${emp.diasAtraso} dia(s)</span><br>`;
+mensagemAtraso += `<strong>Livros:</strong> ${emp.livros.join(', ')}</li>`;
+});
+mensagemAtraso += '</ul>';
+mensagemAtraso += '<p class="mb-0"><strong>⚠️ Empréstimos bloqueados até regularização.</strong></p></div>';
+
+if (modalBody) {
+modalBody.insertAdjacentHTML('afterbegin', mensagemAtraso);
+}
+} else if (verificacao.emprestimosAtivos.length > 0) {
+let mensagemAtivos = `<div class="alert alert-info mb-3"><h6><i class="bx bx-info-circle"></i> Informação sobre Empréstimos</h6>`;
+mensagemAtivos += `<p class="mb-0">Este usuário possui <strong>${verificacao.emprestimosAtivos.length} empréstimo(s) ativo(s)</strong> ainda no prazo. ✅ Pode realizar novos empréstimos.</p></div>`;
+
+if (modalBody) {
+modalBody.insertAdjacentHTML('afterbegin', mensagemAtivos);
+}
+}
+
+} catch (error) {
+console.error('Erro ao verificar pendências ao selecionar usuário:', error);
+}
+}
+
+// Função para verificar se o usuário tem empréstimos pendentes ou atrasados
+async function verificarEmprestimosPendentes(userId) {
+try {
+const snapshot = await db.collection('emprestimos')
+.where('userId', '==', userId)
+.where('status', 'in', ['EMPRESTADO', 'ATRASADO'])
+.get();
+
+if (snapshot.empty) {
+return { temPendencias: false };
+}
+
+const hoje = new Date();
+hoje.setHours(0, 0, 0, 0);
+
+let emprestimosAtrasados = [];
+let emprestimosAtivos = [];
+
+for (const doc of snapshot.docs) {
+const emprestimo = doc.data();
+
+// Verificar se está atrasado baseado na data de devolução
+if (emprestimo.returnDate) {
+const dateParts = emprestimo.returnDate.split('/');
+if (dateParts.length === 3) {
+const returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+returnDate.setHours(0, 0, 0, 0);
+
+if (returnDate < hoje) {
+// Calcular dias de atraso
+const diffTime = hoje.getTime() - returnDate.getTime();
+const diasAtraso = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+// Buscar títulos dos livros
+let livrosTitulos = [];
+if (Array.isArray(emprestimo.books)) {
+for (const book of emprestimo.books) {
+try {
+const bookDoc = await db.collection('livros').doc(book.bookId).get();
+if (bookDoc.exists) {
+livrosTitulos.push(`${bookDoc.data().titulo} (Qtd: ${book.quantity})`);
+} else {
+livrosTitulos.push(`Livro ${book.bookId} (Qtd: ${book.quantity})`);
+}
+} catch (e) {
+livrosTitulos.push(`Livro ${book.bookId} (Qtd: ${book.quantity})`);
+}
+}
+}
+
+emprestimosAtrasados.push({
+registro: emprestimo.registroNumero,
+dataVencimento: emprestimo.returnDate,
+diasAtraso: diasAtraso,
+livros: livrosTitulos
+});
+} else {
+// Empréstimo ainda no prazo
+emprestimosAtivos.push({
+registro: emprestimo.registroNumero,
+dataVencimento: emprestimo.returnDate
+});
+}
+}
+}
+}
+
+return {
+temPendencias: emprestimosAtrasados.length > 0 || emprestimosAtivos.length > 0,
+temAtrasos: emprestimosAtrasados.length > 0,
+emprestimosAtrasados: emprestimosAtrasados,
+emprestimosAtivos: emprestimosAtivos
+};
+
+} catch (error) {
+console.error('Erro ao verificar empréstimos pendentes:', error);
+throw new Error('Erro ao verificar pendências do usuário');
+}
+}
+
 // Função para lidar com a submissão do formulário de empréstimo
 async function handleLoanSubmission(event) {
 event.preventDefault();
@@ -1798,6 +1931,63 @@ const registroNumero = document.getElementById('registroNumero').value;
 const userId = document.getElementById('selectedUserId').value;
 const loanDate = document.getElementById('loanDate').value;
 const returnDate = document.getElementById('returnDate').value;
+
+// VERIFICAÇÃO DE EMPRÉSTIMOS PENDENTES E ATRASOS
+if (userId) {
+try {
+const verificacao = await verificarEmprestimosPendentes(userId);
+
+if (verificacao.temAtrasos) {
+let mensagemAtraso = '<div class="alert alert-danger mb-3"><h5><i class="bx bx-error-circle"></i> Empréstimo Bloqueado</h5>';
+mensagemAtraso += '<p><strong>Este usuário possui livros em atraso e não pode retirar novos materiais.</strong></p>';
+mensagemAtraso += '<h6>Livros em Atraso:</h6><ul class="mb-2">';
+
+verificacao.emprestimosAtrasados.forEach(emp => {
+mensagemAtraso += `<li class="mb-2"><strong>Registro:</strong> ${emp.registro}<br>`;
+mensagemAtraso += `<strong>Vencimento:</strong> ${emp.dataVencimento}<br>`;
+mensagemAtraso += `<strong>Atraso:</strong> <span class="text-danger fw-bold">${emp.diasAtraso} dia(s)</span><br>`;
+mensagemAtraso += `<strong>Livros:</strong> ${emp.livros.join(', ')}</li>`;
+});
+mensagemAtraso += '</ul>';
+mensagemAtraso += '<p class="mb-0"><strong>Ação necessária:</strong> O usuário deve devolver os livros em atraso antes de realizar novos empréstimos.</p></div>';
+
+// Exibe o alerta no topo do modal de empréstimo
+const modalBody = document.querySelector('#addLoanModal .modal-body');
+if (modalBody) {
+// Remove alertas anteriores
+const existingAlerts = modalBody.querySelectorAll('.alert');
+existingAlerts.forEach(alert => alert.remove());
+
+// Adiciona o novo alerta no início do modal
+modalBody.insertAdjacentHTML('afterbegin', mensagemAtraso);
+}
+
+showAlert('danger', 'Empréstimo bloqueado! Usuário possui livros em atraso.', 6000);
+return; // Impede a continuação do processo
+}
+
+if (verificacao.emprestimosAtivos.length > 0) {
+// Mostrar aviso sobre empréstimos ativos (permite continuar)
+let mensagemAtivos = `<div class="alert alert-info mb-3"><h6><i class="bx bx-info-circle"></i> Informação</h6>`;
+mensagemAtivos += `<p class="mb-0">Este usuário possui <strong>${verificacao.emprestimosAtivos.length} empréstimo(s) ativo(s)</strong> ainda no prazo.</p></div>`;
+
+const modalBody = document.querySelector('#addLoanModal .modal-body');
+if (modalBody) {
+// Remove apenas alertas de informação anteriores
+const existingInfoAlerts = modalBody.querySelectorAll('.alert-info');
+existingInfoAlerts.forEach(alert => alert.remove());
+
+// Adiciona o aviso no início do modal
+modalBody.insertAdjacentHTML('afterbegin', mensagemAtivos);
+}
+}
+
+} catch (error) {
+console.error('Erro ao verificar pendências:', error);
+showAlert('danger', 'Erro ao verificar pendências do usuário. Tente novamente.');
+return;
+}
+}
 
 const bookRows = document.querySelectorAll('#multiBookLoans .loan-book-row');
 const books = [];

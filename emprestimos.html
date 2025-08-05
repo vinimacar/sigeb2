@@ -2625,10 +2625,19 @@ const uniqueUsers = new Set();
 
 for (const doc of snapshot.docs) {
 const loanData = doc.data();
-const returnDate = loanData.dataDevolucao?.toDate();
-if (!returnDate) continue;
 
-const daysLate = Math.ceil((today - returnDate) / (1000 * 60 * 60 * 24));
+// Calcula dias de atraso usando returnDate (formato DD/MM/AAAA)
+let daysLate = 0;
+if (loanData.returnDate) {
+const dateParts = loanData.returnDate.split('/');
+if (dateParts.length === 3) {
+const returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+returnDate.setHours(0, 0, 0, 0);
+const diffTime = Math.abs(today - returnDate);
+daysLate = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+}
+
 if (daysLate > 0) {
 uniqueUsers.add(loanData.userId);
 }
@@ -3802,11 +3811,20 @@ const userLoansMap = new Map();
 
 for (const doc of snapshot.docs) {
 const loanData = doc.data();
-const returnDate = loanData.dataDevolucao?.toDate();
-if (!returnDate) continue;
 
-const daysLate = Math.ceil((today - returnDate) / (1000 * 60 * 60 * 24));
-if (daysLate <= 0) continue;
+// Calcula dias de atraso usando returnDate (formato DD/MM/AAAA)
+let daysLate = 0;
+if (loanData.returnDate) {
+const dateParts = loanData.returnDate.split('/');
+if (dateParts.length === 3) {
+const returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+returnDate.setHours(0, 0, 0, 0);
+const diffTime = Math.abs(today - returnDate);
+daysLate = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+}
+
+if (daysLate <= 0) continue; // Só inclui se realmente está atrasado
 
 // Se o usuário já existe no mapa, adiciona este empréstimo
 if (userLoansMap.has(loanData.userId)) {
@@ -3858,8 +3876,8 @@ allBookTitles.push(`Livro não encontrado (${book.quantity})`);
 }
 }
 }
-allLoanDates.push(formatarDataBrasil(loan.dataEmprestimo.toDate()));
-allReturnDates.push(formatarDataBrasil(loan.dataDevolucao.toDate()));
+allLoanDates.push(loan.loanDate || 'Data não informada');
+allReturnDates.push(loan.returnDate || 'Data não informada');
 }
 
 // Formatação para WhatsApp
@@ -3979,10 +3997,19 @@ const userLoansMap = new Map();
 
 for (const docSnap of snapshot.docs) {
 const loanData = docSnap.data();
-const returnDate = loanData.dataDevolucao?.toDate();
-if (!returnDate) continue;
 
-const daysLate = Math.ceil((today - returnDate) / (1000 * 60 * 60 * 24));
+// Calcula dias de atraso usando returnDate (formato DD/MM/AAAA)
+let daysLate = 0;
+if (loanData.returnDate) {
+const dateParts = loanData.returnDate.split('/');
+if (dateParts.length === 3) {
+const returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+returnDate.setHours(0, 0, 0, 0);
+const diffTime = Math.abs(today - returnDate);
+daysLate = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+}
+
 if (daysLate <= 0) continue;
 
 if (userLoansMap.has(loanData.userId)) {
@@ -4084,10 +4111,19 @@ if (Array.isArray(loanData.books)) {
 for (const book of loanData.books) {
 const bookDoc = await db.collection('livros').doc(book.bookId).get();
 if (bookDoc.exists) {
+// Converte returnDate do formato DD/MM/AAAA para Date
+let returnDate = null;
+if (loanData.returnDate) {
+const dateParts = loanData.returnDate.split('/');
+if (dateParts.length === 3) {
+returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+}
+}
+
 allBooks.push({
 ...bookDoc.data(),
 quantity: book.quantity,
-returnDate: loanData.dataDevolucao.toDate()
+returnDate: returnDate || new Date()
 });
 }
 }
@@ -4118,10 +4154,10 @@ doc.text('Livro(s) em atraso:', 20, yPosition);
 yPosition += 10;
 
 allBooks.forEach(book => {
-const returnDate = formatarDataBrasil(book.returnDate);
+const returnDate = book.returnDate ? formatarDataBrasil(book.returnDate) : 'Data inválida';
 const today = getDataBrasilia();
 today.setHours(0, 0, 0, 0);
-const daysLate = Math.ceil((today - book.returnDate) / (1000 * 60 * 60 * 24));
+const daysLate = book.returnDate ? Math.ceil((today - book.returnDate) / (1000 * 60 * 60 * 24)) : 0;
 
 doc.text(`• ${book.titulo} (Qtd: ${book.quantity}) - Deveria ter sido devolvido em: ${returnDate} (${daysLate} dias de atraso)`, 25, yPosition);
 yPosition += 10;

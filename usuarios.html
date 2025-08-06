@@ -829,21 +829,21 @@
           }
         };
         
-        // Função para criar seção com título - versão compacta
+        // Função para criar seção com título - versão ultra compacta
         const addSection = (title, yPos) => {
           // Linha decorativa menor
           doc.setDrawColor(colors.primary[0], colors.primary[1], colors.primary[2]);
           doc.setLineWidth(2);
-          doc.line(margin, yPos, margin + 25, yPos);
+          doc.line(margin, yPos, margin + 20, yPos);
           
           // Título da seção
-          addText(title, margin, yPos + 7, {
-            fontSize: 12,
+          addText(title, margin, yPos + 6, {
+            fontSize: 11,
             fontStyle: 'bold',
             textColor: colors.primary
           });
           
-          return yPos + 16;
+          return yPos + 12;
         };
         
         // === CABEÇALHO MODERNO ===
@@ -899,7 +899,7 @@
         
         // Título centralizado
         const centerX = margin + (contentWidth / 2);
-        addText('ESCOLA ESTADUAL GOVERNADOR BIAS FORTES', centerX, yPosition + 12, {
+        addText('ESCOLA ESTADUAL BIAS FORTES', centerX, yPosition + 12, {
           fontSize: 12,
           fontStyle: 'bold',
           textColor: colors.dark
@@ -924,7 +924,7 @@
         doc.text('FICHA CADASTRAL DE USUÁRIO', centerX, yPosition + 32);
         doc.setTextAlign('left'); // Reset alinhamento
         
-        yPosition += 55;
+        yPosition += 45;
         
         // === DADOS PESSOAIS ===
         yPosition = addSection('DADOS PESSOAIS', yPosition);
@@ -997,7 +997,7 @@
           textColor: colors.dark
         });
         
-        yPosition += 70;
+        yPosition += 60;
         
         // === ENDEREÇO ===
         yPosition = addSection('ENDEREÇO', yPosition);
@@ -1077,7 +1077,7 @@
           textColor: colors.dark
         });
         
-        yPosition += 60;
+        yPosition += 50;
         
         // === DADOS ACADÊMICOS (se for aluno) ===
         if (dadosUsuario.funcao === 'ALUNO') {
@@ -1131,13 +1131,13 @@
             textColor: colors.dark
           });
           
-          yPosition += 45;
+          yPosition += 35;
         }
         
         // === REGRAS DA BIBLIOTECA ===
         yPosition = addSection('REGRAS DA BIBLIOTECA', yPosition);
         
-        addRoundedBox(margin, yPosition, contentWidth, 55, colors.light);
+        addRoundedBox(margin, yPosition, contentWidth, 45, colors.light);
         
         const regras = [
           '• Prazo de empréstimo: 7 dias corridos (renovável por mais 7 dias)',
@@ -1147,17 +1147,17 @@
           '• Danos ou perda: responsabilidade de pagamento do valor integral'
         ];
         
-        let regraY = yPosition + 8;
+        let regraY = yPosition + 6;
         regras.forEach(regra => {
           addText(regra, margin + 8, regraY, {
-            fontSize: 9,
+            fontSize: 8,
             fontStyle: 'normal',
             textColor: colors.dark
           });
-          regraY += 10;
+          regraY += 8;
         });
         
-        yPosition += 70;
+        yPosition += 55;
         
         // === ASSINATURAS ===
         yPosition = addSection('ASSINATURAS', yPosition);
@@ -1165,23 +1165,23 @@
         // Caixas para assinatura - altura reduzida
         const sigWidth = (contentWidth - 20) / 2;
         
-        addRoundedBox(margin, yPosition, sigWidth, 30, null, colors.secondary);
-        addRoundedBox(margin + sigWidth + 20, yPosition, sigWidth, 30, null, colors.secondary);
+        addRoundedBox(margin, yPosition, sigWidth, 25, null, colors.secondary);
+        addRoundedBox(margin + sigWidth + 20, yPosition, sigWidth, 25, null, colors.secondary);
         
-        addText('Assinatura do Usuário', margin + 10, yPosition + 38, {
-          fontSize: 8,
+        addText('Assinatura do Usuário', margin + 10, yPosition + 33, {
+          fontSize: 7,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
         
-        addText('Assinatura do Bibliotecário(a)', margin + sigWidth + 30, yPosition + 38, {
-          fontSize: 8,
+        addText('Assinatura do Bibliotecário(a)', margin + sigWidth + 30, yPosition + 33, {
+          fontSize: 7,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
         
         // === RODAPÉ MODERNO ===
-        yPosition += 50; // Espaço após assinaturas
+        yPosition += 40; // Espaço após assinaturas
         
         // Linha decorativa
         doc.setDrawColor(colors.primary[0], colors.primary[1], colors.primary[2]);
@@ -1195,20 +1195,11 @@
           year: 'numeric'
         });
         
-        addText(`Emitido em: ${dataAtual}`, margin, yPosition + 10, {
-          fontSize: 8,
+        addText(`Emitido em: ${dataAtual}`, margin, yPosition + 6, {
+          fontSize: 7,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
-        
-        // Texto do sistema (direita)
-        doc.setTextAlign('right');
-        addText('SIGEB - Sistema de Gerenciamento de Biblioteca Escolar', pageWidth - margin, yPosition + 10, {
-          fontSize: 8,
-          fontStyle: 'italic',
-          textColor: colors.secondary
-        });
-        doc.setTextAlign('left');
         
         return doc;
       }

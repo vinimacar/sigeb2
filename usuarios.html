@@ -783,12 +783,24 @@
           if (options.fontStyle) doc.setFont('helvetica', options.fontStyle);
           if (options.textColor) doc.setTextColor(options.textColor[0], options.textColor[1], options.textColor[2]);
           
+          // Tratamento de alinhamento
+          let textX = x;
+          if (options.align === 'center') {
+            try {
+              const textWidth = doc.getTextWidth(text);
+              textX = x - (textWidth / 2);
+            } catch (e) {
+              // Fallback: usar coordenada original se getTextWidth falhar
+              textX = x;
+            }
+          }
+          
           // Tratamento de texto longo
           if (options.maxWidth) {
             const lines = doc.splitTextToSize(text, options.maxWidth);
-            doc.text(lines, x, y);
+            doc.text(lines, textX, y);
           } else {
-            doc.text(text, x, y);
+            doc.text(text, textX, y);
           }
           
           // Reset automático
@@ -818,14 +830,38 @@
         // Função para criar caixa com bordas arredondadas
         const addRoundedBox = (x, y, width, height, fillColor, borderColor = null) => {
           const radius = 3;
-          if (fillColor) {
-            doc.setFillColor(fillColor[0], fillColor[1], fillColor[2]);
-            doc.roundedRect(x, y, width, height, radius, radius, 'F');
-          }
-          if (borderColor) {
-            doc.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
-            doc.setLineWidth(0.5);
-            doc.roundedRect(x, y, width, height, radius, radius, 'S');
+          try {
+            if (fillColor) {
+              doc.setFillColor(fillColor[0], fillColor[1], fillColor[2]);
+              if (typeof doc.roundedRect === 'function') {
+                doc.roundedRect(x, y, width, height, radius, radius, 'F');
+              } else {
+                // Fallback para versões antigas do jsPDF
+                doc.rect(x, y, width, height, 'F');
+              }
+            }
+            if (borderColor) {
+              doc.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
+              doc.setLineWidth(0.5);
+              if (typeof doc.roundedRect === 'function') {
+                doc.roundedRect(x, y, width, height, radius, radius, 'S');
+              } else {
+                // Fallback para versões antigas do jsPDF
+                doc.rect(x, y, width, height, 'S');
+              }
+            }
+          } catch (e) {
+            console.warn('Erro ao desenhar caixa arredondada, usando retângulo simples:', e);
+            // Fallback final: retângulo simples
+            if (fillColor) {
+              doc.setFillColor(fillColor[0], fillColor[1], fillColor[2]);
+              doc.rect(x, y, width, height, 'F');
+            }
+            if (borderColor) {
+              doc.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
+              doc.setLineWidth(0.5);
+              doc.rect(x, y, width, height, 'S');
+            }
           }
         };
         
@@ -902,27 +938,23 @@
         addText('ESCOLA ESTADUAL BIAS FORTES', centerX, yPosition + 12, {
           fontSize: 12,
           fontStyle: 'bold',
-          textColor: colors.dark
+          textColor: colors.dark,
+          align: 'center'
         });
         
         addText('Sistema de Gerenciamento de Biblioteca', centerX, yPosition + 22, {
           fontSize: 8,
           fontStyle: 'normal',
-          textColor: colors.secondary
+          textColor: colors.secondary,
+          align: 'center'
         });
         
         addText('FICHA CADASTRAL DE USUÁRIO', centerX, yPosition + 32, {
           fontSize: 10,
           fontStyle: 'bold',
-          textColor: colors.primary
+          textColor: colors.primary,
+          align: 'center'
         });
-        
-        // Centralizar texto
-        doc.setTextAlign('center');
-        doc.text('ESCOLA ESTADUAL GOVERNADOR BIAS FORTES', centerX, yPosition + 12);
-        doc.text('Sistema de Gerenciamento de Biblioteca', centerX, yPosition + 22);
-        doc.text('FICHA CADASTRAL DE USUÁRIO', centerX, yPosition + 32);
-        doc.setTextAlign('left'); // Reset alinhamento
         
         yPosition += 45;
         

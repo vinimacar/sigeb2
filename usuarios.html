@@ -829,69 +829,69 @@
           }
         };
         
-        // Função para criar seção com título
+        // Função para criar seção com título - versão compacta
         const addSection = (title, yPos) => {
-          // Linha decorativa
+          // Linha decorativa menor
           doc.setDrawColor(colors.primary[0], colors.primary[1], colors.primary[2]);
           doc.setLineWidth(2);
-          doc.line(margin, yPos, margin + 30, yPos);
+          doc.line(margin, yPos, margin + 25, yPos);
           
           // Título da seção
-          addText(title, margin, yPos + 8, {
-            fontSize: 14,
+          addText(title, margin, yPos + 7, {
+            fontSize: 12,
             fontStyle: 'bold',
             textColor: colors.primary
           });
           
-          return yPos + 20;
+          return yPos + 16;
         };
         
         // === CABEÇALHO MODERNO ===
         
         // Fundo do cabeçalho com gradiente visual
-        addRoundedBox(margin, yPosition, contentWidth, 50, colors.light);
+        addRoundedBox(margin, yPosition, contentWidth, 40, colors.light);
         
-        // Logo SIGEB (esquerda)
+        // Logo SIGEB (esquerda) - tamanho reduzido
         if (logoSigebBase64) {
           try {
-            doc.addImage(logoSigebBase64, 'PNG', margin + 10, yPosition + 8, 35, 22);
+            doc.addImage(logoSigebBase64, 'PNG', margin + 8, yPosition + 6, 25, 16);
           } catch (error) {
             // Fallback moderno
-            addRoundedBox(margin + 10, yPosition + 8, 35, 22, colors.primary);
-            addText('SIGEB', margin + 21, yPosition + 22, {
-              fontSize: 12,
-              fontStyle: 'bold',
-              textColor: colors.white
-            });
-          }
-        } else {
-          addRoundedBox(margin + 10, yPosition + 8, 35, 22, colors.primary);
-          addText('SIGEB', margin + 21, yPosition + 22, {
-            fontSize: 12,
-            fontStyle: 'bold',
-            textColor: colors.white
-          });
-        }
-
-        // Logo da Escola (direita)
-        if (logoBiasBase64) {
-          try {
-            doc.addImage(logoBiasBase64, 'PNG', pageWidth - margin - 45, yPosition + 8, 35, 22);
-          } catch (error) {
-            // Fallback circular moderno
-            doc.setFillColor(colors.accent[0], colors.accent[1], colors.accent[2]);
-            doc.circle(pageWidth - margin - 27, yPosition + 19, 11, 'F');
-            addText('BF', pageWidth - margin - 31, yPosition + 22, {
+            addRoundedBox(margin + 8, yPosition + 6, 25, 16, colors.primary);
+            addText('SIGEB', margin + 16, yPosition + 16, {
               fontSize: 10,
               fontStyle: 'bold',
               textColor: colors.white
             });
           }
         } else {
-          doc.setFillColor(colors.accent[0], colors.accent[1], colors.accent[2]);
-          doc.circle(pageWidth - margin - 27, yPosition + 19, 11, 'F');
-          addText('BF', pageWidth - margin - 31, yPosition + 22, {
+          addRoundedBox(margin + 8, yPosition + 6, 25, 16, colors.primary);
+          addText('SIGEB', margin + 16, yPosition + 16, {
             fontSize: 10,
+            fontStyle: 'bold',
+            textColor: colors.white
+          });
+        }
+
+        // Logo da Escola (direita) - tamanho reduzido
+        if (logoBiasBase64) {
+          try {
+            doc.addImage(logoBiasBase64, 'PNG', pageWidth - margin - 33, yPosition + 6, 25, 16);
+          } catch (error) {
+            // Fallback circular moderno
+            doc.setFillColor(colors.accent[0], colors.accent[1], colors.accent[2]);
+            doc.circle(pageWidth - margin - 20, yPosition + 14, 8, 'F');
+            addText('BF', pageWidth - margin - 23, yPosition + 16, {
+              fontSize: 8,
+              fontStyle: 'bold',
+              textColor: colors.white
+            });
+          }
+        } else {
+          doc.setFillColor(colors.accent[0], colors.accent[1], colors.accent[2]);
+          doc.circle(pageWidth - margin - 20, yPosition + 14, 8, 'F');
+          addText('BF', pageWidth - margin - 23, yPosition + 16, {
+            fontSize: 8,
             fontStyle: 'bold',
             textColor: colors.white
           });
@@ -899,40 +899,40 @@
         
         // Título centralizado
         const centerX = margin + (contentWidth / 2);
-        addText('ESCOLA ESTADUAL GOVERNADOR BIAS FORTES', centerX, yPosition + 15, {
-          fontSize: 13,
+        addText('ESCOLA ESTADUAL GOVERNADOR BIAS FORTES', centerX, yPosition + 12, {
+          fontSize: 12,
           fontStyle: 'bold',
           textColor: colors.dark
         });
         
-        addText('Sistema de Gerenciamento de Biblioteca', centerX, yPosition + 27, {
-          fontSize: 9,
+        addText('Sistema de Gerenciamento de Biblioteca', centerX, yPosition + 22, {
+          fontSize: 8,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
         
-        addText('FICHA CADASTRAL DE USUÁRIO', centerX, yPosition + 40, {
-          fontSize: 11,
+        addText('FICHA CADASTRAL DE USUÁRIO', centerX, yPosition + 32, {
+          fontSize: 10,
           fontStyle: 'bold',
           textColor: colors.primary
         });
         
         // Centralizar texto
         doc.setTextAlign('center');
-        doc.text('ESCOLA ESTADUAL GOVERNADOR BIAS FORTES', centerX, yPosition + 15);
-        doc.text('Sistema de Gerenciamento de Biblioteca', centerX, yPosition + 27);
-        doc.text('FICHA CADASTRAL DE USUÁRIO', centerX, yPosition + 40);
+        doc.text('ESCOLA ESTADUAL GOVERNADOR BIAS FORTES', centerX, yPosition + 12);
+        doc.text('Sistema de Gerenciamento de Biblioteca', centerX, yPosition + 22);
+        doc.text('FICHA CADASTRAL DE USUÁRIO', centerX, yPosition + 32);
         doc.setTextAlign('left'); // Reset alinhamento
         
-        yPosition += 70;
+        yPosition += 55;
         
         // === DADOS PESSOAIS ===
         yPosition = addSection('DADOS PESSOAIS', yPosition);
         
-        // Card para dados pessoais
-        addRoundedBox(margin, yPosition, contentWidth, 65, null, colors.secondary);
+        // Card para dados pessoais - tamanho reduzido
+        addRoundedBox(margin, yPosition, contentWidth, 55, null, colors.secondary);
         
-        const cardPadding = 8;
+        const cardPadding = 6;
         let cardY = yPosition + cardPadding;
         
         // Nome
@@ -997,13 +997,13 @@
           textColor: colors.dark
         });
         
-        yPosition += 85;
+        yPosition += 70;
         
         // === ENDEREÇO ===
         yPosition = addSection('ENDEREÇO', yPosition);
         
-        // Card para endereço
-        addRoundedBox(margin, yPosition, contentWidth, 50, null, colors.secondary);
+        // Card para endereço - tamanho reduzido
+        addRoundedBox(margin, yPosition, contentWidth, 45, null, colors.secondary);
         cardY = yPosition + cardPadding;
         
         // Logradouro e Número
@@ -1077,13 +1077,13 @@
           textColor: colors.dark
         });
         
-        yPosition += 70;
+        yPosition += 60;
         
         // === DADOS ACADÊMICOS (se for aluno) ===
         if (dadosUsuario.funcao === 'ALUNO') {
           yPosition = addSection('DADOS ACADÊMICOS', yPosition);
           
-          addRoundedBox(margin, yPosition, contentWidth, 35, null, colors.secondary);
+          addRoundedBox(margin, yPosition, contentWidth, 30, null, colors.secondary);
           cardY = yPosition + cardPadding;
           
           // Série e Período
@@ -1131,62 +1131,62 @@
             textColor: colors.dark
           });
           
-          yPosition += 55;
+          yPosition += 45;
         }
         
         // === REGRAS DA BIBLIOTECA ===
         yPosition = addSection('REGRAS DA BIBLIOTECA', yPosition);
         
-        addRoundedBox(margin, yPosition, contentWidth, 60, colors.light);
+        addRoundedBox(margin, yPosition, contentWidth, 55, colors.light);
         
         const regras = [
           '• Prazo de empréstimo: 7 dias corridos (renovável por mais 7 dias)',
           '• Limite máximo: 3 livros por usuário simultaneamente',
+          '• Multa por atraso: R$ 0,50 por dia de atraso por livro',
           '• Obrigatória apresentação da carteirinha ou documento com foto',
-          '• Danos ou perda: responsabilidade de pagamento do valor integral',
-          '• Manter silêncio e organização no ambiente da biblioteca'
+          '• Danos ou perda: responsabilidade de pagamento do valor integral'
         ];
         
-        let regraY = yPosition + 10;
+        let regraY = yPosition + 8;
         regras.forEach(regra => {
           addText(regra, margin + 8, regraY, {
             fontSize: 9,
             fontStyle: 'normal',
             textColor: colors.dark
           });
-          regraY += 11;
+          regraY += 10;
         });
         
-        yPosition += 80;
+        yPosition += 70;
         
         // === ASSINATURAS ===
         yPosition = addSection('ASSINATURAS', yPosition);
         
-        // Caixas para assinatura
+        // Caixas para assinatura - altura reduzida
         const sigWidth = (contentWidth - 20) / 2;
         
-        addRoundedBox(margin, yPosition, sigWidth, 40, null, colors.secondary);
-        addRoundedBox(margin + sigWidth + 20, yPosition, sigWidth, 40, null, colors.secondary);
+        addRoundedBox(margin, yPosition, sigWidth, 30, null, colors.secondary);
+        addRoundedBox(margin + sigWidth + 20, yPosition, sigWidth, 30, null, colors.secondary);
         
-        addText('Assinatura do Usuário', margin + 10, yPosition + 50, {
-          fontSize: 9,
+        addText('Assinatura do Usuário', margin + 10, yPosition + 38, {
+          fontSize: 8,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
         
-        addText('Assinatura do Bibliotecário(a)', margin + sigWidth + 30, yPosition + 50, {
-          fontSize: 9,
+        addText('Assinatura do Bibliotecário(a)', margin + sigWidth + 30, yPosition + 38, {
+          fontSize: 8,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
         
         // === RODAPÉ MODERNO ===
-        const footerY = pageHeight - 30;
+        yPosition += 50; // Espaço após assinaturas
         
         // Linha decorativa
         doc.setDrawColor(colors.primary[0], colors.primary[1], colors.primary[2]);
         doc.setLineWidth(1);
-        doc.line(margin, footerY, pageWidth - margin, footerY);
+        doc.line(margin, yPosition, pageWidth - margin, yPosition);
         
         // Data de emissão
         const dataAtual = new Date().toLocaleDateString('pt-BR', {
@@ -1195,16 +1195,16 @@
           year: 'numeric'
         });
         
-        addText(`Emitido em: ${dataAtual}`, margin, footerY + 12, {
-          fontSize: 9,
+        addText(`Emitido em: ${dataAtual}`, margin, yPosition + 10, {
+          fontSize: 8,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
         
         // Texto do sistema (direita)
         doc.setTextAlign('right');
-        addText('SIGEB - Sistema de Gerenciamento de Biblioteca Escolar', pageWidth - margin, footerY + 12, {
-          fontSize: 9,
+        addText('SIGEB - Sistema de Gerenciamento de Biblioteca Escolar', pageWidth - margin, yPosition + 10, {
+          fontSize: 8,
           fontStyle: 'italic',
           textColor: colors.secondary
         });
@@ -1231,22 +1231,26 @@
           
           // Opções para o usuário com melhor descrição
           const opcao = confirm(
-            '✨ Ficha cadastral gerada com design clean!\n\n' +
+            '✨ Ficha cadastral gerada com design clean otimizado!\n\n' +
             '📥 OK - Fazer download do PDF\n' +
             '👁️ Cancelar - Abrir para visualização/impressão\n\n' +
-            '💡 A nova ficha possui layout moderno com cards organizados e melhor legibilidade.'
+            '� NOVIDADES:\n' +
+            '• Layout compacto que cabe perfeitamente na página\n' +
+            '• Logos redimensionados para melhor proporção\n' +
+            '• Informações sobre multa por atraso (R$ 0,50/dia)\n' +
+            '• Design moderno com cards organizados'
           );
           
           if (opcao) {
             // Download do PDF
             doc.save(nomeArquivo);
-            showAlert('success', '✅ Ficha cadastral moderna baixada com sucesso! Confira o novo design clean com cards e tipografia melhorada.');
+            showAlert('success', '✅ Ficha cadastral otimizada baixada! Layout compacto, logos redimensionados e regras atualizadas com multa por atraso.');
           } else {
             // Abrir para visualização/impressão
             const pdfBlob = doc.output('blob');
             const pdfUrl = URL.createObjectURL(pdfBlob);
             window.open(pdfUrl, '_blank');
-            showAlert('info', '👀 Ficha cadastral aberta em nova aba com design moderno! Use Ctrl+P para imprimir.');
+            showAlert('info', '👀 Ficha compacta aberta em nova aba! Agora com informações sobre multa e layout otimizado. Use Ctrl+P para imprimir.');
           }
           
         } catch (error) {

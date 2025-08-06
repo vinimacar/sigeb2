@@ -956,15 +956,15 @@
           align: 'center'
         });
         
-        yPosition += 45;
+        yPosition += 40;
         
         // === DADOS PESSOAIS ===
         yPosition = addSection('DADOS PESSOAIS', yPosition);
         
         // Card para dados pessoais - tamanho reduzido
-        addRoundedBox(margin, yPosition, contentWidth, 55, null, colors.secondary);
+        addRoundedBox(margin, yPosition, contentWidth, 50, null, colors.secondary);
         
-        const cardPadding = 6;
+        const cardPadding = 5;
         let cardY = yPosition + cardPadding;
         
         // Nome
@@ -973,7 +973,7 @@
           fontStyle: 'normal',
           textColor: colors.secondary
         });
-        addText(formatData(dadosUsuario.nome, 'name'), margin + cardPadding, cardY + 10, {
+        addText(formatData(dadosUsuario.nome, 'name'), margin + cardPadding, cardY + 8, {
           fontSize: 11,
           fontStyle: 'bold',
           textColor: colors.dark,
@@ -983,59 +983,59 @@
         // Email e Matrícula na mesma linha
         const halfWidth = (contentWidth - cardPadding * 3) / 2;
         
-        addText('Email', margin + cardPadding, cardY + 25, {
+        addText('Email', margin + cardPadding, cardY + 20, {
           fontSize: 9,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
-        addText(formatData(dadosUsuario.email, 'email'), margin + cardPadding, cardY + 35, {
+        addText(formatData(dadosUsuario.email, 'email'), margin + cardPadding, cardY + 28, {
           fontSize: 10,
           fontStyle: 'normal',
           textColor: colors.dark,
           maxWidth: halfWidth - 5
         });
         
-        addText('Matrícula', margin + cardPadding + halfWidth, cardY + 25, {
+        addText('Matrícula', margin + cardPadding + halfWidth, cardY + 20, {
           fontSize: 9,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
-        addText(formatData(dadosUsuario.matricula), margin + cardPadding + halfWidth, cardY + 35, {
+        addText(formatData(dadosUsuario.matricula), margin + cardPadding + halfWidth, cardY + 28, {
           fontSize: 10,
           fontStyle: 'bold',
           textColor: colors.primary
         });
         
         // Função e Telefone
-        addText('Função', margin + cardPadding, cardY + 50, {
+        addText('Função', margin + cardPadding, cardY + 40, {
           fontSize: 9,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
-        addText(formatData(dadosUsuario.funcao), margin + cardPadding, cardY + 60, {
+        addText(formatData(dadosUsuario.funcao), margin + cardPadding, cardY + 48, {
           fontSize: 10,
           fontStyle: 'normal',
           textColor: colors.dark
         });
         
-        addText('Telefone', margin + cardPadding + halfWidth, cardY + 50, {
+        addText('Telefone', margin + cardPadding + halfWidth, cardY + 40, {
           fontSize: 9,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
-        addText(formatData(dadosUsuario.telefone, 'phone'), margin + cardPadding + halfWidth, cardY + 60, {
+        addText(formatData(dadosUsuario.telefone, 'phone'), margin + cardPadding + halfWidth, cardY + 48, {
           fontSize: 10,
           fontStyle: 'normal',
           textColor: colors.dark
         });
         
-        yPosition += 60;
+        yPosition += 55;
         
         // === ENDEREÇO ===
         yPosition = addSection('ENDEREÇO', yPosition);
         
         // Card para endereço - tamanho reduzido
-        addRoundedBox(margin, yPosition, contentWidth, 45, null, colors.secondary);
+        addRoundedBox(margin, yPosition, contentWidth, 38, null, colors.secondary);
         cardY = yPosition + cardPadding;
         
         // Logradouro e Número
@@ -1044,7 +1044,7 @@
           fontStyle: 'normal',
           textColor: colors.secondary
         });
-        addText(formatData(dadosUsuario.endereco?.logradouro), margin + cardPadding, cardY + 10, {
+        addText(formatData(dadosUsuario.endereco?.logradouro), margin + cardPadding, cardY + 8, {
           fontSize: 10,
           fontStyle: 'normal',
           textColor: colors.dark,
@@ -1056,7 +1056,7 @@
           fontStyle: 'normal',
           textColor: colors.secondary
         });
-        addText(formatData(dadosUsuario.endereco?.numero), margin + cardPadding + halfWidth, cardY + 10, {
+        addText(formatData(dadosUsuario.endereco?.numero), margin + cardPadding + halfWidth, cardY + 8, {
           fontSize: 10,
           fontStyle: 'normal',
           textColor: colors.dark
@@ -1065,57 +1065,57 @@
         // Bairro, Cidade, UF, CEP
         const quarterWidth = (contentWidth - cardPadding * 5) / 4;
         
-        addText('Bairro', margin + cardPadding, cardY + 25, {
+        addText('Bairro', margin + cardPadding, cardY + 20, {
           fontSize: 9,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
-        addText(formatData(dadosUsuario.endereco?.bairro), margin + cardPadding, cardY + 35, {
+        addText(formatData(dadosUsuario.endereco?.bairro), margin + cardPadding, cardY + 28, {
           fontSize: 10,
           fontStyle: 'normal',
           textColor: colors.dark
         });
         
-        addText('Cidade', margin + cardPadding + quarterWidth, cardY + 25, {
+        addText('Cidade', margin + cardPadding + quarterWidth, cardY + 20, {
           fontSize: 9,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
-        addText(formatData(dadosUsuario.endereco?.cidade), margin + cardPadding + quarterWidth, cardY + 35, {
+        addText(formatData(dadosUsuario.endereco?.cidade), margin + cardPadding + quarterWidth, cardY + 28, {
           fontSize: 10,
           fontStyle: 'normal',
           textColor: colors.dark
         });
         
-        addText('UF', margin + cardPadding + quarterWidth * 2.5, cardY + 25, {
+        addText('UF', margin + cardPadding + quarterWidth * 2.5, cardY + 20, {
           fontSize: 9,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
-        addText(formatData(dadosUsuario.endereco?.uf), margin + cardPadding + quarterWidth * 2.5, cardY + 35, {
+        addText(formatData(dadosUsuario.endereco?.uf), margin + cardPadding + quarterWidth * 2.5, cardY + 28, {
           fontSize: 10,
           fontStyle: 'normal',
           textColor: colors.dark
         });
         
-        addText('CEP', margin + cardPadding + quarterWidth * 3.2, cardY + 25, {
+        addText('CEP', margin + cardPadding + quarterWidth * 3.2, cardY + 20, {
           fontSize: 9,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
-        addText(formatData(dadosUsuario.endereco?.cep, 'cep'), margin + cardPadding + quarterWidth * 3.2, cardY + 35, {
+        addText(formatData(dadosUsuario.endereco?.cep, 'cep'), margin + cardPadding + quarterWidth * 3.2, cardY + 28, {
           fontSize: 10,
           fontStyle: 'normal',
           textColor: colors.dark
         });
         
-        yPosition += 50;
+        yPosition += 43;
         
         // === DADOS ACADÊMICOS (se for aluno) ===
         if (dadosUsuario.funcao === 'ALUNO') {
           yPosition = addSection('DADOS ACADÊMICOS', yPosition);
           
-          addRoundedBox(margin, yPosition, contentWidth, 30, null, colors.secondary);
+          addRoundedBox(margin, yPosition, contentWidth, 25, null, colors.secondary);
           cardY = yPosition + cardPadding;
           
           // Série e Período
@@ -1124,7 +1124,7 @@
             fontStyle: 'normal',
             textColor: colors.secondary
           });
-          addText(dadosUsuario.serie ? `${dadosUsuario.serie}º ano` : '', margin + cardPadding, cardY + 10, {
+          addText(dadosUsuario.serie ? `${dadosUsuario.serie}º ano` : '', margin + cardPadding, cardY + 8, {
             fontSize: 10,
             fontStyle: 'bold',
             textColor: colors.primary
@@ -1135,7 +1135,7 @@
             fontStyle: 'normal',
             textColor: colors.secondary
           });
-          addText(dadosUsuario.periodo || '', margin + cardPadding + quarterWidth, cardY + 10, {
+          addText(dadosUsuario.periodo || '', margin + cardPadding + quarterWidth, cardY + 8, {
             fontSize: 10,
             fontStyle: 'normal',
             textColor: colors.dark
@@ -1146,7 +1146,7 @@
             fontStyle: 'normal',
             textColor: colors.secondary
           });
-          addText(dadosUsuario.turma || '', margin + cardPadding + quarterWidth * 2.5, cardY + 10, {
+          addText(dadosUsuario.turma || '', margin + cardPadding + quarterWidth * 2.5, cardY + 8, {
             fontSize: 10,
             fontStyle: 'bold',
             textColor: colors.primary
@@ -1157,39 +1157,38 @@
             fontStyle: 'normal',
             textColor: colors.secondary
           });
-          addText(dadosUsuario.turno || '', margin + cardPadding + quarterWidth * 3.2, cardY + 10, {
+          addText(dadosUsuario.turno || '', margin + cardPadding + quarterWidth * 3.2, cardY + 8, {
             fontSize: 10,
             fontStyle: 'normal',
             textColor: colors.dark
           });
           
-          yPosition += 35;
+          yPosition += 30;
         }
         
         // === REGRAS DA BIBLIOTECA ===
         yPosition = addSection('REGRAS DA BIBLIOTECA', yPosition);
         
-        addRoundedBox(margin, yPosition, contentWidth, 45, colors.light);
+        addRoundedBox(margin, yPosition, contentWidth, 35, colors.light);
         
         const regras = [
           '• Prazo de empréstimo: 7 dias corridos (renovável por mais 7 dias)',
           '• Limite máximo: 3 livros por usuário simultaneamente',
-          '• Multa por atraso: R$ 0,50 por dia de atraso por livro',
           '• Obrigatória apresentação da carteirinha ou documento com foto',
           '• Danos ou perda: responsabilidade de pagamento do valor integral'
         ];
         
-        let regraY = yPosition + 6;
+        let regraY = yPosition + 5;
         regras.forEach(regra => {
           addText(regra, margin + 8, regraY, {
             fontSize: 8,
             fontStyle: 'normal',
             textColor: colors.dark
           });
-          regraY += 8;
+          regraY += 7;
         });
         
-        yPosition += 55;
+        yPosition += 45;
         
         // === ASSINATURAS ===
         yPosition = addSection('ASSINATURAS', yPosition);

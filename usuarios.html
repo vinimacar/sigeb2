@@ -199,8 +199,21 @@
     }
     .edit-button {
       color: #4facfe;
-    }    .delete-button {
+    }
+    .edit-button:hover {
+      color: #2196F3;
+    }
+    .print-button {
+      color: #28a745;
+    }
+    .print-button:hover {
+      color: #1e7e34;
+    }
+    .delete-button {
       color: #c62828;
+    }
+    .delete-button:hover {
+      color: #b71c1c;
     }
     .user-checkbox {
       cursor: pointer;
@@ -758,7 +771,7 @@
         const doc = new jsPDF();
         
         // Configurações modernas
-        const margin = 25;
+        const margin = 20;
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         const contentWidth = pageWidth - (margin * 2);
@@ -829,7 +842,7 @@
         
         // Função para criar caixa com bordas arredondadas
         const addRoundedBox = (x, y, width, height, fillColor, borderColor = null) => {
-          const radius = 3;
+          const radius = 2;
           try {
             if (fillColor) {
               doc.setFillColor(fillColor[0], fillColor[1], fillColor[2]);
@@ -1487,6 +1500,9 @@
                   <button class="action-button edit-button" data-id="${doc.id}" onclick="handleEditUser('${doc.id}')">
                     <i class='bx bx-edit-alt'></i>
                   </button>
+                  <button class="action-button print-button" data-id="${doc.id}" onclick="handlePrintFicha('${doc.id}')" title="Imprimir Ficha">
+                    <i class='bx bx-printer'></i>
+                  </button>
                   <button class="action-button delete-button" data-id="${doc.id}" onclick="handleDeleteUser('${doc.id}')">
                     <i class='bx bx-trash'></i>
                   </button>
@@ -1531,12 +1547,18 @@
           btn.addEventListener('click', handleEditClick);
         });
         
+        document.querySelectorAll('.print-button').forEach(btn => {
+          btn.removeEventListener('click', handlePrintClick);
+          btn.addEventListener('click', handlePrintClick);
+        });
+        
         document.querySelectorAll('.delete-button').forEach(btn => {
           btn.removeEventListener('click', handleDeleteClick);
           btn.addEventListener('click', handleDeleteClick);
         });
         
         console.log('Event listeners adicionados. Total de botões editar:', document.querySelectorAll('.edit-button').length);
+        console.log('Event listeners adicionados. Total de botões imprimir:', document.querySelectorAll('.print-button').length);
       }
 
       // Handlers para os cliques dos botões
@@ -1546,6 +1568,14 @@
         const userId = e.currentTarget.getAttribute('data-id');
         console.log('Botão editar clicado para usuário:', userId);
         handleEditUser(userId);
+      }
+
+      function handlePrintClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const userId = e.currentTarget.getAttribute('data-id');
+        console.log('Botão imprimir clicado para usuário:', userId);
+        handlePrintFicha(userId);
       }
 
       function handleDeleteClick(e) {
@@ -1566,6 +1596,29 @@
         } catch (error) {
           console.error('Erro ao editar usuário:', error);
           showAlert('danger', 'Erro ao carregar dados do usuário.');
+        }
+      };
+
+      window.handlePrintFicha = async function(userId) {
+        console.log('handlePrintFicha chamada com userId:', userId);
+        try {
+          // Busca os dados do usuário
+          const userDoc = await db.collection('usuarios').doc(userId).get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            console.log('Dados do usuário para impressão:', userData);
+            
+            // Gera e imprime a ficha cadastral
+            const doc = await gerarFichaCadastral(userData);
+            doc.save(`Ficha_Cadastral_${userData.nome || 'Usuario'}.pdf`);
+            
+            showAlert('success', 'Ficha cadastral gerada com sucesso!');
+          } else {
+            showAlert('danger', 'Usuário não encontrado.');
+          }
+        } catch (error) {
+          console.error('Erro ao gerar ficha:', error);
+          showAlert('danger', 'Erro ao gerar ficha cadastral: ' + error.message);
         }
       };
 

@@ -974,10 +974,10 @@
         // === DADOS PESSOAIS ===
         yPosition = addSection('DADOS PESSOAIS', yPosition);
         
-        // Card para dados pessoais - tamanho reduzido
-        addRoundedBox(margin, yPosition, contentWidth, 50, null, colors.secondary);
+        // Card para dados pessoais - altura ajustada para conter todos os dados
+        addRoundedBox(margin, yPosition, contentWidth, 58, null, colors.secondary);
         
-        const cardPadding = 5;
+        const cardPadding = 6;
         let cardY = yPosition + cardPadding;
         
         // Nome
@@ -996,53 +996,53 @@
         // Email e Matrícula na mesma linha
         const halfWidth = (contentWidth - cardPadding * 3) / 2;
         
-        addText('Email', margin + cardPadding, cardY + 20, {
+        addText('Email', margin + cardPadding, cardY + 19, {
           fontSize: 9,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
-        addText(formatData(dadosUsuario.email, 'email'), margin + cardPadding, cardY + 28, {
+        addText(formatData(dadosUsuario.email, 'email'), margin + cardPadding, cardY + 27, {
           fontSize: 10,
           fontStyle: 'normal',
           textColor: colors.dark,
           maxWidth: halfWidth - 5
         });
         
-        addText('Matrícula', margin + cardPadding + halfWidth, cardY + 20, {
+        addText('Matrícula', margin + cardPadding + halfWidth, cardY + 19, {
           fontSize: 9,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
-        addText(formatData(dadosUsuario.matricula), margin + cardPadding + halfWidth, cardY + 28, {
+        addText(formatData(dadosUsuario.matricula), margin + cardPadding + halfWidth, cardY + 27, {
           fontSize: 10,
           fontStyle: 'bold',
           textColor: colors.primary
         });
         
         // Função e Telefone
-        addText('Função', margin + cardPadding, cardY + 40, {
+        addText('Função', margin + cardPadding, cardY + 38, {
           fontSize: 9,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
-        addText(formatData(dadosUsuario.funcao), margin + cardPadding, cardY + 48, {
+        addText(formatData(dadosUsuario.funcao), margin + cardPadding, cardY + 46, {
           fontSize: 10,
           fontStyle: 'normal',
           textColor: colors.dark
         });
         
-        addText('Telefone', margin + cardPadding + halfWidth, cardY + 40, {
+        addText('Telefone', margin + cardPadding + halfWidth, cardY + 38, {
           fontSize: 9,
           fontStyle: 'normal',
           textColor: colors.secondary
         });
-        addText(formatData(dadosUsuario.telefone, 'phone'), margin + cardPadding + halfWidth, cardY + 48, {
+        addText(formatData(dadosUsuario.telefone, 'phone'), margin + cardPadding + halfWidth, cardY + 46, {
           fontSize: 10,
           fontStyle: 'normal',
           textColor: colors.dark
         });
         
-        yPosition += 55;
+        yPosition += 63;
         
         // === ENDEREÇO ===
         yPosition = addSection('ENDEREÇO', yPosition);

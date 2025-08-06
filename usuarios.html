@@ -752,271 +752,463 @@
       }      // Variável global para armazenar dados do último usuário cadastrado
       let ultimoUsuarioCadastrado = null;
 
-      // Função para gerar ficha cadastral em PDF
+      // Função para gerar ficha cadastral em PDF com design clean
       async function gerarFichaCadastral(dadosUsuario) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
-        // Configurações
-        const margin = 20;
+        // Configurações modernas
+        const margin = 25;
         const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
         const contentWidth = pageWidth - (margin * 2);
         let yPosition = margin;
+        
+        // Cores do tema
+        const colors = {
+          primary: [41, 98, 255],      // Azul moderno
+          secondary: [108, 117, 125],   // Cinza elegante
+          accent: [40, 199, 111],       // Verde clean
+          dark: [33, 37, 41],           // Quase preto
+          light: [248, 249, 250],       // Cinza muito claro
+          white: [255, 255, 255]
+        };
         
         // Carrega os logos antes de gerar a ficha
         await carregarLogos();
         
-        // Função auxiliar para adicionar texto
+        // Função auxiliar para adicionar texto com reset automático
         const addText = (text, x, y, options = {}) => {
           if (options.fontSize) doc.setFontSize(options.fontSize);
           if (options.fontStyle) doc.setFont('helvetica', options.fontStyle);
           if (options.textColor) doc.setTextColor(options.textColor[0], options.textColor[1], options.textColor[2]);
-          doc.text(text, x, y);
-          // Reset para padrão
-          if (options.fontSize || options.fontStyle || options.textColor) {
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(12);
-            doc.setTextColor(0, 0, 0);
+          
+          // Tratamento de texto longo
+          if (options.maxWidth) {
+            const lines = doc.splitTextToSize(text, options.maxWidth);
+            doc.text(lines, x, y);
+          } else {
+            doc.text(text, x, y);
+          }
+          
+          // Reset automático
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(11);
+          doc.setTextColor(33, 37, 41);
+        };
+        
+        // Função para validar e formatar dados
+        const formatData = (data, type = 'text') => {
+          if (!data) return '';
+          
+          switch (type) {
+            case 'phone':
+              return data.replace(/(\d{2})(\d{4,5})(\d{4})/, '($1) $2-$3');
+            case 'cep':
+              return data.replace(/(\d{5})(\d{3})/, '$1-$2');
+            case 'name':
+              return data.toUpperCase();
+            case 'email':
+              return data.toLowerCase();
+            default:
+              return data;
           }
         };
         
-        // Função auxiliar para adicionar linha
-        const addLine = (x1, y1, x2, y2) => {
-          doc.line(x1, y1, x2, y2);
+        // Função para criar caixa com bordas arredondadas
+        const addRoundedBox = (x, y, width, height, fillColor, borderColor = null) => {
+          const radius = 3;
+          if (fillColor) {
+            doc.setFillColor(fillColor[0], fillColor[1], fillColor[2]);
+            doc.roundedRect(x, y, width, height, radius, radius, 'F');
+          }
+          if (borderColor) {
+            doc.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
+            doc.setLineWidth(0.5);
+            doc.roundedRect(x, y, width, height, radius, radius, 'S');
+          }
         };
         
-        // === CABEÇALHO COM LOGOS ===
+        // Função para criar seção com título
+        const addSection = (title, yPos) => {
+          // Linha decorativa
+          doc.setDrawColor(colors.primary[0], colors.primary[1], colors.primary[2]);
+          doc.setLineWidth(2);
+          doc.line(margin, yPos, margin + 30, yPos);
+          
+          // Título da seção
+          addText(title, margin, yPos + 8, {
+            fontSize: 14,
+            fontStyle: 'bold',
+            textColor: colors.primary
+          });
+          
+          return yPos + 20;
+        };
+        
+        // === CABEÇALHO MODERNO ===
+        
+        // Fundo do cabeçalho com gradiente visual
+        addRoundedBox(margin, yPosition, contentWidth, 50, colors.light);
         
         // Logo SIGEB (esquerda)
         if (logoSigebBase64) {
           try {
-            doc.addImage(logoSigebBase64, 'PNG', margin, yPosition, 40, 25);
+            doc.addImage(logoSigebBase64, 'PNG', margin + 10, yPosition + 8, 35, 22);
           } catch (error) {
-            console.warn('Erro ao adicionar logo SIGEB na ficha, usando fallback:', error);
-            // Fallback elegante
-            doc.setFillColor(34, 139, 34);
-            doc.rect(margin, yPosition, 35, 20, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(14);
-            doc.setFont('helvetica', 'bold');
-            doc.text('SIGEB', margin + 8, yPosition + 12);
-            doc.setTextColor(0, 0, 0);
+            // Fallback moderno
+            addRoundedBox(margin + 10, yPosition + 8, 35, 22, colors.primary);
+            addText('SIGEB', margin + 21, yPosition + 22, {
+              fontSize: 12,
+              fontStyle: 'bold',
+              textColor: colors.white
+            });
           }
         } else {
-          // Fallback com design profissional
-          doc.setFillColor(34, 139, 34);
-          doc.rect(margin, yPosition, 35, 20, 'F');
-          doc.setTextColor(255, 255, 255);
-          doc.setFontSize(14);
-          doc.setFont('helvetica', 'bold');
-          doc.text('SIGEB', margin + 8, yPosition + 12);
-          doc.setTextColor(0, 0, 0);
+          addRoundedBox(margin + 10, yPosition + 8, 35, 22, colors.primary);
+          addText('SIGEB', margin + 21, yPosition + 22, {
+            fontSize: 12,
+            fontStyle: 'bold',
+            textColor: colors.white
+          });
         }
 
         // Logo da Escola (direita)
         if (logoBiasBase64) {
           try {
-            doc.addImage(logoBiasBase64, 'PNG', pageWidth - margin - 40, yPosition, 40, 25);
+            doc.addImage(logoBiasBase64, 'PNG', pageWidth - margin - 45, yPosition + 8, 35, 22);
           } catch (error) {
-            console.warn('Erro ao adicionar logo da escola na ficha, usando fallback:', error);
-            // Fallback elegante
-            doc.setFillColor(34, 139, 34);
-            doc.circle(pageWidth - margin - 20, yPosition + 12, 12, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('BF', pageWidth - margin - 23, yPosition + 15);
-            doc.setTextColor(0, 0, 0);
+            // Fallback circular moderno
+            doc.setFillColor(colors.accent[0], colors.accent[1], colors.accent[2]);
+            doc.circle(pageWidth - margin - 27, yPosition + 19, 11, 'F');
+            addText('BF', pageWidth - margin - 31, yPosition + 22, {
+              fontSize: 10,
+              fontStyle: 'bold',
+              textColor: colors.white
+            });
           }
         } else {
-          // Fallback com design profissional
-          doc.setFillColor(34, 139, 34);
-          doc.circle(pageWidth - margin - 20, yPosition + 12, 12, 'F');
-          doc.setTextColor(255, 255, 255);
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
-          doc.text('BF', pageWidth - margin - 23, yPosition + 15);
-          doc.setTextColor(0, 0, 0);
+          doc.setFillColor(colors.accent[0], colors.accent[1], colors.accent[2]);
+          doc.circle(pageWidth - margin - 27, yPosition + 19, 11, 'F');
+          addText('BF', pageWidth - margin - 31, yPosition + 22, {
+            fontSize: 10,
+            fontStyle: 'bold',
+            textColor: colors.white
+          });
         }
         
-        // Título centralizado entre os logos
-        addText('ESCOLA ESTADUAL GOVERNADOR BIAS FORTES', margin + 50, yPosition + 8, {
-          fontSize: 12,
+        // Título centralizado
+        const centerX = margin + (contentWidth / 2);
+        addText('ESCOLA ESTADUAL GOVERNADOR BIAS FORTES', centerX, yPosition + 15, {
+          fontSize: 13,
           fontStyle: 'bold',
-          textColor: [34, 139, 34]
+          textColor: colors.dark
         });
         
-        addText('Sistema de Gerenciamento de Biblioteca', margin + 50, yPosition + 16, {
-          fontSize: 10,
+        addText('Sistema de Gerenciamento de Biblioteca', centerX, yPosition + 27, {
+          fontSize: 9,
           fontStyle: 'normal',
-          textColor: [100, 100, 100]
+          textColor: colors.secondary
         });
         
-        addText('FICHA CADASTRAL DE USUÁRIO', margin + 50, yPosition + 24, {
-          fontSize: 14,
+        addText('FICHA CADASTRAL DE USUÁRIO', centerX, yPosition + 40, {
+          fontSize: 11,
           fontStyle: 'bold',
-          textColor: [50, 50, 50]
+          textColor: colors.primary
         });
         
-        yPosition += 35;
+        // Centralizar texto
+        doc.setTextAlign('center');
+        doc.text('ESCOLA ESTADUAL GOVERNADOR BIAS FORTES', centerX, yPosition + 15);
+        doc.text('Sistema de Gerenciamento de Biblioteca', centerX, yPosition + 27);
+        doc.text('FICHA CADASTRAL DE USUÁRIO', centerX, yPosition + 40);
+        doc.setTextAlign('left'); // Reset alinhamento
         
-        // Cabeçalho principal
-        doc.setFillColor(26, 26, 46);
-        doc.rect(margin, yPosition, contentWidth, 20, 'F');
+        yPosition += 70;
         
-        doc.setTextColor(255, 255, 255);
-        addText('FICHA CADASTRAL DE USUÁRIO', margin + 5, yPosition + 13, {
-          fontSize: 14,
-          fontStyle: 'bold'
-        });
-        doc.setTextColor(0, 0, 0);
+        // === DADOS PESSOAIS ===
+        yPosition = addSection('DADOS PESSOAIS', yPosition);
         
-        yPosition += 30;
+        // Card para dados pessoais
+        addRoundedBox(margin, yPosition, contentWidth, 65, null, colors.secondary);
         
-        // Informações pessoais
-        addText('DADOS PESSOAIS', margin, yPosition, {
-          fontSize: 14,
-          fontStyle: 'bold'
-        });
-        yPosition += 10;
-        addLine(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 15;
+        const cardPadding = 8;
+        let cardY = yPosition + cardPadding;
         
         // Nome
-        addText('Nome Completo:', margin, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.nome || '', margin + 35, yPosition);
-        yPosition += 15;
-        
-        // Email e Matrícula
-        addText('Email:', margin, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.email || '', margin + 20, yPosition);
-        addText('Matrícula:', margin + 100, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.matricula || '', margin + 135, yPosition);
-        yPosition += 15;
-        
-        // Função e Status
-        addText('Função:', margin, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.funcao || '', margin + 25, yPosition);
-        addText('Status:', margin + 100, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.status || '', margin + 125, yPosition);
-        yPosition += 15;
-        
-        // Telefone
-        addText('Telefone:', margin, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.telefone || '', margin + 30, yPosition);
-        yPosition += 20;
-        
-        // Endereço
-        addText('ENDEREÇO', margin, yPosition, {
-          fontSize: 14,
-          fontStyle: 'bold'
+        addText('Nome Completo', margin + cardPadding, cardY, {
+          fontSize: 9,
+          fontStyle: 'normal',
+          textColor: colors.secondary
         });
-        yPosition += 10;
-        addLine(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 15;
+        addText(formatData(dadosUsuario.nome, 'name'), margin + cardPadding, cardY + 10, {
+          fontSize: 11,
+          fontStyle: 'bold',
+          textColor: colors.dark,
+          maxWidth: contentWidth - cardPadding * 2
+        });
+        
+        // Email e Matrícula na mesma linha
+        const halfWidth = (contentWidth - cardPadding * 3) / 2;
+        
+        addText('Email', margin + cardPadding, cardY + 25, {
+          fontSize: 9,
+          fontStyle: 'normal',
+          textColor: colors.secondary
+        });
+        addText(formatData(dadosUsuario.email, 'email'), margin + cardPadding, cardY + 35, {
+          fontSize: 10,
+          fontStyle: 'normal',
+          textColor: colors.dark,
+          maxWidth: halfWidth - 5
+        });
+        
+        addText('Matrícula', margin + cardPadding + halfWidth, cardY + 25, {
+          fontSize: 9,
+          fontStyle: 'normal',
+          textColor: colors.secondary
+        });
+        addText(formatData(dadosUsuario.matricula), margin + cardPadding + halfWidth, cardY + 35, {
+          fontSize: 10,
+          fontStyle: 'bold',
+          textColor: colors.primary
+        });
+        
+        // Função e Telefone
+        addText('Função', margin + cardPadding, cardY + 50, {
+          fontSize: 9,
+          fontStyle: 'normal',
+          textColor: colors.secondary
+        });
+        addText(formatData(dadosUsuario.funcao), margin + cardPadding, cardY + 60, {
+          fontSize: 10,
+          fontStyle: 'normal',
+          textColor: colors.dark
+        });
+        
+        addText('Telefone', margin + cardPadding + halfWidth, cardY + 50, {
+          fontSize: 9,
+          fontStyle: 'normal',
+          textColor: colors.secondary
+        });
+        addText(formatData(dadosUsuario.telefone, 'phone'), margin + cardPadding + halfWidth, cardY + 60, {
+          fontSize: 10,
+          fontStyle: 'normal',
+          textColor: colors.dark
+        });
+        
+        yPosition += 85;
+        
+        // === ENDEREÇO ===
+        yPosition = addSection('ENDEREÇO', yPosition);
+        
+        // Card para endereço
+        addRoundedBox(margin, yPosition, contentWidth, 50, null, colors.secondary);
+        cardY = yPosition + cardPadding;
         
         // Logradouro e Número
-        addText('Logradouro:', margin, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.endereco?.logradouro || '', margin + 35, yPosition);
-        addText('Nº:', margin + 120, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.endereco?.numero || '', margin + 130, yPosition);
-        yPosition += 15;
+        addText('Logradouro', margin + cardPadding, cardY, {
+          fontSize: 9,
+          fontStyle: 'normal',
+          textColor: colors.secondary
+        });
+        addText(formatData(dadosUsuario.endereco?.logradouro), margin + cardPadding, cardY + 10, {
+          fontSize: 10,
+          fontStyle: 'normal',
+          textColor: colors.dark,
+          maxWidth: halfWidth - 5
+        });
         
-        // Bairro e CEP
-        addText('Bairro:', margin, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.endereco?.bairro || '', margin + 25, yPosition);
-        addText('CEP:', margin + 100, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.endereco?.cep || '', margin + 120, yPosition);
-        yPosition += 15;
+        addText('Nº', margin + cardPadding + halfWidth, cardY, {
+          fontSize: 9,
+          fontStyle: 'normal',
+          textColor: colors.secondary
+        });
+        addText(formatData(dadosUsuario.endereco?.numero), margin + cardPadding + halfWidth, cardY + 10, {
+          fontSize: 10,
+          fontStyle: 'normal',
+          textColor: colors.dark
+        });
         
-        // Cidade e UF
-        addText('Cidade:', margin, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.endereco?.cidade || '', margin + 25, yPosition);
-        addText('UF:', margin + 120, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.endereco?.uf || '', margin + 135, yPosition);
-        yPosition += 20;
+        // Bairro, Cidade, UF, CEP
+        const quarterWidth = (contentWidth - cardPadding * 5) / 4;
         
-        // Dados acadêmicos (se for aluno)
+        addText('Bairro', margin + cardPadding, cardY + 25, {
+          fontSize: 9,
+          fontStyle: 'normal',
+          textColor: colors.secondary
+        });
+        addText(formatData(dadosUsuario.endereco?.bairro), margin + cardPadding, cardY + 35, {
+          fontSize: 10,
+          fontStyle: 'normal',
+          textColor: colors.dark
+        });
+        
+        addText('Cidade', margin + cardPadding + quarterWidth, cardY + 25, {
+          fontSize: 9,
+          fontStyle: 'normal',
+          textColor: colors.secondary
+        });
+        addText(formatData(dadosUsuario.endereco?.cidade), margin + cardPadding + quarterWidth, cardY + 35, {
+          fontSize: 10,
+          fontStyle: 'normal',
+          textColor: colors.dark
+        });
+        
+        addText('UF', margin + cardPadding + quarterWidth * 2.5, cardY + 25, {
+          fontSize: 9,
+          fontStyle: 'normal',
+          textColor: colors.secondary
+        });
+        addText(formatData(dadosUsuario.endereco?.uf), margin + cardPadding + quarterWidth * 2.5, cardY + 35, {
+          fontSize: 10,
+          fontStyle: 'normal',
+          textColor: colors.dark
+        });
+        
+        addText('CEP', margin + cardPadding + quarterWidth * 3.2, cardY + 25, {
+          fontSize: 9,
+          fontStyle: 'normal',
+          textColor: colors.secondary
+        });
+        addText(formatData(dadosUsuario.endereco?.cep, 'cep'), margin + cardPadding + quarterWidth * 3.2, cardY + 35, {
+          fontSize: 10,
+          fontStyle: 'normal',
+          textColor: colors.dark
+        });
+        
+        yPosition += 70;
+        
+        // === DADOS ACADÊMICOS (se for aluno) ===
         if (dadosUsuario.funcao === 'ALUNO') {
-          addText('DADOS ACADÊMICOS', margin, yPosition, {
-            fontSize: 14,
-            fontStyle: 'bold'
-          });
-          yPosition += 10;
-          addLine(margin, yPosition, pageWidth - margin, yPosition);
-          yPosition += 15;
+          yPosition = addSection('DADOS ACADÊMICOS', yPosition);
+          
+          addRoundedBox(margin, yPosition, contentWidth, 35, null, colors.secondary);
+          cardY = yPosition + cardPadding;
           
           // Série e Período
-          addText('Série:', margin, yPosition, { fontStyle: 'bold' });
-          addText(dadosUsuario.serie ? `${dadosUsuario.serie}º ano` : '', margin + 25, yPosition);
-          addText('Período:', margin + 80, yPosition, { fontStyle: 'bold' });
-          addText(dadosUsuario.periodo || '', margin + 115, yPosition);
-          yPosition += 15;
+          addText('Série', margin + cardPadding, cardY, {
+            fontSize: 9,
+            fontStyle: 'normal',
+            textColor: colors.secondary
+          });
+          addText(dadosUsuario.serie ? `${dadosUsuario.serie}º ano` : '', margin + cardPadding, cardY + 10, {
+            fontSize: 10,
+            fontStyle: 'bold',
+            textColor: colors.primary
+          });
           
-          // Turma e Turno
-          addText('Turma:', margin, yPosition, { fontStyle: 'bold' });
-          addText(dadosUsuario.turma || '', margin + 25, yPosition);
-          addText('Turno:', margin + 80, yPosition, { fontStyle: 'bold' });
-          addText(dadosUsuario.turno || '', margin + 110, yPosition);
-          yPosition += 20;
+          addText('Período', margin + cardPadding + quarterWidth, cardY, {
+            fontSize: 9,
+            fontStyle: 'normal',
+            textColor: colors.secondary
+          });
+          addText(dadosUsuario.periodo || '', margin + cardPadding + quarterWidth, cardY + 10, {
+            fontSize: 10,
+            fontStyle: 'normal',
+            textColor: colors.dark
+          });
+          
+          addText('Turma', margin + cardPadding + quarterWidth * 2.5, cardY, {
+            fontSize: 9,
+            fontStyle: 'normal',
+            textColor: colors.secondary
+          });
+          addText(dadosUsuario.turma || '', margin + cardPadding + quarterWidth * 2.5, cardY + 10, {
+            fontSize: 10,
+            fontStyle: 'bold',
+            textColor: colors.primary
+          });
+          
+          addText('Turno', margin + cardPadding + quarterWidth * 3.2, cardY, {
+            fontSize: 9,
+            fontStyle: 'normal',
+            textColor: colors.secondary
+          });
+          addText(dadosUsuario.turno || '', margin + cardPadding + quarterWidth * 3.2, cardY + 10, {
+            fontSize: 10,
+            fontStyle: 'normal',
+            textColor: colors.dark
+          });
+          
+          yPosition += 55;
         }
         
-        // Regras da biblioteca
-        addText('REGRAS DA BIBLIOTECA', margin, yPosition, {
-          fontSize: 14,
-          fontStyle: 'bold'
-        });
-        yPosition += 10;
-        addLine(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 15;
+        // === REGRAS DA BIBLIOTECA ===
+        yPosition = addSection('REGRAS DA BIBLIOTECA', yPosition);
+        
+        addRoundedBox(margin, yPosition, contentWidth, 60, colors.light);
         
         const regras = [
-          '• Prazo de empréstimo: 7 dias (renovável por mais 7 dias)',
-          '• Multa por atraso: R$ 0,50 por dia',
-          '• Limite de livros: 3 livros por usuário',
-          '• É obrigatório apresentar a carteirinha ou documento com foto',
-          '• Danos ou perda do livro: pagamento do valor integral',
-          '• Manter silêncio e organização no ambiente'
+          '• Prazo de empréstimo: 7 dias corridos (renovável por mais 7 dias)',
+          '• Limite máximo: 3 livros por usuário simultaneamente',
+          '• Obrigatória apresentação da carteirinha ou documento com foto',
+          '• Danos ou perda: responsabilidade de pagamento do valor integral',
+          '• Manter silêncio e organização no ambiente da biblioteca'
         ];
         
+        let regraY = yPosition + 10;
         regras.forEach(regra => {
-          addText(regra, margin, yPosition, { fontSize: 10 });
-          yPosition += 10;
+          addText(regra, margin + 8, regraY, {
+            fontSize: 9,
+            fontStyle: 'normal',
+            textColor: colors.dark
+          });
+          regraY += 11;
         });
         
-        yPosition += 10;
+        yPosition += 80;
         
-        // Assinaturas
-        addText('ASSINATURAS', margin, yPosition, {
-          fontSize: 14,
-          fontStyle: 'bold'
+        // === ASSINATURAS ===
+        yPosition = addSection('ASSINATURAS', yPosition);
+        
+        // Caixas para assinatura
+        const sigWidth = (contentWidth - 20) / 2;
+        
+        addRoundedBox(margin, yPosition, sigWidth, 40, null, colors.secondary);
+        addRoundedBox(margin + sigWidth + 20, yPosition, sigWidth, 40, null, colors.secondary);
+        
+        addText('Assinatura do Usuário', margin + 10, yPosition + 50, {
+          fontSize: 9,
+          fontStyle: 'normal',
+          textColor: colors.secondary
         });
-        yPosition += 10;
-        addLine(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 30;
         
-        // Linha para assinatura do usuário
-        addLine(margin, yPosition, margin + 80, yPosition);
-        addText('Usuário', margin + 30, yPosition + 10, { fontSize: 10 });
-          // Linha para assinatura do responsável
-        addLine(margin + 100, yPosition, margin + 180, yPosition);
-        addText('Bibliotecário(a)', margin + 120, yPosition + 10, { fontSize: 10 });
+        addText('Assinatura do Bibliotecário(a)', margin + sigWidth + 30, yPosition + 50, {
+          fontSize: 9,
+          fontStyle: 'normal',
+          textColor: colors.secondary
+        });
         
-        yPosition += 30;
+        // === RODAPÉ MODERNO ===
+        const footerY = pageHeight - 30;
+        
+        // Linha decorativa
+        doc.setDrawColor(colors.primary[0], colors.primary[1], colors.primary[2]);
+        doc.setLineWidth(1);
+        doc.line(margin, footerY, pageWidth - margin, footerY);
         
         // Data de emissão
-        const dataAtual = new Date().toLocaleDateString('pt-BR');
-        addText('Emitido em: ' + dataAtual, margin, yPosition, {
-          fontSize: 10,
-          fontStyle: 'italic'
+        const dataAtual = new Date().toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
         });
         
-        // Rodapé
-        yPosition = doc.internal.pageSize.getHeight() - 20;
-        addText('SIGEB - Sistema de Gerenciamento de Biblioteca Escolar', margin, yPosition, {
-          fontSize: 8,
-          fontStyle: 'italic'
+        addText(`Emitido em: ${dataAtual}`, margin, footerY + 12, {
+          fontSize: 9,
+          fontStyle: 'normal',
+          textColor: colors.secondary
         });
+        
+        // Texto do sistema (direita)
+        doc.setTextAlign('right');
+        addText('SIGEB - Sistema de Gerenciamento de Biblioteca Escolar', pageWidth - margin, footerY + 12, {
+          fontSize: 9,
+          fontStyle: 'italic',
+          textColor: colors.secondary
+        });
+        doc.setTextAlign('left');
         
         return doc;
       }
@@ -1029,33 +1221,37 @@
         }
         
         try {
+          // Mostra loading
+          showAlert('info', '📄 Gerando ficha cadastral com design moderno...');
+          
           const doc = await gerarFichaCadastral(ultimoUsuarioCadastrado);
           
           // Gerar nome do arquivo
           const nomeArquivo = `ficha_cadastral_${ultimoUsuarioCadastrado.nome?.replace(/\s+/g, '_').toLowerCase() || 'usuario'}.pdf`;
           
-          // Opções para o usuário
+          // Opções para o usuário com melhor descrição
           const opcao = confirm(
-            'Como deseja proceder com a ficha cadastral?\n\n' +
-            'OK - Fazer download do PDF\n' +
-            'Cancelar - Abrir para visualização/impressão'
+            '✨ Ficha cadastral gerada com design clean!\n\n' +
+            '📥 OK - Fazer download do PDF\n' +
+            '👁️ Cancelar - Abrir para visualização/impressão\n\n' +
+            '💡 A nova ficha possui layout moderno com cards organizados e melhor legibilidade.'
           );
           
           if (opcao) {
             // Download do PDF
             doc.save(nomeArquivo);
-            showAlert('success', 'Ficha cadastral baixada com sucesso!');
+            showAlert('success', '✅ Ficha cadastral moderna baixada com sucesso! Confira o novo design clean com cards e tipografia melhorada.');
           } else {
             // Abrir para visualização/impressão
             const pdfBlob = doc.output('blob');
             const pdfUrl = URL.createObjectURL(pdfBlob);
             window.open(pdfUrl, '_blank');
-            showAlert('info', 'Ficha cadastral aberta em nova aba. Use Ctrl+P para imprimir.');
+            showAlert('info', '👀 Ficha cadastral aberta em nova aba com design moderno! Use Ctrl+P para imprimir.');
           }
           
         } catch (error) {
           console.error('Erro ao gerar ficha cadastral:', error);
-          showAlert('danger', 'Erro ao gerar ficha cadastral. Tente novamente.');
+          showAlert('danger', '❌ Erro ao gerar ficha cadastral. Tente novamente.');
         }
       }
 
@@ -1447,19 +1643,72 @@
       }
       
       #btnImprimirFicha {
-        background: linear-gradient(90deg, #28a745, #20c997);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border: none;
-        transition: all 0.3s ease;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.25);
       }
       
       #btnImprimirFicha:hover {
-        background: linear-gradient(90deg, #20c997, #28a745);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+      }
+      
+      #btnImprimirFicha:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+      }
+      
+      #btnImprimirFicha:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+      }
+      
+      #btnImprimirFicha:hover:before {
+        left: 100%;
       }
       
       .modal-footer .btn {
         min-width: 120px;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+      }
+      
+      .modal-footer .btn-primary {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        border: none;
+        box-shadow: 0 3px 12px rgba(79, 172, 254, 0.3);
+      }
+      
+      .modal-footer .btn-primary:hover {
+        background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 5px 18px rgba(79, 172, 254, 0.4);
+      }
+      
+      .modal-footer .btn-secondary {
+        background: linear-gradient(135deg, #a8a8a8 0%, #8c8c8c 100%);
+        border: none;
+        color: white;
+      }
+      
+      .modal-footer .btn-secondary:hover {
+        background: linear-gradient(135deg, #8c8c8c 0%, #a8a8a8 100%);
+        transform: translateY(-1px);
       }
     </style>
   </div>

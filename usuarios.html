@@ -199,21 +199,8 @@
     }
     .edit-button {
       color: #4facfe;
-    }
-    .edit-button:hover {
-      color: #2196F3;
-    }
-    .print-button {
-      color: #28a745;
-    }
-    .print-button:hover {
-      color: #1e7e34;
-    }
-    .delete-button {
+    }    .delete-button {
       color: #c62828;
-    }
-    .delete-button:hover {
-      color: #b71c1c;
     }
     .user-checkbox {
       cursor: pointer;
@@ -765,527 +752,328 @@
       }      // Variável global para armazenar dados do último usuário cadastrado
       let ultimoUsuarioCadastrado = null;
 
-      // Função para gerar ficha cadastral em PDF com design clean
+      // Função para gerar ficha cadastral em PDF
       async function gerarFichaCadastral(dadosUsuario) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
-        // Configurações modernas
-        const margin = 10;
+        // Configurações
+        const margin = 20;
         const pageWidth = doc.internal.pageSize.getWidth();
-        const pageHeight = doc.internal.pageSize.getHeight();
         const contentWidth = pageWidth - (margin * 2);
         let yPosition = margin;
-        
-        // Cores do tema
-        const colors = {
-          primary: [41, 98, 255],      // Azul moderno
-          secondary: [108, 117, 125],   // Cinza elegante
-          accent: [40, 199, 111],       // Verde clean
-          dark: [33, 37, 41],           // Quase preto
-          light: [248, 249, 250],       // Cinza muito claro
-          white: [255, 255, 255]
-        };
         
         // Carrega os logos antes de gerar a ficha
         await carregarLogos();
         
-        // Função auxiliar para adicionar texto com reset automático
+        // Função auxiliar para adicionar texto
         const addText = (text, x, y, options = {}) => {
           if (options.fontSize) doc.setFontSize(options.fontSize);
           if (options.fontStyle) doc.setFont('helvetica', options.fontStyle);
           if (options.textColor) doc.setTextColor(options.textColor[0], options.textColor[1], options.textColor[2]);
-          
-          // Tratamento de alinhamento
-          let textX = x;
-          if (options.align === 'center') {
-            try {
-              const textWidth = doc.getTextWidth(text);
-              textX = x - (textWidth / 2);
-            } catch (e) {
-              // Fallback: usar coordenada original se getTextWidth falhar
-              textX = x;
-            }
-          }
-          
-          // Tratamento de texto longo
-          if (options.maxWidth) {
-            const lines = doc.splitTextToSize(text, options.maxWidth);
-            doc.text(lines, textX, y);
-          } else {
-            doc.text(text, textX, y);
-          }
-          
-          // Reset automático
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(11);
-          doc.setTextColor(33, 37, 41);
-        };
-        
-        // Função para validar e formatar dados
-        const formatData = (data, type = 'text') => {
-          if (!data) return '';
-          
-          switch (type) {
-            case 'phone':
-              return data.replace(/(\d{2})(\d{4,5})(\d{4})/, '($1) $2-$3');
-            case 'cep':
-              return data.replace(/(\d{5})(\d{3})/, '$1-$2');
-            case 'name':
-              return data.toUpperCase();
-            case 'email':
-              return data.toLowerCase();
-            default:
-              return data;
+          doc.text(text, x, y);
+          // Reset para padrão
+          if (options.fontSize || options.fontStyle || options.textColor) {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
           }
         };
         
-        // Função para criar caixa com bordas arredondadas
-        const addRoundedBox = (x, y, width, height, fillColor, borderColor = null) => {
-          const radius = 2;
-          try {
-            if (fillColor) {
-              doc.setFillColor(fillColor[0], fillColor[1], fillColor[2]);
-              if (typeof doc.roundedRect === 'function') {
-                doc.roundedRect(x, y, width, height, radius, radius, 'F');
-              } else {
-                // Fallback para versões antigas do jsPDF
-                doc.rect(x, y, width, height, 'F');
-              }
-            }
-            if (borderColor) {
-              doc.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
-              doc.setLineWidth(0.5);
-              if (typeof doc.roundedRect === 'function') {
-                doc.roundedRect(x, y, width, height, radius, radius, 'S');
-              } else {
-                // Fallback para versões antigas do jsPDF
-                doc.rect(x, y, width, height, 'S');
-              }
-            }
-          } catch (e) {
-            console.warn('Erro ao desenhar caixa arredondada, usando retângulo simples:', e);
-            // Fallback final: retângulo simples
-            if (fillColor) {
-              doc.setFillColor(fillColor[0], fillColor[1], fillColor[2]);
-              doc.rect(x, y, width, height, 'F');
-            }
-            if (borderColor) {
-              doc.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
-              doc.setLineWidth(0.5);
-              doc.rect(x, y, width, height, 'S');
-            }
-          }
+        // Função auxiliar para adicionar linha
+        const addLine = (x1, y1, x2, y2) => {
+          doc.line(x1, y1, x2, y2);
         };
         
-        // Função para criar seção com título - versão ultra compacta
-        const addSection = (title, yPos) => {
-          // Linha decorativa menor
-          doc.setDrawColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-          doc.setLineWidth(2);
-          doc.line(margin, yPos, margin + 20, yPos);
-          
-          // Título da seção
-          addText(title, margin, yPos + 6, {
-            fontSize: 11,
-            fontStyle: 'bold',
-            textColor: colors.primary
-          });
-          
-          return yPos + 12;
-        };
+        // === CABEÇALHO COM LOGOS ===
         
-        // === CABEÇALHO MODERNO ===
-        
-        // Fundo do cabeçalho com gradiente visual
-        addRoundedBox(margin, yPosition, contentWidth, 40, colors.light);
-        
-        // Logo SIGEB (esquerda) - tamanho reduzido
+        // Logo SIGEB (esquerda)
         if (logoSigebBase64) {
           try {
-            doc.addImage(logoSigebBase64, 'PNG', margin + 8, yPosition + 6, 25, 16);
+            doc.addImage(logoSigebBase64, 'PNG', margin, yPosition, 40, 25);
           } catch (error) {
-            // Fallback moderno
-            addRoundedBox(margin + 8, yPosition + 6, 25, 16, colors.primary);
-            addText('SIGEB', margin + 16, yPosition + 16, {
-              fontSize: 10,
-              fontStyle: 'bold',
-              textColor: colors.white
-            });
+            console.warn('Erro ao adicionar logo SIGEB na ficha, usando fallback:', error);
+            // Fallback elegante
+            doc.setFillColor(34, 139, 34);
+            doc.rect(margin, yPosition, 35, 20, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('SIGEB', margin + 8, yPosition + 12);
+            doc.setTextColor(0, 0, 0);
           }
         } else {
-          addRoundedBox(margin + 8, yPosition + 6, 25, 16, colors.primary);
-          addText('SIGEB', margin + 16, yPosition + 16, {
-            fontSize: 10,
-            fontStyle: 'bold',
-            textColor: colors.white
-          });
+          // Fallback com design profissional
+          doc.setFillColor(34, 139, 34);
+          doc.rect(margin, yPosition, 35, 20, 'F');
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(14);
+          doc.setFont('helvetica', 'bold');
+          doc.text('SIGEB', margin + 8, yPosition + 12);
+          doc.setTextColor(0, 0, 0);
         }
 
-        // Logo da Escola (direita) - tamanho reduzido
+        // Logo da Escola (direita)
         if (logoBiasBase64) {
           try {
-            doc.addImage(logoBiasBase64, 'PNG', pageWidth - margin - 33, yPosition + 6, 25, 16);
+            doc.addImage(logoBiasBase64, 'PNG', pageWidth - margin - 40, yPosition, 40, 25);
           } catch (error) {
-            // Fallback circular moderno
-            doc.setFillColor(colors.accent[0], colors.accent[1], colors.accent[2]);
-            doc.circle(pageWidth - margin - 20, yPosition + 14, 8, 'F');
-            addText('BF', pageWidth - margin - 23, yPosition + 16, {
-              fontSize: 8,
-              fontStyle: 'bold',
-              textColor: colors.white
-            });
+            console.warn('Erro ao adicionar logo da escola na ficha, usando fallback:', error);
+            // Fallback elegante
+            doc.setFillColor(34, 139, 34);
+            doc.circle(pageWidth - margin - 20, yPosition + 12, 12, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('BF', pageWidth - margin - 23, yPosition + 15);
+            doc.setTextColor(0, 0, 0);
           }
         } else {
-          doc.setFillColor(colors.accent[0], colors.accent[1], colors.accent[2]);
-          doc.circle(pageWidth - margin - 20, yPosition + 14, 8, 'F');
-          addText('BF', pageWidth - margin - 23, yPosition + 16, {
-            fontSize: 8,
-            fontStyle: 'bold',
-            textColor: colors.white
-          });
+          // Fallback com design profissional
+          doc.setFillColor(34, 139, 34);
+          doc.circle(pageWidth - margin - 20, yPosition + 12, 12, 'F');
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(12);
+          doc.setFont('helvetica', 'bold');
+          doc.text('BF', pageWidth - margin - 23, yPosition + 15);
+          doc.setTextColor(0, 0, 0);
         }
         
-        // Título centralizado
-        const centerX = margin + (contentWidth / 2);
-        addText('ESCOLA ESTADUAL GOVERNADOR BIAS FORTES', centerX, yPosition + 12, {
+        // Título centralizado entre os logos
+        addText('ESCOLA ESTADUAL GOVERNADOR BIAS FORTES', margin + 50, yPosition + 8, {
           fontSize: 12,
           fontStyle: 'bold',
-          textColor: colors.dark,
-          align: 'center'
+          textColor: [34, 139, 34]
         });
         
-        addText('SIGEB - Sistema de Gerenciamento de Biblioteca', centerX, yPosition + 22, {
-          fontSize: 8,
-          fontStyle: 'normal',
-          textColor: colors.secondary,
-          align: 'center'
-        });
-        
-        addText('FICHA CADASTRAL DE USUÁRIO', centerX, yPosition + 32, {
+        addText('Sistema de Gerenciamento de Biblioteca', margin + 50, yPosition + 16, {
           fontSize: 10,
-          fontStyle: 'bold',
-          textColor: colors.primary,
-          align: 'center'
+          fontStyle: 'normal',
+          textColor: [100, 100, 100]
         });
         
-        yPosition += 40;
+        addText('FICHA CADASTRAL DE USUÁRIO', margin + 50, yPosition + 24, {
+          fontSize: 14,
+          fontStyle: 'bold',
+          textColor: [50, 50, 50]
+        });
         
-        // === DADOS PESSOAIS ===
-        yPosition = addSection('DADOS PESSOAIS', yPosition);
+        yPosition += 35;
         
-        // Card para dados pessoais - altura ajustada para conter todos os dados
-        addRoundedBox(margin, yPosition, contentWidth, 58, null, colors.secondary);
+        // Cabeçalho principal
+        doc.setFillColor(26, 26, 46);
+        doc.rect(margin, yPosition, contentWidth, 20, 'F');
         
-        const cardPadding = 6;
-        let cardY = yPosition + cardPadding;
+        doc.setTextColor(255, 255, 255);
+        addText('FICHA CADASTRAL DE USUÁRIO', margin + 5, yPosition + 13, {
+          fontSize: 14,
+          fontStyle: 'bold'
+        });
+        doc.setTextColor(0, 0, 0);
+        
+        yPosition += 30;
+        
+        // Informações pessoais
+        addText('DADOS PESSOAIS', margin, yPosition, {
+          fontSize: 14,
+          fontStyle: 'bold'
+        });
+        yPosition += 10;
+        addLine(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 15;
         
         // Nome
-        addText('Nome Completo', margin + cardPadding, cardY, {
-          fontSize: 9,
-          fontStyle: 'normal',
-          textColor: colors.secondary
-        });
-        addText(formatData(dadosUsuario.nome, 'name'), margin + cardPadding, cardY + 8, {
-          fontSize: 10,
-          fontStyle: 'bold',
-          textColor: colors.dark,
-          maxWidth: contentWidth - cardPadding * 2
-        });
+        addText('Nome Completo:', margin, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.nome || '', margin + 35, yPosition);
+        yPosition += 15;
         
-        // Email e Matrícula na mesma linha
-        const halfWidth = (contentWidth - cardPadding * 3) / 2;
+        // Email e Matrícula
+        addText('Email:', margin, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.email || '', margin + 20, yPosition);
+        addText('Matrícula:', margin + 100, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.matricula || '', margin + 135, yPosition);
+        yPosition += 15;
         
-        addText('Email', margin + cardPadding, cardY + 19, {
-          fontSize: 9,
-          fontStyle: 'normal',
-          textColor: colors.secondary
-        });
-        addText(formatData(dadosUsuario.email, 'email'), margin + cardPadding, cardY + 27, {
-          fontSize: 10,
-          fontStyle: 'normal',
-          textColor: colors.dark,
-          maxWidth: halfWidth - 5
-        });
+        // Função e Status
+        addText('Função:', margin, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.funcao || '', margin + 25, yPosition);
+        addText('Status:', margin + 100, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.status || '', margin + 125, yPosition);
+        yPosition += 15;
         
-        addText('Matrícula', margin + cardPadding + halfWidth, cardY + 19, {
-          fontSize: 9,
-          fontStyle: 'normal',
-          textColor: colors.secondary
-        });
-        addText(formatData(dadosUsuario.matricula), margin + cardPadding + halfWidth, cardY + 27, {
-          fontSize: 10,
-          fontStyle: 'bold',
-          textColor: colors.primary
-        });
+        // Telefone
+        addText('Telefone:', margin, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.telefone || '', margin + 30, yPosition);
+        yPosition += 20;
         
-        // Função e Telefone
-        addText('Função', margin + cardPadding, cardY + 38, {
-          fontSize: 9,
-          fontStyle: 'normal',
-          textColor: colors.secondary
+        // Endereço
+        addText('ENDEREÇO', margin, yPosition, {
+          fontSize: 14,
+          fontStyle: 'bold'
         });
-        addText(formatData(dadosUsuario.funcao), margin + cardPadding, cardY + 46, {
-          fontSize: 10,
-          fontStyle: 'normal',
-          textColor: colors.dark
-        });
-        
-        addText('Telefone', margin + cardPadding + halfWidth, cardY + 38, {
-          fontSize: 9,
-          fontStyle: 'normal',
-          textColor: colors.secondary
-        });
-        addText(formatData(dadosUsuario.telefone, 'phone'), margin + cardPadding + halfWidth, cardY + 46, {
-          fontSize: 10,
-          fontStyle: 'normal',
-          textColor: colors.dark
-        });
-        
-        yPosition += 60;
-        
-        // === ENDEREÇO ===
-        yPosition = addSection('ENDEREÇO', yPosition);
-        
-        // Card para endereço - tamanho reduzido
-        addRoundedBox(margin, yPosition, contentWidth, 38, null, colors.secondary);
-        cardY = yPosition + cardPadding;
+        yPosition += 10;
+        addLine(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 15;
         
         // Logradouro e Número
-        addText('Logradouro', margin + cardPadding, cardY, {
-          fontSize: 9,
-          fontStyle: 'normal',
-          textColor: colors.secondary
-        });
-        addText(formatData(dadosUsuario.endereco?.logradouro), margin + cardPadding, cardY + 8, {
-          fontSize: 10,
-          fontStyle: 'normal',
-          textColor: colors.dark,
-          maxWidth: halfWidth - 5
-        });
+        addText('Logradouro:', margin, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.endereco?.logradouro || '', margin + 35, yPosition);
+        addText('Nº:', margin + 120, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.endereco?.numero || '', margin + 130, yPosition);
+        yPosition += 15;
         
-        addText('Nº', margin + cardPadding + halfWidth, cardY, {
-          fontSize: 9,
-          fontStyle: 'normal',
-          textColor: colors.secondary
-        });
-        addText(formatData(dadosUsuario.endereco?.numero), margin + cardPadding + halfWidth, cardY + 8, {
-          fontSize: 10,
-          fontStyle: 'normal',
-          textColor: colors.dark
-        });
+        // Bairro e CEP
+        addText('Bairro:', margin, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.endereco?.bairro || '', margin + 25, yPosition);
+        addText('CEP:', margin + 100, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.endereco?.cep || '', margin + 120, yPosition);
+        yPosition += 15;
         
-        // Bairro, Cidade, UF, CEP
-        const quarterWidth = (contentWidth - cardPadding * 5) / 4;
+        // Cidade e UF
+        addText('Cidade:', margin, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.endereco?.cidade || '', margin + 25, yPosition);
+        addText('UF:', margin + 120, yPosition, { fontStyle: 'bold' });
+        addText(dadosUsuario.endereco?.uf || '', margin + 135, yPosition);
+        yPosition += 20;
         
-        addText('Bairro', margin + cardPadding, cardY + 20, {
-          fontSize: 9,
-          fontStyle: 'normal',
-          textColor: colors.secondary
-        });
-        addText(formatData(dadosUsuario.endereco?.bairro), margin + cardPadding, cardY + 28, {
-          fontSize: 10,
-          fontStyle: 'normal',
-          textColor: colors.dark
-        });
-        
-        addText('Cidade', margin + cardPadding + quarterWidth, cardY + 20, {
-          fontSize: 9,
-          fontStyle: 'normal',
-          textColor: colors.secondary
-        });
-        addText(formatData(dadosUsuario.endereco?.cidade), margin + cardPadding + quarterWidth, cardY + 28, {
-          fontSize: 10,
-          fontStyle: 'normal',
-          textColor: colors.dark
-        });
-        
-        addText('UF', margin + cardPadding + quarterWidth * 2.5, cardY + 20, {
-          fontSize: 9,
-          fontStyle: 'normal',
-          textColor: colors.secondary
-        });
-        addText(formatData(dadosUsuario.endereco?.uf), margin + cardPadding + quarterWidth * 2.5, cardY + 28, {
-          fontSize: 10,
-          fontStyle: 'normal',
-          textColor: colors.dark
-        });
-        
-        addText('CEP', margin + cardPadding + quarterWidth * 3.2, cardY + 20, {
-          fontSize: 9,
-          fontStyle: 'normal',
-          textColor: colors.secondary
-        });
-        addText(formatData(dadosUsuario.endereco?.cep, 'cep'), margin + cardPadding + quarterWidth * 3.2, cardY + 28, {
-          fontSize: 10,
-          fontStyle: 'normal',
-          textColor: colors.dark
-        });
-        
-        yPosition += 50;
-        
-        // === DADOS ACADÊMICOS (se for aluno) ===
+        // Dados acadêmicos (se for aluno)
         if (dadosUsuario.funcao === 'ALUNO') {
-          yPosition = addSection('DADOS ACADÊMICOS', yPosition);
-          
-          addRoundedBox(margin, yPosition, contentWidth, 25, null, colors.secondary);
-          cardY = yPosition + cardPadding;
+          addText('DADOS ACADÊMICOS', margin, yPosition, {
+            fontSize: 14,
+            fontStyle: 'bold'
+          });
+          yPosition += 10;
+          addLine(margin, yPosition, pageWidth - margin, yPosition);
+          yPosition += 15;
           
           // Série e Período
-          addText('Série', margin + cardPadding, cardY, {
-            fontSize: 9,
-            fontStyle: 'normal',
-            textColor: colors.secondary
-          });
-          addText(dadosUsuario.serie ? `${dadosUsuario.serie}º ano` : '', margin + cardPadding, cardY + 8, {
-            fontSize: 10,
-            fontStyle: 'bold',
-            textColor: colors.primary
-          });
+          addText('Série:', margin, yPosition, { fontStyle: 'bold' });
+          addText(dadosUsuario.serie ? `${dadosUsuario.serie}º ano` : '', margin + 25, yPosition);
+          addText('Período:', margin + 80, yPosition, { fontStyle: 'bold' });
+          addText(dadosUsuario.periodo || '', margin + 115, yPosition);
+          yPosition += 15;
           
-          addText('Período', margin + cardPadding + quarterWidth, cardY, {
-            fontSize: 9,
-            fontStyle: 'normal',
-            textColor: colors.secondary
-          });
-          addText(dadosUsuario.periodo || '', margin + cardPadding + quarterWidth, cardY + 8, {
-            fontSize: 10,
-            fontStyle: 'normal',
-            textColor: colors.dark
-          });
-          
-          addText('Turma', margin + cardPadding + quarterWidth * 2.5, cardY, {
-            fontSize: 9,
-            fontStyle: 'normal',
-            textColor: colors.secondary
-          });
-          addText(dadosUsuario.turma || '', margin + cardPadding + quarterWidth * 2.5, cardY + 8, {
-            fontSize: 10,
-            fontStyle: 'bold',
-            textColor: colors.primary
-          });
-          
-          addText('Turno', margin + cardPadding + quarterWidth * 3.2, cardY, {
-            fontSize: 9,
-            fontStyle: 'normal',
-            textColor: colors.secondary
-          });
-          addText(dadosUsuario.turno || '', margin + cardPadding + quarterWidth * 3.2, cardY + 8, {
-            fontSize: 10,
-            fontStyle: 'normal',
-            textColor: colors.dark
-          });
-          
-          yPosition += 30;
+          // Turma e Turno
+          addText('Turma:', margin, yPosition, { fontStyle: 'bold' });
+          addText(dadosUsuario.turma || '', margin + 25, yPosition);
+          addText('Turno:', margin + 80, yPosition, { fontStyle: 'bold' });
+          addText(dadosUsuario.turno || '', margin + 110, yPosition);
+          yPosition += 20;
         }
         
-        // === REGRAS DA BIBLIOTECA ===
-        yPosition = addSection('REGRAS DA BIBLIOTECA', yPosition);
-        
-        addRoundedBox(margin, yPosition, contentWidth, 25, colors.light);
+        // Regras da biblioteca
+        addText('REGRAS DA BIBLIOTECA', margin, yPosition, {
+          fontSize: 14,
+          fontStyle: 'bold'
+        });
+        yPosition += 10;
+        addLine(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 15;
         
         const regras = [
-          '• Prazo de empréstimo: 7 dias corridos (renovável por mais 7 dias)',
-          '• Limite máximo: 3 livros por usuário simultaneamente',
-          '• Danos ou perda: responsabilidade de pagamento do valor integral'
+          '• Prazo de empréstimo: 7 dias (renovável por mais 7 dias)',
+          '• Multa por atraso: R$ 0,50 por dia',
+          '• Limite de livros: 3 livros por usuário',
+          '• É obrigatório apresentar a carteirinha ou documento com foto',
+          '• Danos ou perda do livro: pagamento do valor integral',
+          '• Manter silêncio e organização no ambiente'
         ];
         
-        let regraY = yPosition + 5;
         regras.forEach(regra => {
-          addText(regra, margin + 8, regraY, {
-            fontSize: 8,
-            fontStyle: 'normal',
-            textColor: colors.dark
-          });
-          regraY += 7;
+          addText(regra, margin, yPosition, { fontSize: 10 });
+          yPosition += 10;
         });
         
-        yPosition += 25;
+        yPosition += 10;
         
-        // === ASSINATURAS ===
-        yPosition = addSection('ASSINATURAS', yPosition);
+        // Assinaturas
+        addText('ASSINATURAS', margin, yPosition, {
+          fontSize: 14,
+          fontStyle: 'bold'
+        });
+        yPosition += 10;
+        addLine(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 20; // Reduzido de 30 para 20
         
-        // Caixas para assinatura - altura reduzida
-        const sigWidth = (contentWidth - 20) / 2;
+        // Linha para assinatura do usuário
+        addLine(margin, yPosition, margin + 80, yPosition);
+        addText('Usuário', margin + 30, yPosition + 8, { fontSize: 10 }); // Reduzido de +10 para +8
         
-        addRoundedBox(margin, yPosition, sigWidth, 25, null, colors.secondary);
-        addRoundedBox(margin + sigWidth + 15, yPosition, sigWidth, 20, null, colors.secondary);
+        // Linha para assinatura do responsável
+        addLine(margin + 100, yPosition, margin + 180, yPosition);
+        addText('Bibliotecário(a)', margin + 120, yPosition + 8, { fontSize: 10 }); // Reduzido de +10 para +8
         
-        addText('Assinatura do Usuário', margin + 10, yPosition + 23, {
-          fontSize: 7,
-          fontStyle: 'normal',
-          textColor: colors.secondary
+        yPosition += 20; // Reduzido de 30 para 20
+        
+        // Rodapé (movido para o final da página)
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const footerPosition = pageHeight - 30;
+        
+        // Data de emissão na parte inferior
+        const dataAtual = new Date().toLocaleDateString('pt-BR');
+        addText('Emitido em: ' + dataAtual, margin, footerPosition, {
+          fontSize: 10,
+          fontStyle: 'italic'
         });
         
-        addText('Assinatura do Bibliotecário(a)', margin + sigWidth + 10, yPosition + 23, {
-          fontSize: 7,
-          fontStyle: 'normal',
-          textColor: colors.secondary
-        });
-        
-        // === RODAPÉ MODERNO ===
-        yPosition += 10; // Espaço após assinaturas
-        
-      
-        // Data de emissão
-        const dataAtual = new Date().toLocaleDateString('pt-BR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
-        });
-        
-        addText(`Emitido em: ${dataAtual}`, margin, yPosition + 6, {
-          fontSize: 7,
-          fontStyle: 'normal',
-          textColor: colors.secondary
+        // Sistema info no rodapé
+        addText('SIGEB - Sistema de Gerenciamento de Biblioteca Escolar', margin, footerPosition + 10, {
+          fontSize: 8,
+          fontStyle: 'italic'
         });
         
         return doc;
       }
       
+      // Variável para controlar execução múltipla
+      let imprimindoFicha = false;
+
       // Função para imprimir ficha cadastral
       async function imprimirFichaCadastral() {
+        // Previne execução múltipla
+        if (imprimindoFicha) {
+          console.log('Impressão já em andamento, ignorando...');
+          return;
+        }
+        
         if (!ultimoUsuarioCadastrado) {
           showAlert('warning', 'Nenhum usuário foi cadastrado para impressão.');
           return;
         }
         
+        imprimindoFicha = true;
+        
         try {
-          // Mostra loading
-          showAlert('info', '📄 Gerando ficha cadastral com design moderno...');
-          
           const doc = await gerarFichaCadastral(ultimoUsuarioCadastrado);
           
           // Gerar nome do arquivo
           const nomeArquivo = `ficha_cadastral_${ultimoUsuarioCadastrado.nome?.replace(/\s+/g, '_').toLowerCase() || 'usuario'}.pdf`;
           
-          // Opções para o usuário com melhor descrição
+          // Opções para o usuário
           const opcao = confirm(
-            '✨ Ficha cadastral gerada com design clean otimizado!\n\n' +
-            '📥 OK - Fazer download do PDF\n' +
-            '👁️ Cancelar - Abrir para visualização/impressão\n\n' +
-            '� NOVIDADES:\n' +
-            '• Layout compacto que cabe perfeitamente na página\n' +
-            '• Logos redimensionados para melhor proporção\n' +
-            '• Informações sobre multa por atraso (R$ 0,50/dia)\n' +
-            '• Design moderno com cards organizados'
+            'Como deseja proceder com a ficha cadastral?\n\n' +
+            'OK - Fazer download do PDF\n' +
+            'Cancelar - Abrir para visualização/impressão'
           );
           
           if (opcao) {
             // Download do PDF
             doc.save(nomeArquivo);
-            showAlert('success', '✅ Ficha cadastral otimizada baixada! Layout compacto, logos redimensionados e regras atualizadas com multa por atraso.');
+            showAlert('success', 'Ficha cadastral baixada com sucesso!');
           } else {
             // Abrir para visualização/impressão
             const pdfBlob = doc.output('blob');
             const pdfUrl = URL.createObjectURL(pdfBlob);
             window.open(pdfUrl, '_blank');
-            showAlert('info', '👀 Ficha compacta aberta em nova aba! Agora com informações sobre multa e layout otimizado. Use Ctrl+P para imprimir.');
+            showAlert('info', 'Ficha cadastral aberta em nova aba. Use Ctrl+P para imprimir.');
           }
           
         } catch (error) {
           console.error('Erro ao gerar ficha cadastral:', error);
-          showAlert('danger', '❌ Erro ao gerar ficha cadastral. Tente novamente.');
+          showAlert('danger', 'Erro ao gerar ficha cadastral. Tente novamente.');
+        } finally {
+          // Libera a flag após completar
+          imprimindoFicha = false;
         }
       }
 
@@ -1495,9 +1283,6 @@
                   <button class="action-button edit-button" data-id="${doc.id}" onclick="handleEditUser('${doc.id}')">
                     <i class='bx bx-edit-alt'></i>
                   </button>
-                  <button class="action-button print-button" data-id="${doc.id}" onclick="handlePrintFicha('${doc.id}')" title="Imprimir Ficha">
-                    <i class='bx bx-printer'></i>
-                  </button>
                   <button class="action-button delete-button" data-id="${doc.id}" onclick="handleDeleteUser('${doc.id}')">
                     <i class='bx bx-trash'></i>
                   </button>
@@ -1542,18 +1327,12 @@
           btn.addEventListener('click', handleEditClick);
         });
         
-        document.querySelectorAll('.print-button').forEach(btn => {
-          btn.removeEventListener('click', handlePrintClick);
-          btn.addEventListener('click', handlePrintClick);
-        });
-        
         document.querySelectorAll('.delete-button').forEach(btn => {
           btn.removeEventListener('click', handleDeleteClick);
           btn.addEventListener('click', handleDeleteClick);
         });
         
         console.log('Event listeners adicionados. Total de botões editar:', document.querySelectorAll('.edit-button').length);
-        console.log('Event listeners adicionados. Total de botões imprimir:', document.querySelectorAll('.print-button').length);
       }
 
       // Handlers para os cliques dos botões
@@ -1563,14 +1342,6 @@
         const userId = e.currentTarget.getAttribute('data-id');
         console.log('Botão editar clicado para usuário:', userId);
         handleEditUser(userId);
-      }
-
-      function handlePrintClick(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const userId = e.currentTarget.getAttribute('data-id');
-        console.log('Botão imprimir clicado para usuário:', userId);
-        handlePrintFicha(userId);
       }
 
       function handleDeleteClick(e) {
@@ -1591,29 +1362,6 @@
         } catch (error) {
           console.error('Erro ao editar usuário:', error);
           showAlert('danger', 'Erro ao carregar dados do usuário.');
-        }
-      };
-
-      window.handlePrintFicha = async function(userId) {
-        console.log('handlePrintFicha chamada com userId:', userId);
-        try {
-          // Busca os dados do usuário
-          const userDoc = await db.collection('usuarios').doc(userId).get();
-          if (userDoc.exists) {
-            const userData = userDoc.data();
-            console.log('Dados do usuário para impressão:', userData);
-            
-            // Gera e imprime a ficha cadastral
-            const doc = await gerarFichaCadastral(userData);
-            doc.save(`Ficha_Cadastral_${userData.nome || 'Usuario'}.pdf`);
-            
-            showAlert('success', 'Ficha cadastral gerada com sucesso!');
-          } else {
-            showAlert('danger', 'Usuário não encontrado.');
-          }
-        } catch (error) {
-          console.error('Erro ao gerar ficha:', error);
-          showAlert('danger', 'Erro ao gerar ficha cadastral: ' + error.message);
         }
       };
 
@@ -1717,72 +1465,19 @@
       }
       
       #btnImprimirFicha {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(90deg, #28a745, #20c997);
         border: none;
-        border-radius: 8px;
-        padding: 10px 20px;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.25);
+        transition: all 0.3s ease;
       }
       
       #btnImprimirFicha:hover {
-        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        background: linear-gradient(90deg, #20c997, #28a745);
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-      }
-      
-      #btnImprimirFicha:active {
-        transform: translateY(0);
-        box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
-      }
-      
-      #btnImprimirFicha:before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: left 0.5s;
-      }
-      
-      #btnImprimirFicha:hover:before {
-        left: 100%;
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
       }
       
       .modal-footer .btn {
         min-width: 120px;
-        border-radius: 6px;
-        font-weight: 500;
-        transition: all 0.2s ease;
-      }
-      
-      .modal-footer .btn-primary {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        border: none;
-        box-shadow: 0 3px 12px rgba(79, 172, 254, 0.3);
-      }
-      
-      .modal-footer .btn-primary:hover {
-        background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-        transform: translateY(-1px);
-        box-shadow: 0 5px 18px rgba(79, 172, 254, 0.4);
-      }
-      
-      .modal-footer .btn-secondary {
-        background: linear-gradient(135deg, #a8a8a8 0%, #8c8c8c 100%);
-        border: none;
-        color: white;
-      }
-      
-      .modal-footer .btn-secondary:hover {
-        background: linear-gradient(135deg, #8c8c8c 0%, #a8a8a8 100%);
-        transform: translateY(-1px);
       }
     </style>
   </div>
@@ -2175,7 +1870,12 @@
       // Event listener para botão de impressão
       const btnImprimir = document.getElementById('btnImprimirFicha');
       if (btnImprimir) {
-        btnImprimir.addEventListener('click', async function() {
+        // Remove event listeners existentes para evitar duplicação
+        const novoBtnImprimir = btnImprimir.cloneNode(true);
+        btnImprimir.parentNode.replaceChild(novoBtnImprimir, btnImprimir);
+        
+        // Adiciona o event listener apenas uma vez
+        novoBtnImprimir.addEventListener('click', async function() {
           await imprimirFichaCadastral();
         });
       }
@@ -2248,7 +1948,18 @@
     }
 
     // Função para gerar cartão de um usuário individual (após cadastro)
+    // Variável para controlar geração múltipla de cartões
+    let gerandoCartao = false;
+
     async function gerarCartaoUsuarioIndividual(userData) {
+      // Previne execução múltipla
+      if (gerandoCartao) {
+        console.log('Cartão já sendo gerado, ignorando...');
+        return;
+      }
+      
+      gerandoCartao = true;
+      
       try {
         // Carrega os logos antes de gerar o cartão
         await carregarLogos();
@@ -2272,6 +1983,9 @@
       } catch (error) {
         console.error('Erro ao gerar cartão:', error);
         showAlert('danger', 'Erro ao gerar cartão de leitor. Verifique os dados do usuário.');
+      } finally {
+        // Libera a flag após completar
+        gerandoCartao = false;
       }
     }
 
@@ -2868,10 +2582,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-

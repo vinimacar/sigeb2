@@ -771,7 +771,7 @@
         const doc = new jsPDF();
         
         // Configurações modernas
-        const margin = 20;
+        const margin = 10;
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         const contentWidth = pageWidth - (margin * 2);
@@ -955,7 +955,7 @@
           align: 'center'
         });
         
-        addText('Sistema de Gerenciamento de Biblioteca', centerX, yPosition + 22, {
+        addText('SIGEB - Sistema de Gerenciamento de Biblioteca', centerX, yPosition + 22, {
           fontSize: 8,
           fontStyle: 'normal',
           textColor: colors.secondary,
@@ -969,7 +969,7 @@
           align: 'center'
         });
         
-        yPosition += 60;
+        yPosition += 40;
         
         // === DADOS PESSOAIS ===
         yPosition = addSection('DADOS PESSOAIS', yPosition);
@@ -987,7 +987,7 @@
           textColor: colors.secondary
         });
         addText(formatData(dadosUsuario.nome, 'name'), margin + cardPadding, cardY + 8, {
-          fontSize: 11,
+          fontSize: 10,
           fontStyle: 'bold',
           textColor: colors.dark,
           maxWidth: contentWidth - cardPadding * 2
@@ -1042,7 +1042,7 @@
           textColor: colors.dark
         });
         
-        yPosition += 63;
+        yPosition += 53;
         
         // === ENDEREÇO ===
         yPosition = addSection('ENDEREÇO', yPosition);
@@ -1182,7 +1182,7 @@
         // === REGRAS DA BIBLIOTECA ===
         yPosition = addSection('REGRAS DA BIBLIOTECA', yPosition);
         
-        addRoundedBox(margin, yPosition, contentWidth, 35, colors.light);
+        addRoundedBox(margin, yPosition, contentWidth, 25, colors.light);
         
         const regras = [
           '• Prazo de empréstimo: 7 dias corridos (renovável por mais 7 dias)',
@@ -2872,6 +2872,7 @@
   </script>
 </body>
 </html>
+
 
 
 

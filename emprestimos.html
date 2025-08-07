@@ -2754,8 +2754,20 @@ if (data.returnDate) {
 // Assume formato DD/MM/AAAA - usando o mesmo método da função loadLoans
 const dateParts = data.returnDate.split('/');
 if (dateParts.length === 3) {
-returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+const day = parseInt(dateParts[0], 10);
+const month = parseInt(dateParts[1], 10) - 1; // Mês em JavaScript é 0-indexado
+const year = parseInt(dateParts[2], 10);
+
+// Verifica se os valores são válidos
+if (!isNaN(day) && !isNaN(month) && !isNaN(year) && 
+day >= 1 && day <= 31 && month >= 0 && month <= 11 && year >= 1900) {
+returnDate = new Date(year, month, day);
 returnDate.setHours(0, 0, 0, 0);
+} else {
+console.warn('Data de retorno inválida:', data.returnDate);
+}
+} else {
+console.warn('Formato de data inválido:', data.returnDate);
 }
 }
 
@@ -2794,9 +2806,14 @@ userName = 'Usuário não encontrado';
 
 // Calcula dias de atraso usando o mesmo método da função loadLoans
 let diffDays = 0;
-if (returnDate) {
-const diffTime = Math.abs(today - returnDate);
+if (returnDate && !isNaN(returnDate.getTime()) && !isNaN(today.getTime())) {
+const diffTime = Math.abs(today.getTime() - returnDate.getTime());
 diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+// Garantir que diffDays seja um número válido
+if (isNaN(diffDays) || diffDays < 0) {
+diffDays = 0;
 }
 
 let actionBtns = `
@@ -2884,10 +2901,29 @@ today.setHours(0, 0, 0, 0);
 if (data.status === 'ATRASADO' && data.returnDate) {
 const dateParts = data.returnDate.split('/');
 if (dateParts.length === 3) {
-const returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+const day = parseInt(dateParts[0], 10);
+const month = parseInt(dateParts[1], 10) - 1; // Mês em JavaScript é 0-indexado
+const year = parseInt(dateParts[2], 10);
+
+// Verifica se os valores são válidos
+if (!isNaN(day) && !isNaN(month) && !isNaN(year) && 
+day >= 1 && day <= 31 && month >= 0 && month <= 11 && year >= 1900) {
+const returnDate = new Date(year, month, day);
 returnDate.setHours(0, 0, 0, 0);
-const diffTime = Math.abs(today - returnDate);
+
+// Verifica se as datas são válidas antes de calcular a diferença
+if (!isNaN(returnDate.getTime()) && !isNaN(today.getTime())) {
+const diffTime = Math.abs(today.getTime() - returnDate.getTime());
 diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+} else {
+console.warn('Data de retorno inválida:', data.returnDate);
+}
+}
+
+// Garantir que diffDays seja um número válido
+if (isNaN(diffDays) || diffDays < 0) {
+diffDays = 0;
 }
 }
 

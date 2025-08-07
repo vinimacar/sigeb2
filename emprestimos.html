@@ -2794,8 +2794,11 @@ const overdueLoans = [];
 for (const doc of snapshot.docs) {
 const data = doc.data();
 
+// Log para debug - identificar empréstimos problemáticos
+console.log(`Processando empréstimo ${doc.id} com returnDate: ${data.returnDate}`);
+
 // Converte a data de devolução para Date
-let returnDate;
+let returnDate = null;
 if (data.returnDate) {
 // Assume formato DD/MM/AAAA - usando o mesmo método da função loadLoans
 const dateParts = data.returnDate.split('/');
@@ -2807,8 +2810,14 @@ const year = parseInt(dateParts[2], 10);
 // Verifica se os valores são válidos
 if (!isNaN(day) && !isNaN(month) && !isNaN(year) && 
 day >= 1 && day <= 31 && month >= 0 && month <= 11 && year >= 1900) {
-returnDate = new Date(year, month, day);
-returnDate.setHours(0, 0, 0, 0);
+const tempDate = new Date(year, month, day);
+tempDate.setHours(0, 0, 0, 0);
+// Verifica se a data criada é válida
+if (tempDate instanceof Date && !isNaN(tempDate.getTime())) {
+returnDate = tempDate;
+} else {
+console.warn('Data criada é inválida:', data.returnDate);
+}
 } else {
 console.warn('Data de retorno inválida:', data.returnDate);
 }
@@ -2818,8 +2827,11 @@ console.warn('Formato de data inválido:', data.returnDate);
 }
 
 // Verifica se está atrasado (data de devolução menor que hoje)
-if (returnDate && returnDate < today) {
+if (returnDate && returnDate instanceof Date && !isNaN(returnDate.getTime()) && 
+    today && today instanceof Date && !isNaN(today.getTime()) && returnDate < today) {
 overdueLoans.push({ doc, data });
+} else if (data.returnDate) {
+console.warn(`Empréstimo ${doc.id} tem returnDate "${data.returnDate}" mas não pôde ser processado como data válida`);
 }
 }
 
@@ -2854,7 +2866,8 @@ userName = 'Usuário não encontrado';
 
 // Calcula dias de atraso usando o mesmo método da função loadLoans
 let diffDays = 0;
-if (returnDate && !isNaN(returnDate.getTime()) && !isNaN(today.getTime())) {
+if (returnDate && returnDate instanceof Date && !isNaN(returnDate.getTime()) && 
+    today && today instanceof Date && !isNaN(today.getTime())) {
 const diffTime = Math.abs(today.getTime() - returnDate.getTime());
 diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
@@ -2905,7 +2918,12 @@ ${actionBtns}
 })
 .catch((error) => {
 console.error('Erro ao buscar empréstimos atrasados:', error);
+if (error.message && error.message.includes('getTime')) {
+console.error('Erro específico de data detectado. Verifique os dados de returnDate no Firestore.');
+showAlert('danger', 'Erro no processamento de datas. Verifique os dados dos empréstimos.');
+} else {
 showAlert('danger', 'Erro ao buscar empréstimos atrasados.');
+}
 });
 } else {
 // Para outros status, mantém a lógica original
@@ -2966,7 +2984,8 @@ const returnDate = new Date(year, month, day);
 returnDate.setHours(0, 0, 0, 0);
 
 // Verifica se as datas são válidas antes de calcular a diferença
-if (!isNaN(returnDate.getTime()) && !isNaN(today.getTime())) {
+if (returnDate instanceof Date && !isNaN(returnDate.getTime()) && 
+    today instanceof Date && !isNaN(today.getTime())) {
 const diffTime = Math.abs(today.getTime() - returnDate.getTime());
 diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }

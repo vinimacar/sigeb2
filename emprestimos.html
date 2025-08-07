@@ -1896,16 +1896,22 @@ const existingAlerts = modalBody.querySelectorAll('.alert-danger, .alert-warning
 existingAlerts.forEach(alert => alert.remove());
 }
 
-if (verificacao.temAtrasos) {
+// Verifica se verificacao tem as propriedades necessárias
+if (!verificacao || typeof verificacao !== 'object') {
+console.warn('Verificação retornou dados inválidos:', verificacao);
+return;
+}
+
+if (verificacao.temAtrasos && verificacao.emprestimosAtrasados && verificacao.emprestimosAtrasados.length > 0) {
 let mensagemAtraso = '<div class="alert alert-danger mb-3"><h5><i class="bx bx-error-circle"></i> ⚠️ Usuário com Livros em Atraso</h5>';
 mensagemAtraso += '<p><strong>Este usuário possui livros em atraso e não poderá retirar novos materiais.</strong></p>';
 mensagemAtraso += '<h6>Livros em Atraso:</h6><ul class="mb-2">';
 
 verificacao.emprestimosAtrasados.forEach(emp => {
-mensagemAtraso += `<li class="mb-2"><strong>Registro:</strong> ${emp.registro}<br>`;
-mensagemAtraso += `<strong>Vencimento:</strong> ${emp.dataVencimento}<br>`;
-mensagemAtraso += `<strong>Atraso:</strong> <span class="text-danger fw-bold">${emp.diasAtraso} dia(s)</span><br>`;
-mensagemAtraso += `<strong>Livros:</strong> ${emp.livros.join(', ')}</li>`;
+mensagemAtraso += `<li class="mb-2"><strong>Registro:</strong> ${emp.registro || 'N/A'}<br>`;
+mensagemAtraso += `<strong>Vencimento:</strong> ${emp.dataVencimento || 'N/A'}<br>`;
+mensagemAtraso += `<strong>Atraso:</strong> <span class="text-danger fw-bold">${emp.diasAtraso || 0} dia(s)</span><br>`;
+mensagemAtraso += `<strong>Livros:</strong> ${emp.livros && emp.livros.length > 0 ? emp.livros.join(', ') : 'N/A'}</li>`;
 });
 mensagemAtraso += '</ul>';
 mensagemAtraso += '<p class="mb-0"><strong>⚠️ Empréstimos bloqueados até regularização.</strong></p></div>';
@@ -1913,7 +1919,7 @@ mensagemAtraso += '<p class="mb-0"><strong>⚠️ Empréstimos bloqueados até r
 if (modalBody) {
 modalBody.insertAdjacentHTML('afterbegin', mensagemAtraso);
 }
-} else if (verificacao.emprestimosAtivos.length > 0) {
+} else if (verificacao.emprestimosAtivos && verificacao.emprestimosAtivos.length > 0) {
 let mensagemAtivos = `<div class="alert alert-info mb-3"><h6><i class="bx bx-info-circle"></i> Informação sobre Empréstimos</h6>`;
 mensagemAtivos += `<p class="mb-0">Este usuário possui <strong>${verificacao.emprestimosAtivos.length} empréstimo(s) ativo(s)</strong> ainda no prazo. ✅ Pode realizar novos empréstimos.</p></div>`;
 
@@ -3292,14 +3298,14 @@ printWindow.document.write(`
 <style>
 @page {
 size: A4;
-margin: 10mm 10mm 10mm 10mm;
+margin: 15mm 15mm 15mm 15mm;
 }
 body { 
 font-family: 'Arial', sans-serif; 
 margin: 0; 
 padding: 0;
-font-size: 9px;
-line-height: 1.2;
+font-size: 10px;
+line-height: 1.3;
 width: 100%;
 max-width: 210mm;
 height: 100vh;
@@ -3311,18 +3317,18 @@ height: 100%;
 display: flex;
 flex-direction: column;
 justify-content: space-between;
-padding: 3px;
+padding: 5px;
 box-sizing: border-box;
 }
 .print-header {
 text-align: center;
 border-bottom: 1px solid #dc3545;
-padding-bottom: 5px;
-margin-bottom: 6px;
+padding-bottom: 8px;
+margin-bottom: 10px;
 display: flex;
 align-items: center;
 justify-content: center;
-gap: 10px;
+gap: 15px;
 flex-shrink: 0;
 }
 .print-header-content {
@@ -3331,26 +3337,26 @@ flex: 1;
 .print-header h3 {
 color: #dc3545; 
 margin: 0;
-font-size: 12px;
+font-size: 14px;
 }
 .print-header h5 {
-margin: 2px 0 0 0;
-font-size: 10px;
+margin: 3px 0 0 0;
+font-size: 12px;
 }
 .print-header p {
-margin: 2px 0 0 0;
-font-size: 8px;
+margin: 3px 0 0 0;
+font-size: 9px;
 }
 .logo {
-width: 30px;
-height: 30px;
+width: 45px;
+height: 45px;
 object-fit: contain;
 }
 .system-logo {
-width: 50px;
+width: 70px;
 height: auto;
 object-fit: contain;
-margin: 3px 0;
+margin: 5px 0;
 }
 .print-content {
 flex: 1;
@@ -3360,43 +3366,43 @@ overflow: hidden;
 border: 1px solid #dc3545 !important;
 background-color: #f8d7da !important;
 color: #721c24 !important;
-padding: 3px 5px;
-margin-bottom: 5px;
-font-size: 8px;
+padding: 5px 8px;
+margin-bottom: 8px;
+font-size: 9px;
 }
 .card { 
 border: 1px solid #ddd; 
-margin-bottom: 5px;
+margin-bottom: 8px;
 }
 .card-header { 
 background-color: #f8f9fa; 
 border-bottom: 1px solid #ddd;
-padding: 3px 5px;
+padding: 5px 8px;
 font-weight: bold;
-font-size: 8px;
+font-size: 9px;
 }
 .card-body { 
-padding: 5px;
-font-size: 8px;
+padding: 8px;
+font-size: 9px;
 }
 .card-body p {
-margin-bottom: 2px;
+margin-bottom: 3px;
 }
 .card-body ul {
-margin-bottom: 3px;
-padding-left: 12px;
+margin-bottom: 5px;
+padding-left: 15px;
 }
 .signature-section {
 display: flex;
 justify-content: space-between;
-margin-top: 10px;
+margin-top: 15px;
 flex-shrink: 0;
-gap: 15px;
+gap: 20px;
 }
 .signature-area {
 border-top: 1px solid #000;
-height: 30px;
-margin: 0 0 3px 0;
+height: 40px;
+margin: 0 0 5px 0;
 background-image: url('${warningSignaturePad.toDataURL()}');
 background-size: contain;
 background-repeat: no-repeat;
@@ -3405,8 +3411,8 @@ width: 100%;
 }
 .librarian-signature-area {
 border-top: 1px solid #000;
-height: 30px;
-margin: 0 0 3px 0;
+height: 40px;
+margin: 0 0 5px 0;
 background-image: url('${librarianSignaturePad.toDataURL()}');
 background-size: contain;
 background-repeat: no-repeat;
@@ -3418,9 +3424,9 @@ text-align: center;
 width: 45%;
 }
 .signature-item p {
-margin: 2px 0 0 0;
+margin: 3px 0 0 0;
 font-weight: bold;
-font-size: 8px;
+font-size: 9px;
 }
 @media print {
 .modal-header, .modal-footer { display: none !important; }
@@ -3439,29 +3445,29 @@ min-height: 100vh;
 .email-section {
     background-color: #f8f9fa;
     border: 1px solid #dee2e6;
-    border-radius: 0.25rem;
-    padding: 4px;
-    margin-top: 4px;
-    font-size: 7px;
+    border-radius: 0.375rem;
+    padding: 8px;
+    margin-top: 8px;
+    font-size: 9px;
 }
 
 .email-info {
     background-color: #d1ecf1;
     color: #0c5460;
-    padding: 3px;
-    border-radius: 0.2rem;
-    margin-bottom: 3px;
+    padding: 5px;
+    border-radius: 0.25rem;
+    margin-bottom: 5px;
     border-left: 2px solid #bee5eb;
-    font-size: 7px;
+    font-size: 8px;
 }
 
 .email-icon {
     color: #17a2b8;
-    margin-right: 2px;
+    margin-right: 3px;
 }
 
 .email-checkbox {
-    margin-left: 2px;
+    margin-left: 3px;
 }
 </style>
 </head>

@@ -2834,16 +2834,10 @@ console.warn('Formato de data inválido:', data.returnDate);
 
 // Verifica se está atrasado (data de devolução menor que hoje)
 if (returnDate && returnDate instanceof Date && !isNaN(returnDate.getTime()) && 
-    today && today instanceof Date && !isNaN(today.getTime())) {
-    if (returnDate < today) {
-        overdueLoans.push({ doc, data });
-        console.log(`Empréstimo ${doc.id} está atrasado: returnDate=${returnDate.toDateString()}, today=${today.toDateString()}`);
-    } else {
-        console.log(`Empréstimo ${doc.id} não está atrasado: returnDate=${returnDate.toDateString()}, today=${today.toDateString()}`);
-    }
+    today && today instanceof Date && !isNaN(today.getTime()) && returnDate < today) {
+overdueLoans.push({ doc, data });
 } else if (data.returnDate) {
-    console.warn(`Empréstimo ${doc.id} tem returnDate "${data.returnDate}" mas não pôde ser processado como data válida`);
-}
+console.warn(`Empréstimo ${doc.id} tem returnDate "${data.returnDate}" mas não pôde ser processado como data válida`);
 }
 }
 

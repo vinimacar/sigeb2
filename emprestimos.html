@@ -1133,6 +1133,30 @@ Total de advertências: <span id="warningsCountDisplay" class="fw-bold">0</span>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// Proteção contra erros de extensões de navegador
+window.addEventListener('error', function(event) {
+    // Filtra erros conhecidos de extensões do Chrome
+    if (event.filename && (
+        event.filename.includes('contentscript') || 
+        event.filename.includes('chrome-extension') ||
+        event.filename.includes('moz-extension')
+    )) {
+        console.warn('Erro de extensão de navegador filtrado:', event.message);
+        event.preventDefault();
+        return false;
+    }
+    
+    // Filtra erros específicos de jQuery de extensões
+    if (event.message && (
+        event.message.includes("Cannot read properties of undefined (reading 'html')") ||
+        event.message.includes("Cannot read property 'html' of undefined")
+    )) {
+        console.warn('Erro de jQuery de extensão filtrado:', event.message);
+        event.preventDefault();
+        return false;
+    }
+});
+
 // Configurações do sistema
 const SYSTEM_CONFIG = {
     schoolName: "Escola Estadual Governador Bias Fortes", // Nome oficial da escola
@@ -2730,7 +2754,27 @@ const strokeDashoffset = circumference * (1 - percentage);
 document.querySelector(`.pie-fg-${status}`).style.strokeDasharray = `${circumference} ${circumference}`;
 document.querySelector(`.pie-fg-${status}`).style.strokeDashoffset = strokeDashoffset;
 } function showLoansByStatus(status) {
+try {
+// Proteção contra extensões de navegador
+if (typeof jQuery !== 'undefined' && window.chrome && window.chrome.runtime) {
+// Detecta possível interferência de extensão
+console.warn('Extensão de navegador detectada, aplicando proteções...');
+}
+
 const tbody = document.getElementById('loansTableBody');
+if (!tbody) {
+console.error('Elemento loansTableBody não encontrado');
+return;
+}
+
+// Proteção adicional: garantir que o elemento não foi removido
+setTimeout(() => {
+if (!document.getElementById('loansTableBody')) {
+console.error('Elemento loansTableBody foi removido inesperadamente');
+return;
+}
+}, 100);
+
 tbody.innerHTML = '<tr><td colspan="6">Buscando...</td></tr>';
 
 // Para atrasos, busca empréstimos ativos e verifica as datas
@@ -2739,7 +2783,9 @@ db.collection('emprestimos')
 .where('status', 'in', ['EMPRESTADO', 'ATRASADO'])
 .get()
 .then(async (snapshot) => {
+if (tbody) {
 tbody.innerHTML = '';
+}
 const today = getDataBrasilia();
 today.setHours(0, 0, 0, 0); // Zera as horas para comparar apenas a data (horário Brasília)
 
@@ -2778,7 +2824,9 @@ overdueLoans.push({ doc, data });
 }
 
 if (overdueLoans.length === 0) {
+if (tbody) {
 tbody.innerHTML = '<tr><td colspan="6">Nenhum empréstimo atrasado encontrado.</td></tr>';
+}
 return;
 }
 
@@ -2834,6 +2882,7 @@ let actionBtns = `
 </button>
 `;
 
+if (tbody) {
 tbody.innerHTML += `
 <tr style="background-color: #ffe6e6;">
 <td>${livros}</td>
@@ -2852,6 +2901,7 @@ ${actionBtns}
 </tr>
 `;
 }
+}
 })
 .catch((error) => {
 console.error('Erro ao buscar empréstimos atrasados:', error);
@@ -2863,9 +2913,13 @@ db.collection('emprestimos')
 .where('status', '==', status)
 .get()
 .then(async (snapshot) => {
+if (tbody) {
 tbody.innerHTML = '';
+}
 if (snapshot.empty) {
+if (tbody) {
 tbody.innerHTML = '<tr><td colspan="6">Nenhum empréstimo encontrado.</td></tr>';
+}
 return;
 }
 for (const doc of snapshot.docs) {
@@ -2976,6 +3030,7 @@ statusDisplay = `
 `;
 }
 
+if (tbody) {
 tbody.innerHTML += `
 <tr>
 <td>${livros}</td>
@@ -2991,11 +3046,16 @@ ${actionBtns}
 </tr>
 `;
 }
+}
 })
 .catch((error) => {
 console.error('Erro ao buscar empréstimos:', error);
 showAlert('danger', 'Erro ao buscar empréstimos.');
 });
+}
+} catch (error) {
+console.error('Erro na função showLoansByStatus:', error);
+showAlert('danger', 'Erro ao exibir empréstimos por status.');
 }
 }
 

@@ -2032,16 +2032,21 @@ if (userId) {
 try {
 const verificacao = await verificarEmprestimosPendentes(userId);
 
-if (verificacao.temAtrasos) {
+// Verifica se verificacao tem as propriedades necessárias
+if (!verificacao || typeof verificacao !== 'object') {
+console.warn('Verificação retornou dados inválidos:', verificacao);
+showAlert('warning', 'Não foi possível verificar pendências. Empréstimo pode continuar.');
+} else {
+if (verificacao.temAtrasos && verificacao.emprestimosAtrasados && verificacao.emprestimosAtrasados.length > 0) {
 let mensagemAtraso = '<div class="alert alert-danger mb-3"><h5><i class="bx bx-error-circle"></i> Empréstimo Bloqueado</h5>';
 mensagemAtraso += '<p><strong>Este usuário possui livros em atraso e não pode retirar novos materiais.</strong></p>';
 mensagemAtraso += '<h6>Livros em Atraso:</h6><ul class="mb-2">';
 
 verificacao.emprestimosAtrasados.forEach(emp => {
-mensagemAtraso += `<li class="mb-2"><strong>Registro:</strong> ${emp.registro}<br>`;
-mensagemAtraso += `<strong>Vencimento:</strong> ${emp.dataVencimento}<br>`;
-mensagemAtraso += `<strong>Atraso:</strong> <span class="text-danger fw-bold">${emp.diasAtraso} dia(s)</span><br>`;
-mensagemAtraso += `<strong>Livros:</strong> ${emp.livros.join(', ')}</li>`;
+mensagemAtraso += `<li class="mb-2"><strong>Registro:</strong> ${emp.registro || 'N/A'}<br>`;
+mensagemAtraso += `<strong>Vencimento:</strong> ${emp.dataVencimento || 'N/A'}<br>`;
+mensagemAtraso += `<strong>Atraso:</strong> <span class="text-danger fw-bold">${emp.diasAtraso || 0} dia(s)</span><br>`;
+mensagemAtraso += `<strong>Livros:</strong> ${emp.livros && emp.livros.length > 0 ? emp.livros.join(', ') : 'N/A'}</li>`;
 });
 mensagemAtraso += '</ul>';
 mensagemAtraso += '<p class="mb-0"><strong>Ação necessária:</strong> O usuário deve devolver os livros em atraso antes de realizar novos empréstimos.</p></div>';
@@ -2061,7 +2066,7 @@ showAlert('danger', 'Empréstimo bloqueado! Usuário possui livros em atraso.', 
 return; // Impede a continuação do processo
 }
 
-if (verificacao.emprestimosAtivos.length > 0) {
+if (verificacao.emprestimosAtivos && verificacao.emprestimosAtivos.length > 0) {
 // Mostrar aviso sobre empréstimos ativos (permite continuar)
 let mensagemAtivos = `<div class="alert alert-info mb-3"><h6><i class="bx bx-info-circle"></i> Informação</h6>`;
 mensagemAtivos += `<p class="mb-0">Este usuário possui <strong>${verificacao.emprestimosAtivos.length} empréstimo(s) ativo(s)</strong> ainda no prazo.</p></div>`;
@@ -2074,6 +2079,7 @@ existingInfoAlerts.forEach(alert => alert.remove());
 
 // Adiciona o aviso no início do modal
 modalBody.insertAdjacentHTML('afterbegin', mensagemAtivos);
+}
 }
 }
 

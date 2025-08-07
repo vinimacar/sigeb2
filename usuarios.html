@@ -849,7 +849,7 @@
         addText('ESCOLA ESTADUAL GOVERNADOR BIAS FORTES', margin + 50, yPosition + 8, {
           fontSize: 12,
           fontStyle: 'bold',
-          textColor: [34, 139, 34]
+          textColor: [0, 0, 0]  // Mudança para preto
         });
         
         addText('Sistema de Gerenciamento de Biblioteca', margin + 50, yPosition + 16, {
@@ -864,83 +864,83 @@
           textColor: [50, 50, 50]
         });
         
-        yPosition += 35;
+        yPosition += 28; // Reduzido de 35 para 28
         
         // Cabeçalho principal
         doc.setFillColor(26, 26, 46);
-        doc.rect(margin, yPosition, contentWidth, 20, 'F');
+        doc.rect(margin, yPosition, contentWidth, 18, 'F'); // Reduzido de 20 para 18
         
         doc.setTextColor(255, 255, 255);
-        addText('FICHA CADASTRAL DE USUÁRIO', margin + 5, yPosition + 13, {
+        addText('FICHA CADASTRAL DE USUÁRIO', margin + 5, yPosition + 12, { // Ajustado de 13 para 12
           fontSize: 14,
           fontStyle: 'bold'
         });
         doc.setTextColor(0, 0, 0);
         
-        yPosition += 30;
+        yPosition += 25; // Reduzido de 30 para 25
         
         // Informações pessoais
         addText('DADOS PESSOAIS', margin, yPosition, {
           fontSize: 14,
           fontStyle: 'bold'
         });
-        yPosition += 10;
+        yPosition += 8; // Reduzido de 10 para 8
         addLine(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 15;
+        yPosition += 12; // Reduzido de 15 para 12
         
         // Nome
         addText('Nome Completo:', margin, yPosition, { fontStyle: 'bold' });
         addText(dadosUsuario.nome || '', margin + 35, yPosition);
-        yPosition += 15;
+        yPosition += 12; // Reduzido de 15 para 12
         
         // Email e Matrícula
         addText('Email:', margin, yPosition, { fontStyle: 'bold' });
         addText(dadosUsuario.email || '', margin + 20, yPosition);
         addText('Matrícula:', margin + 100, yPosition, { fontStyle: 'bold' });
         addText(dadosUsuario.matricula || '', margin + 135, yPosition);
-        yPosition += 15;
+        yPosition += 12; // Reduzido de 15 para 12
         
         // Função e Status
         addText('Função:', margin, yPosition, { fontStyle: 'bold' });
         addText(dadosUsuario.funcao || '', margin + 25, yPosition);
         addText('Status:', margin + 100, yPosition, { fontStyle: 'bold' });
         addText(dadosUsuario.status || '', margin + 125, yPosition);
-        yPosition += 15;
+        yPosition += 12; // Reduzido de 15 para 12
         
         // Telefone
         addText('Telefone:', margin, yPosition, { fontStyle: 'bold' });
         addText(dadosUsuario.telefone || '', margin + 30, yPosition);
-        yPosition += 20;
+        yPosition += 15; // Reduzido de 20 para 15
         
         // Endereço
         addText('ENDEREÇO', margin, yPosition, {
           fontSize: 14,
           fontStyle: 'bold'
         });
-        yPosition += 10;
+        yPosition += 8; // Reduzido de 10 para 8
         addLine(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 15;
+        yPosition += 12; // Reduzido de 15 para 12
         
         // Logradouro e Número
         addText('Logradouro:', margin, yPosition, { fontStyle: 'bold' });
         addText(dadosUsuario.endereco?.logradouro || '', margin + 35, yPosition);
         addText('Nº:', margin + 120, yPosition, { fontStyle: 'bold' });
         addText(dadosUsuario.endereco?.numero || '', margin + 130, yPosition);
-        yPosition += 15;
+        yPosition += 12; // Reduzido de 15 para 12
         
         // Bairro e CEP
         addText('Bairro:', margin, yPosition, { fontStyle: 'bold' });
         addText(dadosUsuario.endereco?.bairro || '', margin + 25, yPosition);
         addText('CEP:', margin + 100, yPosition, { fontStyle: 'bold' });
         addText(dadosUsuario.endereco?.cep || '', margin + 120, yPosition);
-        yPosition += 15;
+        yPosition += 12; // Reduzido de 15 para 12
         
         // Cidade e UF
         addText('Cidade:', margin, yPosition, { fontStyle: 'bold' });
         addText(dadosUsuario.endereco?.cidade || '', margin + 25, yPosition);
         addText('UF:', margin + 120, yPosition, { fontStyle: 'bold' });
         addText(dadosUsuario.endereco?.uf || '', margin + 135, yPosition);
-        yPosition += 20;
+        yPosition += 15; // Reduzido de 20 para 15
         
         // Dados acadêmicos (se for aluno)
         if (dadosUsuario.funcao === 'ALUNO') {
@@ -948,23 +948,23 @@
             fontSize: 14,
             fontStyle: 'bold'
           });
-          yPosition += 10;
+          yPosition += 8; // Reduzido de 10 para 8
           addLine(margin, yPosition, pageWidth - margin, yPosition);
-          yPosition += 15;
+          yPosition += 12; // Reduzido de 15 para 12
           
           // Série e Período
           addText('Série:', margin, yPosition, { fontStyle: 'bold' });
           addText(dadosUsuario.serie ? `${dadosUsuario.serie}º ano` : '', margin + 25, yPosition);
           addText('Período:', margin + 80, yPosition, { fontStyle: 'bold' });
           addText(dadosUsuario.periodo || '', margin + 115, yPosition);
-          yPosition += 15;
+          yPosition += 12; // Reduzido de 15 para 12
           
           // Turma e Turno
           addText('Turma:', margin, yPosition, { fontStyle: 'bold' });
           addText(dadosUsuario.turma || '', margin + 25, yPosition);
           addText('Turno:', margin + 80, yPosition, { fontStyle: 'bold' });
           addText(dadosUsuario.turno || '', margin + 110, yPosition);
-          yPosition += 20;
+          yPosition += 15; // Reduzido de 20 para 15
         }
         
         // Regras da biblioteca
@@ -972,13 +972,12 @@
           fontSize: 14,
           fontStyle: 'bold'
         });
-        yPosition += 10;
+        yPosition += 8; // Reduzido de 10 para 8
         addLine(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 15;
+        yPosition += 12; // Reduzido de 15 para 12
         
         const regras = [
           '• Prazo de empréstimo: 7 dias (renovável por mais 7 dias)',
-          '• Multa por atraso: R$ 0,50 por dia',
           '• Limite de livros: 3 livros por usuário',
           '• É obrigatório apresentar a carteirinha ou documento com foto',
           '• Danos ou perda do livro: pagamento do valor integral',
@@ -987,29 +986,29 @@
         
         regras.forEach(regra => {
           addText(regra, margin, yPosition, { fontSize: 10 });
-          yPosition += 10;
+          yPosition += 8; // Reduzido de 10 para 8
         });
         
-        yPosition += 10;
+        yPosition += 8; // Reduzido de 10 para 8
         
         // Assinaturas
         addText('ASSINATURAS', margin, yPosition, {
           fontSize: 14,
           fontStyle: 'bold'
         });
-        yPosition += 10;
+        yPosition += 8; // Reduzido de 10 para 8
         addLine(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 20; // Reduzido de 30 para 20
+        yPosition += 15; // Reduzido de 20 para 15
         
         // Linha para assinatura do usuário
         addLine(margin, yPosition, margin + 80, yPosition);
-        addText('Usuário', margin + 30, yPosition + 8, { fontSize: 10 }); // Reduzido de +10 para +8
+        addText('Usuário', margin + 30, yPosition + 6, { fontSize: 10 }); // Reduzido de +8 para +6
         
         // Linha para assinatura do responsável
         addLine(margin + 100, yPosition, margin + 180, yPosition);
-        addText('Bibliotecário(a)', margin + 120, yPosition + 8, { fontSize: 10 }); // Reduzido de +10 para +8
+        addText('Bibliotecário(a)', margin + 120, yPosition + 6, { fontSize: 10 }); // Reduzido de +8 para +6
         
-        yPosition += 20; // Reduzido de 30 para 20
+        yPosition += 15; // Reduzido de 20 para 15
         
         // Rodapé (movido para o final da página)
         const pageHeight = doc.internal.pageSize.getHeight();

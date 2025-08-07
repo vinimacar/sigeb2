@@ -1122,7 +1122,7 @@
           textColor: colors.dark
         });
         
-        yPosition += 45;
+        yPosition += 50;
         
         // === DADOS ACADÊMICOS (se for aluno) ===
         if (dadosUsuario.funcao === 'ALUNO') {
@@ -1209,9 +1209,9 @@
         const sigWidth = (contentWidth - 20) / 2;
         
         addRoundedBox(margin, yPosition, sigWidth, 25, null, colors.secondary);
-        addRoundedBox(margin + sigWidth + 20, yPosition, sigWidth, 25, null, colors.secondary);
+        addRoundedBox(margin + sigWidth + 15, yPosition, sigWidth, 20, null, colors.secondary);
         
-        addText('Assinatura do Usuário', margin + 10, yPosition + 33, {
+        addText('Assinatura do Usuário', margin + 10, yPosition + 23, {
           fontSize: 7,
           fontStyle: 'normal',
           textColor: colors.secondary
@@ -2868,6 +2868,7 @@
   </script>
 </body>
 </html>
+
 
 
 

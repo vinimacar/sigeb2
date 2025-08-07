@@ -197,6 +197,12 @@
     .action-button:hover {
       transform: translateY(-2px);
     }
+    .print-button {
+      color: #28a745;
+    }
+    .print-button:hover {
+      color: #1e7e34;
+    }
     .edit-button {
       color: #4facfe;
     }    .delete-button {
@@ -1280,6 +1286,9 @@
               <td><span class="user-status ${user.status === 'Inativo' ? 'status-inativo' : 'status-ativo'}">${user.status || 'Ativo'}</span></td>
               <td>
                 <div class="action-buttons">
+                  <button class="action-button print-button" data-id="${doc.id}" onclick="handlePrintUser('${doc.id}')" title="Imprimir Ficha">
+                    <i class='bx bx-printer'></i>
+                  </button>
                   <button class="action-button edit-button" data-id="${doc.id}" onclick="handleEditUser('${doc.id}')">
                     <i class='bx bx-edit-alt'></i>
                   </button>
@@ -1322,6 +1331,11 @@
         console.log('Adicionando event listeners aos botões...');
         
         // Remove listeners antigos para evitar duplicação
+        document.querySelectorAll('.print-button').forEach(btn => {
+          btn.removeEventListener('click', handlePrintClick);
+          btn.addEventListener('click', handlePrintClick);
+        });
+        
         document.querySelectorAll('.edit-button').forEach(btn => {
           btn.removeEventListener('click', handleEditClick);
           btn.addEventListener('click', handleEditClick);
@@ -1332,10 +1346,19 @@
           btn.addEventListener('click', handleDeleteClick);
         });
         
+        console.log('Event listeners adicionados. Total de botões imprimir:', document.querySelectorAll('.print-button').length);
         console.log('Event listeners adicionados. Total de botões editar:', document.querySelectorAll('.edit-button').length);
       }
 
       // Handlers para os cliques dos botões
+      function handlePrintClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const userId = e.currentTarget.getAttribute('data-id');
+        console.log('Botão imprimir clicado para usuário:', userId);
+        handlePrintUser(userId);
+      }
+
       function handleEditClick(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -1372,6 +1395,32 @@
         } catch (error) {
           console.error('Erro ao excluir usuário:', error);
           showAlert('danger', 'Erro ao excluir usuário.');
+        }
+      };
+
+      window.handlePrintUser = async function(userId) {
+        try {
+          console.log('Imprimindo ficha do usuário:', userId);
+          
+          // Busca os dados do usuário
+          const userDoc = await db.collection('usuarios').doc(userId).get();
+          if (!userDoc.exists) {
+            showAlert('danger', 'Usuário não encontrado.');
+            return;
+          }
+          
+          const userData = userDoc.data();
+          
+          // Gera e baixa a ficha cadastral
+          const doc_pdf = await gerarFichaCadastral(userData);
+          if (doc_pdf) {
+            const fileName = `ficha_${userData.nome?.replace(/\s+/g, '_') || 'usuario'}_${Date.now()}.pdf`;
+            doc_pdf.save(fileName);
+            showAlert('success', 'Ficha cadastral gerada com sucesso!');
+          }
+        } catch (error) {
+          console.error('Erro ao imprimir ficha do usuário:', error);
+          showAlert('danger', 'Erro ao gerar ficha cadastral.');
         }
       };
 

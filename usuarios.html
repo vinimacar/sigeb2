@@ -1042,7 +1042,7 @@
           textColor: colors.dark
         });
         
-        yPosition += 53;
+        yPosition += 55;
         
         // === ENDEREÇO ===
         yPosition = addSection('ENDEREÇO', yPosition);
@@ -1122,7 +1122,7 @@
           textColor: colors.dark
         });
         
-        yPosition += 43;
+        yPosition += 45;
         
         // === DADOS ACADÊMICOS (se for aluno) ===
         if (dadosUsuario.funcao === 'ALUNO') {
@@ -1226,11 +1226,7 @@
         // === RODAPÉ MODERNO ===
         yPosition += 10; // Espaço após assinaturas
         
-        // Linha decorativa
-        doc.setDrawColor(colors.primary[0], colors.primary[1], colors.primary[2]);
-        doc.setLineWidth(1);
-        doc.line(margin, yPosition, pageWidth - margin, yPosition);
-        
+      
         // Data de emissão
         const dataAtual = new Date().toLocaleDateString('pt-BR', {
           day: '2-digit',
@@ -2872,6 +2868,7 @@
   </script>
 </body>
 </html>
+
 
 
 

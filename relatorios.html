@@ -152,7 +152,7 @@
           <input type="date" class="form-control" id="leitoresDataFim" name="leitoresDataFim">
           <small class="text-muted">Devoluções até esta data</small>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
           <label class="form-label" for="leitoresLimite">Limite de Resultados</label>
           <select class="form-select" id="leitoresLimite" name="leitoresLimite">
             <option value="10">Top 10</option>
@@ -161,7 +161,10 @@
             <option value="">Todos</option>
           </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
+          <button class="btn btn-secondary w-100" id="btnBaixarPDFLeitores"><i class='bx bx-download'></i> Baixar PDF</button>
+        </div>
+        <div class="col-md-2">
           <button class="btn btn-outline-secondary w-100" onclick="document.getElementById('leitoresDataInicio').value=''; document.getElementById('leitoresDataFim').value=''; document.getElementById('leitoresLimite').value='10';">
             <i class='bx bx-refresh'></i> Limpar Filtros
           </button>
@@ -1260,6 +1263,7 @@
 
     btnBaixarPDF.addEventListener('click', baixarPDF);
     document.getElementById('btnBaixarPDF2').addEventListener('click', baixarPDF);
+    document.getElementById('btnBaixarPDFLeitores').addEventListener('click', baixarPDF);
 
     // Exemplo para buscar a quantidade total de livros cadastrados no Firestore
     async function buscarQuantidadeLivros() {

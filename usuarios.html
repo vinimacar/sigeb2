@@ -736,6 +736,60 @@
         });
       }
 
+      // Validação em tempo real para email (evitar duplicação)
+      document.getElementById('email').addEventListener('blur', async function(e) {
+        const email = e.target.value.trim();
+        if (!email) return;
+        
+        const currentUserId = document.getElementById('usuarioId').value;
+        const duplicateCheck = await checkUserExists(email, '', currentUserId);
+        
+        if (duplicateCheck.exists && duplicateCheck.field === 'email') {
+          e.target.classList.add('is-invalid');
+          // Criar ou atualizar mensagem de erro
+          let errorDiv = e.target.parentNode.querySelector('.duplicate-error');
+          if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.className = 'duplicate-error text-danger small mt-1';
+            e.target.parentNode.appendChild(errorDiv);
+          }
+          errorDiv.textContent = duplicateCheck.message;
+        } else {
+          e.target.classList.remove('is-invalid');
+          const errorDiv = e.target.parentNode.querySelector('.duplicate-error');
+          if (errorDiv) {
+            errorDiv.remove();
+          }
+        }
+      });
+
+      // Validação em tempo real para matrícula (evitar duplicação)
+      document.getElementById('matricula').addEventListener('blur', async function(e) {
+        const matricula = e.target.value.trim();
+        if (!matricula) return;
+        
+        const currentUserId = document.getElementById('usuarioId').value;
+        const duplicateCheck = await checkUserExists('', matricula, currentUserId);
+        
+        if (duplicateCheck.exists && duplicateCheck.field === 'matricula') {
+          e.target.classList.add('is-invalid');
+          // Criar ou atualizar mensagem de erro
+          let errorDiv = e.target.parentNode.querySelector('.duplicate-error');
+          if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.className = 'duplicate-error text-danger small mt-1';
+            e.target.parentNode.appendChild(errorDiv);
+          }
+          errorDiv.textContent = duplicateCheck.message;
+        } else {
+          e.target.classList.remove('is-invalid');
+          const errorDiv = e.target.parentNode.querySelector('.duplicate-error');
+          if (errorDiv) {
+            errorDiv.remove();
+          }
+        }
+      });
+
       // Função para hash da senha (exemplo simples - em produção usar bcrypt ou similar)
       async function hashPassword(password) {
         const encoder = new TextEncoder();
@@ -1829,7 +1883,39 @@
       
       // Remove arrays vazios
       return arrData.filter(arr => arr.length > 0);
-    }    // Função para salvar/atualizar usuário ao submeter o formulário do modal
+    }    // Função para verificar se usuário já existe (evitar duplicações)
+    async function checkUserExists(email, matricula, currentUserId = null) {
+      try {
+        // Verificar por email
+        const emailQuery = await db.collection('usuarios').where('email', '==', email).get();
+        if (!emailQuery.empty) {
+          const existingUser = emailQuery.docs[0];
+          // Se está editando, permitir o mesmo email do usuário atual
+          if (!currentUserId || existingUser.id !== currentUserId) {
+            return { exists: true, field: 'email', message: 'Já existe um usuário cadastrado com este email.' };
+          }
+        }
+
+        // Verificar por matrícula (apenas se fornecida)
+        if (matricula && matricula.trim() !== '') {
+          const matriculaQuery = await db.collection('usuarios').where('matricula', '==', matricula).get();
+          if (!matriculaQuery.empty) {
+            const existingUser = matriculaQuery.docs[0];
+            // Se está editando, permitir a mesma matrícula do usuário atual
+            if (!currentUserId || existingUser.id !== currentUserId) {
+              return { exists: true, field: 'matricula', message: 'Já existe um usuário cadastrado com esta matrícula.' };
+            }
+          }
+        }
+
+        return { exists: false };
+      } catch (error) {
+        console.error('Erro ao verificar duplicação:', error);
+        return { exists: false }; // Em caso de erro, permite continuar
+      }
+    }
+
+    // Função para salvar/atualizar usuário ao submeter o formulário do modal
     async function handleUserSubmission(event) {
       event.preventDefault?.();
 
@@ -1856,6 +1942,27 @@
         matricula = document.getElementById('matricula').value.trim();
         serie = document.getElementById('serie').value;
         periodo = document.getElementById('periodo').value;
+      turma = document.getElementById('turma').value;
+      turno = document.getElementById('turno').value;
+
+      // Verificar duplicações antes de salvar
+      const duplicateCheck = await checkUserExists(email, matricula, id);
+      if (duplicateCheck.exists) {
+        showAlert('danger', duplicateCheck.message);
+        
+        // Destacar o campo problemático
+        const fieldElement = document.getElementById(duplicateCheck.field);
+        if (fieldElement) {
+          fieldElement.classList.add('is-invalid');
+          fieldElement.focus();
+          
+          // Remover destaque após alguns segundos
+          setTimeout(() => {
+            fieldElement.classList.remove('is-invalid');
+          }, 5000);
+        }
+        return;
+      }
         turma = document.getElementById('turma').value;
         turno = document.getElementById('turno').value;
       }
@@ -1918,30 +2025,8 @@
         console.error('Erro ao salvar usuário:', error);
         showAlert('danger', 'Erro ao salvar usuário.');
       }
-    }    // Certifique-se de adicionar o event listener após a definição da função:
-    document.addEventListener('DOMContentLoaded', function() {
-      const btnSalvar = document.getElementById('btnSalvarUsuario');
-      if (btnSalvar) {
-        btnSalvar.addEventListener('click', function(event) {
-          event.preventDefault();
-          handleUserSubmission(event);
-        });
-      }
-      
-      // Event listener para botão de impressão
-      const btnImprimir = document.getElementById('btnImprimirFicha');
-      if (btnImprimir) {
-        // Remove event listeners existentes para evitar duplicação
-        const novoBtnImprimir = btnImprimir.cloneNode(true);
-        btnImprimir.parentNode.replaceChild(novoBtnImprimir, btnImprimir);
-        
-        // Adiciona o event listener apenas uma vez
-        novoBtnImprimir.addEventListener('click', async function() {
-          await imprimirFichaCadastral();
-        });
-      }
-    });
-
+    }
+    
     // Exibe ou esconde campos de aluno conforme função selecionada
     document.getElementById('funcao').addEventListener('change', function() {
       const isAluno = this.value === 'ALUNO';
@@ -2632,6 +2717,29 @@
 
     document.addEventListener('DOMContentLoaded', function() {
       loadUsers();
+      
+      // Event listeners do formulário
+      const btnSalvar = document.getElementById('btnSalvarUsuario');
+      if (btnSalvar) {
+        btnSalvar.addEventListener('click', function(event) {
+          event.preventDefault();
+          handleUserSubmission(event);
+        });
+      }
+      
+      // Event listener para botão de impressão
+      const btnImprimir = document.getElementById('btnImprimirFicha');
+      if (btnImprimir) {
+        // Remove event listeners existentes para evitar duplicação
+        const novoBtnImprimir = btnImprimir.cloneNode(true);
+        btnImprimir.parentNode.replaceChild(novoBtnImprimir, btnImprimir);
+        
+        // Adiciona o event listener apenas uma vez
+        novoBtnImprimir.addEventListener('click', async function() {
+          await imprimirFichaCadastral();
+        });
+      }
+      
       // Pré-carrega os logos para melhor performance
       carregarLogos().catch(error => {
         console.warn('Logos não puderam ser pré-carregados:', error);

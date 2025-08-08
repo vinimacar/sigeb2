@@ -1271,13 +1271,26 @@
             return;
           }
           
-          // Carrega usuários do Firebase
+          // Carrega usuários do Firebase e organiza em ordem alfabética
+          const users = [];
           snapshot.forEach(doc => {
             const user = doc.data();
+            users.push({ id: doc.id, data: user });
+          });
+          
+          // Ordena os usuários alfabeticamente pelo nome
+          users.sort((a, b) => {
+            const nomeA = (a.data.nome || '').toLowerCase();
+            const nomeB = (b.data.nome || '').toLowerCase();
+            return nomeA.localeCompare(nomeB);
+          });
+          
+          // Adiciona os usuários ordenados à tabela
+          users.forEach(({ id, data: user }) => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
               <td>
-                <input type="checkbox" class="form-check-input user-checkbox" data-user-id="${doc.id}">
+                <input type="checkbox" class="form-check-input user-checkbox" data-user-id="${id}">
               </td>
               <td>${user.nome || ''}</td>
               <td>${user.email || ''}</td>
@@ -1285,13 +1298,13 @@
               <td><span class="user-status ${user.status === 'Inativo' ? 'status-inativo' : 'status-ativo'}">${user.status || 'Ativo'}</span></td>
               <td>
                 <div class="action-buttons">
-                  <button class="action-button print-button" data-id="${doc.id}" onclick="handlePrintUser('${doc.id}')" title="Imprimir Ficha">
+                  <button class="action-button print-button" data-id="${id}" onclick="handlePrintUser('${id}')" title="Imprimir Ficha">
                     <i class='bx bx-printer'></i>
                   </button>
-                  <button class="action-button edit-button" data-id="${doc.id}" onclick="handleEditUser('${doc.id}')">
+                  <button class="action-button edit-button" data-id="${id}" onclick="handleEditUser('${id}')">
                     <i class='bx bx-edit-alt'></i>
                   </button>
-                  <button class="action-button delete-button" data-id="${doc.id}" onclick="handleDeleteUser('${doc.id}')">
+                  <button class="action-button delete-button" data-id="${id}" onclick="handleDeleteUser('${id}')">
                     <i class='bx bx-trash'></i>
                   </button>
                 </div>

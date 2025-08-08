@@ -945,6 +945,77 @@
       }
     });
 
+    // Função para criar imagens de medalhas para o PDF
+    function criarImagemMedalha(tipo) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 40;
+      canvas.height = 40;
+      const ctx = canvas.getContext('2d');
+      
+      // Limpar canvas
+      ctx.clearRect(0, 0, 40, 40);
+      
+      // Desenhar sombra
+      ctx.beginPath();
+      ctx.arc(21, 21, 18, 0, 2 * Math.PI);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.fill();
+      
+      // Desenhar círculo base
+      ctx.beginPath();
+      ctx.arc(20, 20, 18, 0, 2 * Math.PI);
+      
+      // Definir cores baseadas no tipo
+      if (tipo === 1) {
+        // Medalha de Ouro
+        const gradient = ctx.createRadialGradient(15, 15, 0, 20, 20, 18);
+        gradient.addColorStop(0, '#FFF700');
+        gradient.addColorStop(0.5, '#FFD700');
+        gradient.addColorStop(1, '#B8860B');
+        ctx.fillStyle = gradient;
+      } else if (tipo === 2) {
+        // Medalha de Prata
+        const gradient = ctx.createRadialGradient(15, 15, 0, 20, 20, 18);
+        gradient.addColorStop(0, '#E8E8E8');
+        gradient.addColorStop(0.5, '#C0C0C0');
+        gradient.addColorStop(1, '#808080');
+        ctx.fillStyle = gradient;
+      } else if (tipo === 3) {
+        // Medalha de Bronze
+        const gradient = ctx.createRadialGradient(15, 15, 0, 20, 20, 18);
+        gradient.addColorStop(0, '#DEB887');
+        gradient.addColorStop(0.5, '#CD7F32');
+        gradient.addColorStop(1, '#8B4513');
+        ctx.fillStyle = gradient;
+      }
+      
+      ctx.fill();
+      
+      // Adicionar borda externa escura
+      ctx.strokeStyle = '#2C2C2C';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      
+      // Adicionar borda interna brilhante
+      ctx.beginPath();
+      ctx.arc(20, 20, 15, 0, 2 * Math.PI);
+      ctx.strokeStyle = tipo === 1 ? '#FFFF99' : tipo === 2 ? '#F0F0F0' : '#F4A460';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      
+      // Adicionar número
+      ctx.fillStyle = '#FFFFFF';
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1;
+      ctx.font = 'bold 18px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.strokeText(tipo.toString(), 20, 20);
+      ctx.fillText(tipo.toString(), 20, 20);
+      
+      return canvas.toDataURL('image/png');
+    }
+
     // Função para baixar PDF (duplicada para os dois botões)
     function baixarPDF() {
       const reportType = document.getElementById('reportType').value;
@@ -1036,6 +1107,60 @@
                 theme: 'striped'
               };
 
+              // Para relatório de ranking de leitores, adicionar medalhas
+              if (reportType === 'leitores') {
+                autoTableConfig.styles.fontSize = 9;
+                autoTableConfig.columnStyles = {
+                  0: { cellWidth: 25, halign: 'center' }, // Coluna posição com medalha
+                  1: { cellWidth: 50 }, // Nome
+                  2: { cellWidth: 25 }, // Matrícula
+                  3: { cellWidth: 30 }, // Função
+                  4: { halign: 'center' }, // Total livros
+                  5: { halign: 'center' }, // Empréstimos
+                  6: { halign: 'center' } // Média
+                };
+                
+                // Remover emojis do texto e manter só os números
+                autoTableConfig.didParseCell = function(data) {
+                  if (data.column.index === 0) {
+                    if (data.row.index < 3) {
+                      // Para as 3 primeiras posições, limpar o texto (será adicionado manualmente)
+                      data.cell.text = [''];
+                    } else {
+                      // Para outras posições, remover emojis e manter só o número
+                      data.cell.text = data.cell.text.map(text => {
+                        return text.replace(/🥇|🥈|🥉/g, '').trim();
+                      });
+                    }
+                  }
+                  // Remover HTML de outras células
+                  if (data.cell.text && Array.isArray(data.cell.text)) {
+                    data.cell.text = data.cell.text.map(text => {
+                      return text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+                    });
+                  }
+                };
+                
+                // Adicionar medalhas após desenhar a célula
+                autoTableConfig.didDrawCell = function(data) {
+                  if (data.column.index === 0 && data.row.index < 3) {
+                    // Adicionar medalha como imagem para as 3 primeiras posições
+                    const posicao = data.row.index + 1;
+                    const medalhaImg = criarImagemMedalha(posicao);
+                    
+                    // Posicionar a medalha no centro-esquerda da célula
+                    const medalhaX = data.cell.x + 2;
+                    const medalhaY = data.cell.y + (data.cell.height - 10) / 2;
+                    doc.addImage(medalhaImg, 'PNG', medalhaX, medalhaY, 10, 10);
+                    
+                    // Ajustar o texto para ficar ao lado da medalha
+                    doc.setFontSize(9);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`${posicao}º`, medalhaX + 12, medalhaY + 5.5);
+                  }
+                };
+              }
+
               // Para relatório de advertências, ajustar configurações
               if (reportType === 'advertencias') {
                 autoTableConfig.styles.fontSize = 7;
@@ -1102,9 +1227,24 @@
                   
                   doc.setFontSize(9);
                   doc.setFont('helvetica', 'bold');
-                  doc.text('Como interpretar:', 14, finalY + 36);
+                  doc.text('Sistema de Medalhas:', 14, finalY + 36);
                   doc.setFont('helvetica', 'normal');
-                  doc.text('🥇🥈🥉 Medalhas para os 3 primeiros colocados | Ranking baseado em livros devolvidos', 14, finalY + 44);
+                  
+                  // Adicionar pequenas medalhas na legenda
+                  const medalhaOuro = criarImagemMedalha(1);
+                  const medalhaPrata = criarImagemMedalha(2);
+                  const medalhaBronze = criarImagemMedalha(3);
+                  
+                  doc.addImage(medalhaOuro, 'PNG', 14, finalY + 42, 6, 6);
+                  doc.text('1º Lugar (Ouro)', 22, finalY + 46);
+                  
+                  doc.addImage(medalhaPrata, 'PNG', 60, finalY + 42, 6, 6);
+                  doc.text('2º Lugar (Prata)', 68, finalY + 46);
+                  
+                  doc.addImage(medalhaBronze, 'PNG', 120, finalY + 42, 6, 6);
+                  doc.text('3º Lugar (Bronze)', 128, finalY + 46);
+                  
+                  doc.text('Ranking baseado no total de livros devolvidos com sucesso', 14, finalY + 54);
                 }
               }
             } else {

@@ -812,274 +812,353 @@
       }      // Variável global para armazenar dados do último usuário cadastrado
       let ultimoUsuarioCadastrado = null;
 
-      // Função para gerar ficha cadastral em PDF
+      // Função para gerar ficha cadastral em PDF otimizada para A4
       async function gerarFichaCadastral(dadosUsuario) {
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
+        const doc = new jsPDF('portrait', 'mm', 'a4'); // Especifica formato A4
         
-        // Configurações
-        const margin = 20;
-        const pageWidth = doc.internal.pageSize.getWidth();
+        // Configurações otimizadas para A4 (210 x 297 mm)
+        const margin = 15; // Margens menores para aproveitar melhor o espaço
+        const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
+        const pageHeight = doc.internal.pageSize.getHeight(); // 297mm
         const contentWidth = pageWidth - (margin * 2);
         let yPosition = margin;
         
         // Carrega os logos antes de gerar a ficha
         await carregarLogos();
         
-        // Função auxiliar para adicionar texto
+        // Função auxiliar para adicionar texto com quebra automática
         const addText = (text, x, y, options = {}) => {
           if (options.fontSize) doc.setFontSize(options.fontSize);
           if (options.fontStyle) doc.setFont('helvetica', options.fontStyle);
           if (options.textColor) doc.setTextColor(options.textColor[0], options.textColor[1], options.textColor[2]);
-          doc.text(text, x, y);
+          
+          // Quebra automática de texto se especificado
+          if (options.maxWidth) {
+            const lines = doc.splitTextToSize(text, options.maxWidth);
+            doc.text(lines, x, y);
+            return lines.length * (options.lineHeight || 5); // Retorna altura ocupada
+          } else {
+            doc.text(text, x, y);
+            return options.lineHeight || 5;
+          }
+          
           // Reset para padrão
           if (options.fontSize || options.fontStyle || options.textColor) {
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(12);
+            doc.setFontSize(10);
             doc.setTextColor(0, 0, 0);
           }
         };
         
         // Função auxiliar para adicionar linha
-        const addLine = (x1, y1, x2, y2) => {
+        const addLine = (x1, y1, x2, y2, width = 0.1) => {
+          doc.setLineWidth(width);
           doc.line(x1, y1, x2, y2);
+          doc.setLineWidth(0.1); // Reset
         };
         
-        // === CABEÇALHO COM LOGOS ===
+        // Função para adicionar retângulo com borda
+        const addRect = (x, y, width, height, filled = false) => {
+          if (filled) {
+            doc.setFillColor(240, 240, 240);
+            doc.rect(x, y, width, height, 'F');
+          } else {
+            doc.rect(x, y, width, height);
+          }
+        };
         
-        // Logo SIGEB (esquerda)
+        // === CABEÇALHO COMPACTO ===
+        
+        // Caixa de cabeçalho
+        doc.setFillColor(26, 26, 46);
+        doc.rect(margin, yPosition, contentWidth, 22, 'F');
+        
+        // Logo SIGEB (esquerda, menor)
         if (logoSigebBase64) {
           try {
-            doc.addImage(logoSigebBase64, 'PNG', margin, yPosition, 40, 25);
+            doc.addImage(logoSigebBase64, 'PNG', margin + 3, yPosition + 3, 16, 16);
           } catch (error) {
-            console.warn('Erro ao adicionar logo SIGEB na ficha, usando fallback:', error);
-            // Fallback elegante
-            doc.setFillColor(34, 139, 34);
-            doc.rect(margin, yPosition, 35, 20, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(14);
+            // Fallback compacto
+            doc.setFillColor(255, 255, 255);
+            doc.rect(margin + 3, yPosition + 3, 16, 16, 'F');
+            doc.setTextColor(26, 26, 46);
+            doc.setFontSize(8);
             doc.setFont('helvetica', 'bold');
-            doc.text('SIGEB', margin + 8, yPosition + 12);
-            doc.setTextColor(0, 0, 0);
+            doc.text('SIGEB', margin + 7, yPosition + 13);
           }
         } else {
-          // Fallback com design profissional
-          doc.setFillColor(34, 139, 34);
-          doc.rect(margin, yPosition, 35, 20, 'F');
-          doc.setTextColor(255, 255, 255);
-          doc.setFontSize(14);
+          // Fallback
+          doc.setFillColor(255, 255, 255);
+          doc.rect(margin + 3, yPosition + 3, 16, 16, 'F');
+          doc.setTextColor(26, 26, 46);
+          doc.setFontSize(8);
           doc.setFont('helvetica', 'bold');
-          doc.text('SIGEB', margin + 8, yPosition + 12);
-          doc.setTextColor(0, 0, 0);
+          doc.text('SIGEB', margin + 7, yPosition + 13);
         }
 
-        // Logo da Escola (direita)
+        // Informações centrais do cabeçalho (texto branco)
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('ESCOLA ESTADUAL GOV. BIAS FORTES', margin + 25, yPosition + 8);
+        
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Sistema de Gerenciamento de Biblioteca', margin + 25, yPosition + 14);
+        
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('FICHA CADASTRAL DE USUÁRIO', margin + 25, yPosition + 19);
+        
+        // Logo da Escola (direita, menor)
         if (logoBiasBase64) {
           try {
-            doc.addImage(logoBiasBase64, 'PNG', pageWidth - margin - 40, yPosition, 40, 25);
+            doc.addImage(logoBiasBase64, 'PNG', pageWidth - margin - 19, yPosition + 3, 16, 16);
           } catch (error) {
-            console.warn('Erro ao adicionar logo da escola na ficha, usando fallback:', error);
-            // Fallback elegante
-            doc.setFillColor(34, 139, 34);
-            doc.circle(pageWidth - margin - 20, yPosition + 12, 12, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('BF', pageWidth - margin - 23, yPosition + 15);
-            doc.setTextColor(0, 0, 0);
+            // Fallback compacto
+            doc.setFillColor(255, 255, 255);
+            doc.circle(pageWidth - margin - 11, yPosition + 11, 8, 'F');
+            doc.setTextColor(26, 26, 46);
+            doc.setFontSize(7);
+            doc.text('BF', pageWidth - margin - 13, yPosition + 13);
           }
         } else {
-          // Fallback com design profissional
-          doc.setFillColor(34, 139, 34);
-          doc.circle(pageWidth - margin - 20, yPosition + 12, 12, 'F');
-          doc.setTextColor(255, 255, 255);
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
-          doc.text('BF', pageWidth - margin - 23, yPosition + 15);
-          doc.setTextColor(0, 0, 0);
+          // Fallback
+          doc.setFillColor(255, 255, 255);
+          doc.circle(pageWidth - margin - 11, yPosition + 11, 8, 'F');
+          doc.setTextColor(26, 26, 46);
+          doc.setFontSize(7);
+          doc.text('BF', pageWidth - margin - 13, yPosition + 13);
         }
         
-        // Título centralizado entre os logos
-        addText('ESCOLA ESTADUAL GOVERNADOR BIAS FORTES', margin + 50, yPosition + 8, {
-          fontSize: 12,
-          fontStyle: 'bold',
-          textColor: [0, 0, 0]  // Mudança para preto
-        });
-        
-        addText('Sistema de Gerenciamento de Biblioteca', margin + 50, yPosition + 16, {
-          fontSize: 10,
-          fontStyle: 'normal',
-          textColor: [100, 100, 100]
-        });
-        
-        addText('FICHA CADASTRAL DE USUÁRIO', margin + 50, yPosition + 24, {
-          fontSize: 14,
-          fontStyle: 'bold',
-          textColor: [50, 50, 50]
-        });
-        
-        yPosition += 28; // Reduzido de 35 para 28
-        
-        // Cabeçalho principal
-        doc.setFillColor(26, 26, 46);
-        doc.rect(margin, yPosition, contentWidth, 18, 'F'); // Reduzido de 20 para 18
-        
-        doc.setTextColor(255, 255, 255);
-        addText('FICHA CADASTRAL DE USUÁRIO', margin + 5, yPosition + 12, { // Ajustado de 13 para 12
-          fontSize: 14,
-          fontStyle: 'bold'
-        });
+        // Reset cor do texto
         doc.setTextColor(0, 0, 0);
+        yPosition += 28;
         
-        yPosition += 25; // Reduzido de 30 para 25
+        // === DADOS PESSOAIS EM FORMATO DE TABELA ===
         
-        // Informações pessoais
-        addText('DADOS PESSOAIS', margin, yPosition, {
-          fontSize: 14,
-          fontStyle: 'bold'
-        });
-        yPosition += 8; // Reduzido de 10 para 8
-        addLine(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 12; // Reduzido de 15 para 12
+        // Seção Dados Pessoais
+        doc.setFillColor(230, 230, 230);
+        doc.rect(margin, yPosition, contentWidth, 8, 'F');
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text('DADOS PESSOAIS', margin + 2, yPosition + 6);
+        yPosition += 10;
         
-        // Nome
-        addText('Nome Completo:', margin, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.nome || '', margin + 35, yPosition);
-        yPosition += 12; // Reduzido de 15 para 12
+        // Grid de informações (2 colunas)
+        const colWidth = contentWidth / 2;
         
-        // Email e Matrícula
-        addText('Email:', margin, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.email || '', margin + 20, yPosition);
-        addText('Matrícula:', margin + 100, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.matricula || '', margin + 135, yPosition);
-        yPosition += 12; // Reduzido de 15 para 12
+        // Linha 1: Nome (span completo)
+        addRect(margin, yPosition, contentWidth, 8);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.text('NOME COMPLETO:', margin + 2, yPosition + 3);
+        doc.setFont('helvetica', 'normal');
+        addText(dadosUsuario.nome || '', margin + 2, yPosition + 6.5, { maxWidth: contentWidth - 4 });
+        yPosition += 8;
         
-        // Função e Status
-        addText('Função:', margin, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.funcao || '', margin + 25, yPosition);
-        addText('Status:', margin + 100, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.status || '', margin + 125, yPosition);
-        yPosition += 12; // Reduzido de 15 para 12
+        // Linha 2: Email e Matrícula
+        addRect(margin, yPosition, colWidth, 8);
+        addRect(margin + colWidth, yPosition, colWidth, 8);
         
-        // Telefone
-        addText('Telefone:', margin, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.telefone || '', margin + 30, yPosition);
-        yPosition += 15; // Reduzido de 20 para 15
+        doc.setFont('helvetica', 'bold');
+        doc.text('EMAIL:', margin + 2, yPosition + 3);
+        doc.text('MATRÍCULA:', margin + colWidth + 2, yPosition + 3);
         
-        // Endereço
-        addText('ENDEREÇO', margin, yPosition, {
-          fontSize: 14,
-          fontStyle: 'bold'
-        });
-        yPosition += 8; // Reduzido de 10 para 8
-        addLine(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 12; // Reduzido de 15 para 12
+        doc.setFont('helvetica', 'normal');
+        addText(dadosUsuario.email || '', margin + 2, yPosition + 6.5, { maxWidth: colWidth - 4 });
+        doc.text(dadosUsuario.matricula || '', margin + colWidth + 2, yPosition + 6.5);
+        yPosition += 8;
+        
+        // Linha 3: Função e Status
+        addRect(margin, yPosition, colWidth, 8);
+        addRect(margin + colWidth, yPosition, colWidth, 8);
+        
+        doc.setFont('helvetica', 'bold');
+        doc.text('FUNÇÃO:', margin + 2, yPosition + 3);
+        doc.text('STATUS:', margin + colWidth + 2, yPosition + 3);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.text(dadosUsuario.funcao || '', margin + 2, yPosition + 6.5);
+        doc.text(dadosUsuario.status || '', margin + colWidth + 2, yPosition + 6.5);
+        yPosition += 8;
+        
+        // Linha 4: Telefone
+        addRect(margin, yPosition, contentWidth, 8);
+        doc.setFont('helvetica', 'bold');
+        doc.text('TELEFONE:', margin + 2, yPosition + 3);
+        doc.setFont('helvetica', 'normal');
+        doc.text(dadosUsuario.telefone || '', margin + 2, yPosition + 6.5);
+        yPosition += 12;
+        
+        // === ENDEREÇO ===
+        
+        doc.setFillColor(230, 230, 230);
+        doc.rect(margin, yPosition, contentWidth, 8, 'F');
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text('ENDEREÇO', margin + 2, yPosition + 6);
+        yPosition += 10;
+        
+        // Endereço em grid
+        const col1 = contentWidth * 0.7;
+        const col2 = contentWidth * 0.3;
         
         // Logradouro e Número
-        addText('Logradouro:', margin, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.endereco?.logradouro || '', margin + 35, yPosition);
-        addText('Nº:', margin + 120, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.endereco?.numero || '', margin + 130, yPosition);
-        yPosition += 12; // Reduzido de 15 para 12
+        addRect(margin, yPosition, col1, 8);
+        addRect(margin + col1, yPosition, col2, 8);
+        
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.text('LOGRADOURO:', margin + 2, yPosition + 3);
+        doc.text('NÚMERO:', margin + col1 + 2, yPosition + 3);
+        
+        doc.setFont('helvetica', 'normal');
+        addText(dadosUsuario.endereco?.logradouro || '', margin + 2, yPosition + 6.5, { maxWidth: col1 - 4 });
+        doc.text(dadosUsuario.endereco?.numero || '', margin + col1 + 2, yPosition + 6.5);
+        yPosition += 8;
         
         // Bairro e CEP
-        addText('Bairro:', margin, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.endereco?.bairro || '', margin + 25, yPosition);
-        addText('CEP:', margin + 100, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.endereco?.cep || '', margin + 120, yPosition);
-        yPosition += 12; // Reduzido de 15 para 12
+        addRect(margin, yPosition, col1, 8);
+        addRect(margin + col1, yPosition, col2, 8);
+        
+        doc.setFont('helvetica', 'bold');
+        doc.text('BAIRRO:', margin + 2, yPosition + 3);
+        doc.text('CEP:', margin + col1 + 2, yPosition + 3);
+        
+        doc.setFont('helvetica', 'normal');
+        addText(dadosUsuario.endereco?.bairro || '', margin + 2, yPosition + 6.5, { maxWidth: col1 - 4 });
+        doc.text(dadosUsuario.endereco?.cep || '', margin + col1 + 2, yPosition + 6.5);
+        yPosition += 8;
         
         // Cidade e UF
-        addText('Cidade:', margin, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.endereco?.cidade || '', margin + 25, yPosition);
-        addText('UF:', margin + 120, yPosition, { fontStyle: 'bold' });
-        addText(dadosUsuario.endereco?.uf || '', margin + 135, yPosition);
-        yPosition += 15; // Reduzido de 20 para 15
+        addRect(margin, yPosition, col1, 8);
+        addRect(margin + col1, yPosition, col2, 8);
         
-        // Dados acadêmicos (se for aluno)
+        doc.setFont('helvetica', 'bold');
+        doc.text('CIDADE:', margin + 2, yPosition + 3);
+        doc.text('UF:', margin + col1 + 2, yPosition + 3);
+        
+        doc.setFont('helvetica', 'normal');
+        addText(dadosUsuario.endereco?.cidade || '', margin + 2, yPosition + 6.5, { maxWidth: col1 - 4 });
+        doc.text(dadosUsuario.endereco?.uf || '', margin + col1 + 2, yPosition + 6.5);
+        yPosition += 12;
+        
+        // === DADOS ACADÊMICOS (se aluno) ===
+        
         if (dadosUsuario.funcao === 'ALUNO') {
-          addText('DADOS ACADÊMICOS', margin, yPosition, {
-            fontSize: 14,
-            fontStyle: 'bold'
-          });
-          yPosition += 8; // Reduzido de 10 para 8
-          addLine(margin, yPosition, pageWidth - margin, yPosition);
-          yPosition += 12; // Reduzido de 15 para 12
+          doc.setFillColor(230, 230, 230);
+          doc.rect(margin, yPosition, contentWidth, 8, 'F');
+          doc.setFontSize(11);
+          doc.setFont('helvetica', 'bold');
+          doc.text('DADOS ACADÊMICOS', margin + 2, yPosition + 6);
+          yPosition += 10;
           
-          // Série e Período
-          addText('Série:', margin, yPosition, { fontStyle: 'bold' });
-          addText(dadosUsuario.serie ? `${dadosUsuario.serie}º ano` : '', margin + 25, yPosition);
-          addText('Período:', margin + 80, yPosition, { fontStyle: 'bold' });
-          addText(dadosUsuario.periodo || '', margin + 115, yPosition);
-          yPosition += 12; // Reduzido de 15 para 12
+          // Grade acadêmica (4 colunas)
+          const colAcad = contentWidth / 4;
           
-          // Turma e Turno
-          addText('Turma:', margin, yPosition, { fontStyle: 'bold' });
-          addText(dadosUsuario.turma || '', margin + 25, yPosition);
-          addText('Turno:', margin + 80, yPosition, { fontStyle: 'bold' });
-          addText(dadosUsuario.turno || '', margin + 110, yPosition);
-          yPosition += 15; // Reduzido de 20 para 15
+          addRect(margin, yPosition, colAcad, 8);
+          addRect(margin + colAcad, yPosition, colAcad, 8);
+          addRect(margin + (colAcad * 2), yPosition, colAcad, 8);
+          addRect(margin + (colAcad * 3), yPosition, colAcad, 8);
+          
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'bold');
+          doc.text('SÉRIE:', margin + 2, yPosition + 3);
+          doc.text('PERÍODO:', margin + colAcad + 2, yPosition + 3);
+          doc.text('TURMA:', margin + (colAcad * 2) + 2, yPosition + 3);
+          doc.text('TURNO:', margin + (colAcad * 3) + 2, yPosition + 3);
+          
+          doc.setFont('helvetica', 'normal');
+          doc.text(dadosUsuario.serie ? `${dadosUsuario.serie}º` : '', margin + 2, yPosition + 6.5);
+          doc.text(dadosUsuario.periodo || '', margin + colAcad + 2, yPosition + 6.5);
+          doc.text(dadosUsuario.turma || '', margin + (colAcad * 2) + 2, yPosition + 6.5);
+          doc.text(dadosUsuario.turno || '', margin + (colAcad * 3) + 2, yPosition + 6.5);
+          yPosition += 12;
         }
         
-        // Regras da biblioteca
-        addText('REGRAS DA BIBLIOTECA', margin, yPosition, {
-          fontSize: 14,
-          fontStyle: 'bold'
-        });
-        yPosition += 8; // Reduzido de 10 para 8
-        addLine(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 12; // Reduzido de 15 para 12
+        // === REGRAS COMPACTAS ===
         
-        const regras = [
-          '• Prazo de empréstimo: 7 dias (renovável por mais 7 dias)',
-          '• Limite de livros: 3 livros por usuário',
-          '• É obrigatório apresentar a carteirinha ou documento com foto',
-          '• Danos ou perda do livro: pagamento do valor integral',
-          '• Manter silêncio e organização no ambiente'
+        doc.setFillColor(230, 230, 230);
+        doc.rect(margin, yPosition, contentWidth, 8, 'F');
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text('REGRAS DA BIBLIOTECA', margin + 2, yPosition + 6);
+        yPosition += 10;
+        
+        const regrasCompactas = [
+          '• Prazo: 7 dias (renovável) • Limite: 3 livros • Documento obrigatório',
+          '• Danos/perda: pagamento integral • Manter silêncio e organização'
         ];
         
-        regras.forEach(regra => {
-          addText(regra, margin, yPosition, { fontSize: 10 });
-          yPosition += 8; // Reduzido de 10 para 8
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        regrasCompactas.forEach(regra => {
+          doc.text(regra, margin + 2, yPosition);
+          yPosition += 5;
         });
         
-        yPosition += 8; // Reduzido de 10 para 8
+        yPosition += 8;
         
-        // Assinaturas
-        addText('ASSINATURAS', margin, yPosition, {
-          fontSize: 14,
-          fontStyle: 'bold'
+        // === ASSINATURAS ===
+        
+        doc.setFillColor(230, 230, 230);
+        doc.rect(margin, yPosition, contentWidth, 8, 'F');
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.text('ASSINATURAS E RESPONSABILIDADE', margin + 2, yPosition + 6);
+        yPosition += 15;
+        
+        // Caixas de assinatura
+        const sigWidth = (contentWidth - 10) / 2;
+        
+        // Usuário
+        addRect(margin, yPosition, sigWidth, 20);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.text('USUÁRIO/RESPONSÁVEL:', margin + 2, yPosition + 4);
+        addLine(margin + 5, yPosition + 15, margin + sigWidth - 5, yPosition + 15);
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Assinatura', margin + (sigWidth/2) - 10, yPosition + 18);
+        
+        // Bibliotecário
+        addRect(margin + sigWidth + 5, yPosition, sigWidth, 20);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.text('BIBLIOTECÁRIO(A):', margin + sigWidth + 7, yPosition + 4);
+        addLine(margin + sigWidth + 10, yPosition + 15, margin + contentWidth - 5, yPosition + 15);
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Assinatura e Carimbo', margin + sigWidth + (sigWidth/2) - 15, yPosition + 18);
+        
+        yPosition += 25;
+        
+        // === RODAPÉ ===
+        
+        // Garantir que o rodapé fique no final da página
+        const rodapeY = pageHeight - 25;
+        
+        // Linha separadora
+        addLine(margin, rodapeY - 5, pageWidth - margin, rodapeY - 5, 0.2);
+        
+        // Informações do rodapé
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        const dataAtual = new Date().toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit', 
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
         });
-        yPosition += 8; // Reduzido de 10 para 8
-        addLine(margin, yPosition, pageWidth - margin, yPosition);
-        yPosition += 15; // Reduzido de 20 para 15
         
-        // Linha para assinatura do usuário
-        addLine(margin, yPosition, margin + 80, yPosition);
-        addText('Usuário', margin + 30, yPosition + 6, { fontSize: 10 }); // Reduzido de +8 para +6
+        doc.text(`Emitido em: ${dataAtual}`, margin, rodapeY);
+        doc.text('SIGEB - Sistema de Gerenciamento de Biblioteca Escolar', margin, rodapeY + 4);
         
-        // Linha para assinatura do responsável
-        addLine(margin + 100, yPosition, margin + 180, yPosition);
-        addText('Bibliotecário(a)', margin + 120, yPosition + 6, { fontSize: 10 }); // Reduzido de +8 para +6
-        
-        yPosition += 15; // Reduzido de 20 para 15
-        
-        // Rodapé (movido para o final da página)
-        const pageHeight = doc.internal.pageSize.getHeight();
-        const footerPosition = pageHeight - 30;
-        
-        // Data de emissão na parte inferior
-        const dataAtual = new Date().toLocaleDateString('pt-BR');
-        addText('Emitido em: ' + dataAtual, margin, footerPosition, {
-          fontSize: 10,
-          fontStyle: 'italic'
-        });
-        
-        // Sistema info no rodapé
-        addText('SIGEB - Sistema de Gerenciamento de Biblioteca Escolar', margin, footerPosition + 10, {
-          fontSize: 8,
-          fontStyle: 'italic'
-        });
+        // Número da página
+        doc.text('Página 1/1', pageWidth - margin - 20, rodapeY);
         
         return doc;
       }

@@ -180,6 +180,22 @@
       font-weight: 500;
     }
 
+    .ranking-card {
+      background: linear-gradient(135deg, #fff 0%, #f8f9ff 100%);
+      border: 2px solid #4facfe20;
+      transition: all 0.4s ease;
+    }
+
+    .ranking-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 15px 35px rgba(79, 172, 254, 0.2);
+      border-color: #4facfe;
+    }
+
+    .ranking-card::before {
+      background: linear-gradient(45deg, #4facfe, #00f2fe);
+    }
+
     .recent-activities {
       background: white;
       padding: 20px;
@@ -292,6 +308,104 @@
       font-size: 1.3rem;
     }
 
+    /* Estilos do Ranking de Leitores */
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      margin-bottom: 10px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      border-left: 4px solid #e9ecef;
+    }
+
+    .ranking-item:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .ranking-top {
+      border-left-color: #4facfe !important;
+      background: linear-gradient(135deg, #fff 0%, #f8f9ff 100%);
+    }
+
+    .ranking-top:nth-child(1) {
+      border-left-color: #ffd700 !important;
+    }
+
+    .ranking-top:nth-child(2) {
+      border-left-color: #c0c0c0 !important;
+    }
+
+    .ranking-top:nth-child(3) {
+      border-left-color: #cd7f32 !important;
+    }
+
+    .ranking-position {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-right: 20px;
+      min-width: 60px;
+    }
+
+    .position-number {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #666;
+      margin-top: 2px;
+    }
+
+    .ranking-info {
+      flex: 1;
+      margin-right: 20px;
+    }
+
+    .ranking-name {
+      margin: 0 0 2px 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+
+    .ranking-function {
+      color: #666;
+      font-size: 0.85rem;
+      background: #e9ecef;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    .ranking-stats {
+      display: flex;
+      gap: 15px;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      min-width: 60px;
+    }
+
+    .stat-number {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #4facfe;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      color: #666;
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
     .chart-container {
       position: relative;
       height: 300px;
@@ -328,6 +442,26 @@
       }
       .chart-card h4 {
         font-size: 1rem;
+      }
+      
+      /* Responsividade do ranking */
+      .ranking-stats {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .stat-item {
+        min-width: 40px;
+      }
+
+      .ranking-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+      }
+
+      .ranking-position {
+        margin-right: 0;
       }
     }
   </style>
@@ -406,6 +540,12 @@
         <i class='bx bx-info-circle tooltip-info' title="Empréstimos em atraso"></i>
         <h3 id="totalAtrasados">...</h3>
         <p>Atrasos</p>
+      </div>
+      <div class="stat-card ranking-card" data-aos="fade-up" data-aos-delay="600" onclick="abrirRankingLeitores()">
+        <i class='bx bx-trophy tooltip-info' title="Clique para ver o ranking completo dos usuários que mais leram"></i>
+        <h3 style="font-size: 1.5rem;"><i class='bx bx-crown' style="color: #ffd700;"></i></h3>
+        <p>Ranking de Leitores</p>
+        <small style="color: #4facfe; font-weight: 500;">Clique para acessar</small>
       </div>
     </div>
 
@@ -488,6 +628,51 @@
             <h4>Carregando atividades...</h4>
             <p>Aguarde um momento.</p>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal do Ranking de Leitores -->
+  <div class="modal fade" id="rankingModal" tabindex="-1" aria-labelledby="rankingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header" style="background: linear-gradient(90deg, #4facfe, #00f2fe); color: white;">
+          <h5 class="modal-title" id="rankingModalLabel">
+            <i class='bx bx-trophy'></i> Ranking dos Leitores
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body p-0">
+          <div class="ranking-header">
+            <div class="container-fluid p-4" style="background: #f8f9fa;">
+              <div class="row">
+                <div class="col-md-8">
+                  <h6 class="mb-2"><i class='bx bx-info-circle text-primary'></i> Como funciona o ranking</h6>
+                  <p class="mb-0 text-muted small">
+                    Os usuários são classificados pelo <strong>total de livros emprestados</strong>. 
+                    Inclui empréstimos ativos e devolvidos.
+                  </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                  <small class="text-muted">
+                    <i class='bx bx-time'></i> Atualizado em tempo real
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="rankingContainer" class="p-4">
+            <!-- Conteúdo do ranking será carregado aqui -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class='bx bx-x'></i> Fechar
+          </button>
+          <button type="button" class="btn btn-primary" onclick="carregarRankingLeitores()">
+            <i class='bx bx-refresh'></i> Atualizar
+          </button>
         </div>
       </div>
     </div>
@@ -779,6 +964,165 @@
             `;
           }
         });
+    }
+
+    // Função para abrir o modal do ranking de leitores
+    function abrirRankingLeitores() {
+      const modal = new bootstrap.Modal(document.getElementById('rankingModal'));
+      modal.show();
+      carregarRankingLeitores();
+    }
+
+    // Função para carregar o ranking dos usuários que mais leram
+    async function carregarRankingLeitores() {
+      const container = document.getElementById('rankingContainer');
+      container.innerHTML = `
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+          </div>
+          <p class="mt-2">Calculando ranking...</p>
+        </div>
+      `;
+
+      try {
+        // Buscar todos os empréstimos
+        const emprestimosSnapshot = await db.collection('emprestimos').get();
+        const contadorLeituras = {};
+
+        // Contar empréstimos por usuário
+        emprestimosSnapshot.forEach(doc => {
+          const data = doc.data();
+          const userId = data.userId;
+          
+          if (userId) {
+            if (!contadorLeituras[userId]) {
+              contadorLeituras[userId] = { total: 0, devolvidos: 0 };
+            }
+            
+            // Contar total de livros emprestados
+            if (data.books && Array.isArray(data.books)) {
+              data.books.forEach(book => {
+                contadorLeituras[userId].total += book.quantity || 1;
+                if (data.status === 'DEVOLVIDO') {
+                  contadorLeituras[userId].devolvidos += book.quantity || 1;
+                }
+              });
+            } else if (data.bookId) {
+              contadorLeituras[userId].total += data.quantity || 1;
+              if (data.status === 'DEVOLVIDO') {
+                contadorLeituras[userId].devolvidos += data.quantity || 1;
+              }
+            }
+          }
+        });
+
+        // Buscar dados dos usuários e criar array para ranking
+        const rankingData = [];
+        for (const userId in contadorLeituras) {
+          try {
+            const userDoc = await db.collection('usuarios').doc(userId).get();
+            if (userDoc.exists) {
+              const userData = userDoc.data();
+              rankingData.push({
+                nome: userData.nome || 'Nome não informado',
+                funcao: userData.funcao || 'Função não informada',
+                totalEmprestimos: contadorLeituras[userId].total,
+                livrosDevolvidos: contadorLeituras[userId].devolvidos,
+                emprestimosAtivos: contadorLeituras[userId].total - contadorLeituras[userId].devolvidos
+              });
+            }
+          } catch (error) {
+            console.log('Erro ao buscar usuário:', userId);
+          }
+        }
+
+        // Ordenar por total de empréstimos (descendente)
+        rankingData.sort((a, b) => b.totalEmprestimos - a.totalEmprestimos);
+
+        // Exibir o ranking
+        if (rankingData.length === 0) {
+          container.innerHTML = `
+            <div class="text-center py-4">
+              <i class='bx bx-book-open' style="font-size: 3rem; color: #6c757d;"></i>
+              <h5 class="mt-3 text-muted">Nenhum empréstimo registrado</h5>
+              <p class="text-muted">Ainda não há atividade de leitura para exibir.</p>
+            </div>
+          `;
+          return;
+        }
+
+        let html = '';
+        rankingData.forEach((usuario, index) => {
+          const posicao = index + 1;
+          let medalha = '';
+          let corMedalha = '';
+          
+          if (posicao === 1) {
+            medalha = 'bx-medal';
+            corMedalha = '#ffd700'; // Ouro
+          } else if (posicao === 2) {
+            medalha = 'bx-medal';
+            corMedalha = '#c0c0c0'; // Prata
+          } else if (posicao === 3) {
+            medalha = 'bx-medal';
+            corMedalha = '#cd7f32'; // Bronze
+          } else {
+            medalha = 'bx-user';
+            corMedalha = '#6c757d';
+          }
+
+          const porcentagemDevolucao = usuario.totalEmprestimos > 0 
+            ? Math.round((usuario.livrosDevolvidos / usuario.totalEmprestimos) * 100) 
+            : 0;
+
+          html += `
+            <div class="ranking-item ${posicao <= 3 ? 'ranking-top' : ''}" data-position="${posicao}">
+              <div class="ranking-position">
+                <i class='bx ${medalha}' style="color: ${corMedalha}; font-size: 1.5rem;"></i>
+                <span class="position-number">${posicao}º</span>
+              </div>
+              <div class="ranking-info">
+                <h6 class="ranking-name">${usuario.nome}</h6>
+                <small class="ranking-function">${usuario.funcao}</small>
+              </div>
+              <div class="ranking-stats">
+                <div class="stat-item">
+                  <span class="stat-number">${usuario.totalEmprestimos}</span>
+                  <span class="stat-label">Total</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number">${usuario.livrosDevolvidos}</span>
+                  <span class="stat-label">Devolvidos</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number">${usuario.emprestimosAtivos}</span>
+                  <span class="stat-label">Ativos</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number">${porcentagemDevolucao}%</span>
+                  <span class="stat-label">Taxa Retorno</span>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+
+      } catch (error) {
+        console.error('Erro ao carregar ranking:', error);
+        container.innerHTML = `
+          <div class="text-center py-4">
+            <i class='bx bx-error' style="font-size: 3rem; color: #dc3545;"></i>
+            <h5 class="mt-3 text-danger">Erro ao carregar ranking</h5>
+            <p class="text-muted">Não foi possível buscar os dados dos leitores.</p>
+            <button class="btn btn-primary" onclick="carregarRankingLeitores()">
+              <i class='bx bx-refresh'></i> Tentar Novamente
+            </button>
+          </div>
+        `;
+      }
     }
 
     // Função para criar gráfico de status dos empréstimos

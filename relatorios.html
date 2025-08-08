@@ -65,6 +65,7 @@
             <option value="livros">Livros</option>
             <option value="usuarios">Usuários</option>
             <option value="emprestimos">Empréstimos</option>
+            <option value="leitores">Ranking de Leitores</option>
             <option value="advertencias">Advertências</option>
           </select>
         </div>
@@ -107,6 +108,13 @@
             <option value="Atrasado">Atrasado</option>
           </select>
         </div>
+        <div class="col-md-3 d-none" id="leitoresFilters">
+          <label class="form-label" for="leitoresOrdem">Ordenação</label>
+          <select class="form-select" id="leitoresOrdem" name="leitoresOrdem">
+            <option value="desc">Maior para Menor</option>
+            <option value="asc">Menor para Maior</option>
+          </select>
+        </div>
         <div class="col-md-3">
           <button class="btn btn-gradient w-100" id="btnGerarRelatorio"><i class='bx bx-printer'></i> Gerar Relatório</button>
         </div>
@@ -129,6 +137,33 @@
         <div class="col-md-3">
           <button class="btn btn-outline-secondary w-100" onclick="document.getElementById('dataInicio').value=''; document.getElementById('dataFim').value='';">
             <i class='bx bx-refresh'></i> Limpar Datas
+          </button>
+        </div>
+      </div>
+      <!-- Filtros de data para ranking de leitores -->
+      <div class="row g-3 align-items-end mt-2" id="leitoresDateFilters" style="display: none;">
+        <div class="col-md-3">
+          <label class="form-label" for="leitoresDataInicio">Data Início</label>
+          <input type="date" class="form-control" id="leitoresDataInicio" name="leitoresDataInicio">
+          <small class="text-muted">Devoluções a partir desta data</small>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="leitoresDataFim">Data Fim</label>
+          <input type="date" class="form-control" id="leitoresDataFim" name="leitoresDataFim">
+          <small class="text-muted">Devoluções até esta data</small>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label" for="leitoresLimite">Limite de Resultados</label>
+          <select class="form-select" id="leitoresLimite" name="leitoresLimite">
+            <option value="10">Top 10</option>
+            <option value="20">Top 20</option>
+            <option value="50">Top 50</option>
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <button class="btn btn-outline-secondary w-100" onclick="document.getElementById('leitoresDataInicio').value=''; document.getElementById('leitoresDataFim').value=''; document.getElementById('leitoresLimite').value='10';">
+            <i class='bx bx-refresh'></i> Limpar Filtros
           </button>
         </div>
       </div>
@@ -629,6 +664,254 @@
         }
       }
 
+      if (reportType.value === 'leitores') {
+        const ordem = document.getElementById('leitoresOrdem').value;
+        const dataInicio = document.getElementById('leitoresDataInicio').value;
+        const dataFim = document.getElementById('leitoresDataFim').value;
+        const limite = document.getElementById('leitoresLimite').value;
+
+        try {
+          const snapshotEmprestimos = await db.collection('emprestimos')
+            .where('status', '==', 'DEVOLVIDO')
+            .get();
+
+          if (snapshotEmprestimos.empty) {
+            html = '<p>Nenhum livro foi devolvido ainda para gerar o ranking de leitores.</p>';
+          } else {
+            // Converter datas do filtro para objetos Date para comparação
+            let dataInicioObj = null;
+            let dataFimObj = null;
+            
+            if (dataInicio) {
+              dataInicioObj = new Date(dataInicio);
+              dataInicioObj.setHours(0, 0, 0, 0);
+            }
+            
+            if (dataFim) {
+              dataFimObj = new Date(dataFim);
+              dataFimObj.setHours(23, 59, 59, 999);
+            }
+
+            // Mapa para contar livros por usuário
+            const leitoresPorUsuario = new Map();
+
+            for (const doc of snapshotEmprestimos.docs) {
+              const emprestimo = doc.data();
+              
+              // Filtro por data de devolução real
+              let passaFiltroPorData = true;
+              if (dataInicioObj || dataFimObj) {
+                let dataDevolucaoObj = null;
+                if (emprestimo.actualReturnDate) {
+                  const dateParts = emprestimo.actualReturnDate.split('/');
+                  if (dateParts.length === 3) {
+                    dataDevolucaoObj = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                    dataDevolucaoObj.setHours(0, 0, 0, 0);
+                  }
+                }
+                
+                if (dataDevolucaoObj) {
+                  if (dataInicioObj && dataDevolucaoObj < dataInicioObj) {
+                    passaFiltroPorData = false;
+                  }
+                  if (dataFimObj && dataDevolucaoObj > dataFimObj) {
+                    passaFiltroPorData = false;
+                  }
+                } else {
+                  // Se não há data de devolução real, usar data de empréstimo como fallback
+                  if (emprestimo.loanDate) {
+                    const dateParts = emprestimo.loanDate.split('/');
+                    if (dateParts.length === 3) {
+                      dataDevolucaoObj = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                      dataDevolucaoObj.setHours(0, 0, 0, 0);
+                      
+                      if (dataInicioObj && dataDevolucaoObj < dataInicioObj) {
+                        passaFiltroPorData = false;
+                      }
+                      if (dataFimObj && dataDevolucaoObj > dataFimObj) {
+                        passaFiltroPorData = false;
+                      }
+                    } else if (dataInicioObj || dataFimObj) {
+                      passaFiltroPorData = false;
+                    }
+                  } else if (dataInicioObj || dataFimObj) {
+                    passaFiltroPorData = false;
+                  }
+                }
+              }
+              
+              if (!passaFiltroPorData) continue;
+
+              // Contar livros por usuário
+              if (Array.isArray(emprestimo.books)) {
+                const totalLivros = emprestimo.books.reduce((total, book) => total + (book.quantity || 1), 0);
+                
+                if (leitoresPorUsuario.has(emprestimo.userId)) {
+                  leitoresPorUsuario.get(emprestimo.userId).totalLivros += totalLivros;
+                  leitoresPorUsuario.get(emprestimo.userId).emprestimos += 1;
+                } else {
+                  leitoresPorUsuario.set(emprestimo.userId, {
+                    userId: emprestimo.userId,
+                    totalLivros: totalLivros,
+                    emprestimos: 1,
+                    nomeUsuario: 'Carregando...',
+                    matriculaUsuario: '',
+                    funcaoUsuario: ''
+                  });
+                }
+              }
+            }
+
+            // Buscar dados dos usuários
+            for (const [userId, userData] of leitoresPorUsuario) {
+              try {
+                const userDoc = await db.collection('usuarios').doc(userId).get();
+                if (userDoc.exists) {
+                  const user = userDoc.data();
+                  userData.nomeUsuario = user.nome || 'Nome não informado';
+                  userData.matriculaUsuario = user.matricula || '';
+                  userData.funcaoUsuario = user.funcao || user.papel || '';
+                }
+              } catch (error) {
+                console.error('Erro ao buscar usuário:', error);
+                userData.nomeUsuario = 'Erro ao carregar';
+              }
+            }
+
+            // Converter para array e ordenar
+            let leitoresArray = Array.from(leitoresPorUsuario.values());
+            
+            // Ordenar por total de livros
+            if (ordem === 'desc') {
+              leitoresArray.sort((a, b) => b.totalLivros - a.totalLivros);
+            } else {
+              leitoresArray.sort((a, b) => a.totalLivros - b.totalLivros);
+            }
+
+            // Aplicar limite se especificado
+            if (limite && parseInt(limite) > 0) {
+              leitoresArray = leitoresArray.slice(0, parseInt(limite));
+            }
+
+            if (leitoresArray.length === 0) {
+              html = '<p>Nenhum leitor encontrado com os filtros selecionados.</p>';
+            } else {
+              html = `
+                <div class="row mb-4">
+                  <div class="col-md-4">
+                    <div class="card text-center border-success">
+                      <div class="card-body">
+                        <h4 class="text-success mb-1">${leitoresArray.length}</h4>
+                        <small class="text-muted">Leitores Ativos</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="card text-center border-primary">
+                      <div class="card-body">
+                        <h4 class="text-primary mb-1">${leitoresArray.reduce((total, leitor) => total + leitor.totalLivros, 0)}</h4>
+                        <small class="text-muted">Total de Livros Lidos</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="card text-center border-warning">
+                      <div class="card-body">
+                        <h4 class="text-warning mb-1">${Math.round(leitoresArray.reduce((total, leitor) => total + leitor.totalLivros, 0) / leitoresArray.length)}</h4>
+                        <small class="text-muted">Média por Leitor</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <table class="table table-bordered table-sm">
+                  <thead class="table-primary">
+                    <tr>
+                      <th>Posição</th>
+                      <th>Nome</th>
+                      <th>Matrícula</th>
+                      <th>Função</th>
+                      <th>Livros Lidos</th>
+                      <th>Empréstimos</th>
+                      <th>Média por Empréstimo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+              `;
+
+              leitoresArray.forEach((leitor, index) => {
+                const posicao = index + 1;
+                const mediaPorEmprestimo = (leitor.totalLivros / leitor.emprestimos).toFixed(1);
+                
+                // Definir classe CSS baseada na posição
+                let rowClass = '';
+                if (posicao === 1) rowClass = 'table-warning'; // Ouro
+                else if (posicao === 2) rowClass = 'table-secondary'; // Prata
+                else if (posicao === 3) rowClass = 'table-info'; // Bronze
+
+                // Ícone de medalha para os 3 primeiros
+                let medalha = '';
+                if (posicao === 1) medalha = '🥇';
+                else if (posicao === 2) medalha = '🥈';
+                else if (posicao === 3) medalha = '🥉';
+
+                html += `
+                  <tr class="${rowClass}">
+                    <td class="text-center">
+                      <strong>${medalha} ${posicao}º</strong>
+                    </td>
+                    <td><strong>${leitor.nomeUsuario}</strong></td>
+                    <td>${leitor.matriculaUsuario || 'N/A'}</td>
+                    <td>${leitor.funcaoUsuario || 'N/A'}</td>
+                    <td class="text-center">
+                      <span class="badge bg-success fs-6">${leitor.totalLivros}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge bg-primary">${leitor.emprestimos}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge bg-info">${mediaPorEmprestimo}</span>
+                    </td>
+                  </tr>
+                `;
+              });
+
+              html += '</tbody></table>';
+              
+              // Adiciona estatísticas resumidas
+              html += `
+                <div class="mt-4">
+                  <h5>Resumo do Ranking:</h5>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p><strong>Total de leitores encontrados:</strong> ${leitoresArray.length}</p>
+                      <p><strong>Livros lidos no período:</strong> ${leitoresArray.reduce((total, leitor) => total + leitor.totalLivros, 0)}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p><strong>Empréstimos concluídos:</strong> ${leitoresArray.reduce((total, leitor) => total + leitor.emprestimos, 0)}</p>
+                      ${dataInicio || dataFim ? `<p><strong>Período:</strong> ${dataInicio ? new Date(dataInicio).toLocaleDateString('pt-BR') : 'Início'} até ${dataFim ? new Date(dataFim).toLocaleDateString('pt-BR') : 'Fim'}</p>` : ''}
+                    </div>
+                  </div>
+                  
+                  <div class="alert alert-info mt-3">
+                    <h6><i class='bx bx-info-circle'></i> Como interpretar este ranking:</h6>
+                    <ul class="mb-0">
+                      <li><strong>Livros Lidos:</strong> Total de livros devolvidos pelo usuário</li>
+                      <li><strong>Empréstimos:</strong> Número de vezes que o usuário fez empréstimos</li>
+                      <li><strong>Média por Empréstimo:</strong> Quantos livros em média o usuário lê por empréstimo</li>
+                      <li><strong>🥇🥈🥉:</strong> Medalhas para os 3 primeiros colocados</li>
+                    </ul>
+                  </div>
+                </div>
+              `;
+            }
+          }
+        } catch (error) {
+          html = `<p class="text-danger">Erro ao carregar ranking de leitores: ${error.message}</p>`;
+          console.error('Erro ao buscar ranking de leitores:', error);
+        }
+      }
+
       reportResult.innerHTML = html;
     });
 
@@ -637,16 +920,24 @@
       document.getElementById('livrosFilters').classList.toggle('d-none', this.value !== 'livros');
       document.getElementById('usuariosFilters').classList.toggle('d-none', this.value !== 'usuarios');
       document.getElementById('emprestimosFilters').classList.toggle('d-none', this.value !== 'emprestimos');
+      document.getElementById('leitoresFilters').classList.toggle('d-none', this.value !== 'leitores');
       
-      // Controla a exibição dos filtros de data dos empréstimos
+      // Controla a exibição dos filtros de data
       const emprestimosDateFilters = document.getElementById('emprestimosDateFilters');
+      const leitoresDateFilters = document.getElementById('leitoresDateFilters');
       const otherReportsActions = document.getElementById('otherReportsActions');
       
       if (this.value === 'emprestimos') {
         emprestimosDateFilters.style.display = 'flex';
+        leitoresDateFilters.style.display = 'none';
+        otherReportsActions.style.display = 'none';
+      } else if (this.value === 'leitores') {
+        emprestimosDateFilters.style.display = 'none';
+        leitoresDateFilters.style.display = 'flex';
         otherReportsActions.style.display = 'none';
       } else {
         emprestimosDateFilters.style.display = 'none';
+        leitoresDateFilters.style.display = 'none';
         otherReportsActions.style.display = 'flex';
       }
     });
@@ -661,6 +952,7 @@
       if (reportType === 'livros') titulo = 'Relatório de Livros';
       if (reportType === 'usuarios') titulo = 'Relatório de Usuários';
       if (reportType === 'emprestimos') titulo = 'Relatório de Empréstimos';
+      if (reportType === 'leitores') titulo = 'Ranking de Leitores';
       if (reportType === 'advertencias') titulo = 'Relatório de Advertências';
 
       // Adiciona informações de filtro ao título
@@ -672,6 +964,22 @@
         if (dataInicio || dataFim || situacao) {
           let filtros = [];
           if (situacao) filtros.push(`Situação: ${situacao}`);
+          if (dataInicio) filtros.push(`De: ${new Date(dataInicio).toLocaleDateString('pt-BR')}`);
+          if (dataFim) filtros.push(`Até: ${new Date(dataFim).toLocaleDateString('pt-BR')}`);
+          titulo += ` (${filtros.join(', ')})`;
+        }
+      }
+
+      if (reportType === 'leitores') {
+        const dataInicio = document.getElementById('leitoresDataInicio').value;
+        const dataFim = document.getElementById('leitoresDataFim').value;
+        const limite = document.getElementById('leitoresLimite').value;
+        const ordem = document.getElementById('leitoresOrdem').value;
+        
+        if (dataInicio || dataFim || limite || ordem !== 'desc') {
+          let filtros = [];
+          if (limite) filtros.push(`Top ${limite}`);
+          if (ordem === 'asc') filtros.push('Menor para Maior');
           if (dataInicio) filtros.push(`De: ${new Date(dataInicio).toLocaleDateString('pt-BR')}`);
           if (dataFim) filtros.push(`Até: ${new Date(dataFim).toLocaleDateString('pt-BR')}`);
           titulo += ` (${filtros.join(', ')})`;
@@ -769,6 +1077,31 @@
                   doc.text('Legenda de Gravidade:', 14, finalY + 36);
                   doc.setFont('helvetica', 'normal');
                   doc.text('1-7 dias: Atraso Leve  |  8-15 dias: Atraso Moderado  |  16+ dias: Atraso Grave', 14, finalY + 44);
+                }
+              }
+
+              // Adicionar resumo específico para ranking de leitores
+              if (reportType === 'leitores') {
+                const finalY = doc.lastAutoTable.finalY + 10;
+                
+                // Buscar dados dos cards de estatísticas
+                const statsCards = reportResult.querySelectorAll('.card h4');
+                if (statsCards.length >= 3) {
+                  doc.setFontSize(12);
+                  doc.setFont('helvetica', 'bold');
+                  doc.text('RESUMO EXECUTIVO', 14, finalY);
+                  
+                  doc.setFontSize(10);
+                  doc.setFont('helvetica', 'normal');
+                  doc.text(`• Leitores Ativos: ${statsCards[0].textContent}`, 14, finalY + 10);
+                  doc.text(`• Total de Livros Lidos: ${statsCards[1].textContent}`, 14, finalY + 18);
+                  doc.text(`• Média por Leitor: ${statsCards[2].textContent} livros`, 14, finalY + 26);
+                  
+                  doc.setFontSize(9);
+                  doc.setFont('helvetica', 'bold');
+                  doc.text('Como interpretar:', 14, finalY + 36);
+                  doc.setFont('helvetica', 'normal');
+                  doc.text('🥇🥈🥉 Medalhas para os 3 primeiros colocados | Ranking baseado em livros devolvidos', 14, finalY + 44);
                 }
               }
             } else {
@@ -878,6 +1211,31 @@
               doc.text('Legenda de Gravidade:', 14, finalY + 36);
               doc.setFont('helvetica', 'normal');
               doc.text('1-7 dias: Atraso Leve  |  8-15 dias: Atraso Moderado  |  16+ dias: Atraso Grave', 14, finalY + 44);
+            }
+          }
+
+          // Adicionar resumo específico para ranking de leitores
+          if (reportType === 'leitores') {
+            const finalY = doc.lastAutoTable.finalY + 10;
+            
+            // Buscar dados dos cards de estatísticas
+            const statsCards = reportResult.querySelectorAll('.card h4');
+            if (statsCards.length >= 3) {
+              doc.setFontSize(12);
+              doc.setFont('helvetica', 'bold');
+              doc.text('RESUMO EXECUTIVO', 14, finalY);
+              
+              doc.setFontSize(10);
+              doc.setFont('helvetica', 'normal');
+              doc.text(`• Leitores Ativos: ${statsCards[0].textContent}`, 14, finalY + 10);
+              doc.text(`• Total de Livros Lidos: ${statsCards[1].textContent}`, 14, finalY + 18);
+              doc.text(`• Média por Leitor: ${statsCards[2].textContent} livros`, 14, finalY + 26);
+              
+              doc.setFontSize(9);
+              doc.setFont('helvetica', 'bold');
+              doc.text('Como interpretar:', 14, finalY + 36);
+              doc.setFont('helvetica', 'normal');
+              doc.text('🥇🥈🥉 Medalhas para os 3 primeiros colocados | Ranking baseado em livros devolvidos', 14, finalY + 44);
             }
           }
         } else {

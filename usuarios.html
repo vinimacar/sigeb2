@@ -203,6 +203,12 @@
     .print-button:hover {
       color: #1e7e34;
     }
+    .history-button {
+      color: #fd7e14;
+    }
+    .history-button:hover {
+      color: #e55a00;
+    }
     .edit-button {
       color: #4facfe;
     }    .delete-button {
@@ -674,6 +680,121 @@
                 <button type="button" class="btn btn-primary" id="btnSalvarUsuario">Salvar Usuário</button>
               </div>
             </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para Histórico de Leitura -->
+    <div class="modal fade" id="userHistoryModal" tabindex="-1" aria-labelledby="userHistoryModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header bg-warning text-dark">
+            <h5 class="modal-title" id="userHistoryModalLabel">
+              <i class="bx bx-history me-2"></i>Histórico de Leitura
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row mb-3">
+              <div class="col-md-8">
+                <h6 id="userHistoryName" class="mb-0"></h6>
+                <small class="text-muted" id="userHistoryInfo"></small>
+              </div>
+              <div class="col-md-4 text-end">
+                <button type="button" class="btn btn-primary" onclick="printUserHistory()" id="printHistoryBtn">
+                  <i class="bx bx-printer me-2"></i>Imprimir Relatório
+                </button>
+              </div>
+            </div>
+            
+            <div class="row mb-4">
+              <div class="col-md-3">
+                <div class="card text-center border-success">
+                  <div class="card-body">
+                    <h4 class="text-success mb-1" id="totalBooksRead">0</h4>
+                    <small class="text-muted">Livros Lidos</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card text-center border-primary">
+                  <div class="card-body">
+                    <h4 class="text-primary mb-1" id="currentLoans">0</h4>
+                    <small class="text-muted">Empréstimos Ativos</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card text-center border-warning">
+                  <div class="card-body">
+                    <h4 class="text-warning mb-1" id="overdueLoans">0</h4>
+                    <small class="text-muted">Em Atraso</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card text-center border-info">
+                  <div class="card-body">
+                    <h4 class="text-info mb-1" id="averageReadingTime">0</h4>
+                    <small class="text-muted">Dias Médios</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <ul class="nav nav-tabs" id="historyTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">
+                  <i class="bx bx-check-circle me-1"></i>Livros Devolvidos
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button" role="tab">
+                  <i class="bx bx-book-open me-1"></i>Empréstimos Ativos
+                </button>
+              </li>
+            </ul>
+
+            <div class="tab-content" id="historyTabContent">
+              <div class="tab-pane fade show active" id="completed" role="tabpanel">
+                <div class="table-responsive mt-3">
+                  <table class="table table-hover">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Livro</th>
+                        <th>Data Empréstimo</th>
+                        <th>Data Devolução</th>
+                        <th>Dias de Leitura</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="completedLoansTable">
+                      <!-- Preenchido dinamicamente -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              <div class="tab-pane fade" id="active" role="tabpanel">
+                <div class="table-responsive mt-3">
+                  <table class="table table-hover">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Livro</th>
+                        <th>Data Empréstimo</th>
+                        <th>Data Prevista</th>
+                        <th>Dias Restantes</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="activeLoansTable">
+                      <!-- Preenchido dinamicamente -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1433,6 +1554,9 @@
                 <div class="action-buttons">
                   <button class="action-button print-button" data-id="${id}" onclick="handlePrintUser('${id}')" title="Imprimir Ficha">
                     <i class='bx bx-printer'></i>
+                  </button>
+                  <button class="action-button history-button" data-id="${id}" onclick="viewUserHistory('${id}')" title="Histórico de Leitura">
+                    <i class='bx bx-history'></i>
                   </button>
                   <button class="action-button edit-button" data-id="${id}" onclick="handleEditUser('${id}')">
                     <i class='bx bx-edit-alt'></i>
@@ -2827,6 +2951,423 @@
       // Aplica proteções contra extensões
       protegerContraExtensoes();
     });
+
+    // Função para visualizar histórico do usuário
+    async function viewUserHistory(userId) {
+      try {
+        // Busca dados do usuário
+        const userDoc = await db.collection('usuarios').doc(userId).get();
+        if (!userDoc.exists) {
+          showAlert('danger', 'Usuário não encontrado.');
+          return;
+        }
+
+        const userData = userDoc.data();
+        
+        // Atualiza informações do usuário no modal
+        document.getElementById('userHistoryName').textContent = userData.nome || 'N/A';
+        document.getElementById('userHistoryInfo').textContent = 
+          `Matrícula: ${userData.matricula || 'N/A'} | Função: ${userData.funcao || 'N/A'}`;
+
+        // Busca empréstimos do usuário
+        const loansSnapshot = await db.collection('emprestimos')
+          .where('userId', '==', userId)
+          .get();
+
+        const completedLoans = [];
+        const activeLoans = [];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        for (const loanDoc of loansSnapshot.docs) {
+          const loanData = loanDoc.data();
+          const loan = { id: loanDoc.id, ...loanData };
+
+          // Busca informações dos livros
+          if (Array.isArray(loan.books)) {
+            for (const book of loan.books) {
+              try {
+                const bookDoc = await db.collection('livros').doc(book.bookId).get();
+                if (bookDoc.exists) {
+                  const bookData = bookDoc.data();
+                  
+                  const loanEntry = {
+                    bookTitle: bookData.titulo,
+                    loanDate: loan.loanDate,
+                    returnDate: loan.returnDate,
+                    actualReturnDate: loan.actualReturnDate,
+                    status: loan.status,
+                    quantity: book.quantity
+                  };
+
+                  if (loan.status === 'DEVOLVIDO') {
+                    completedLoans.push(loanEntry);
+                  } else {
+                    activeLoans.push(loanEntry);
+                  }
+                }
+              } catch (error) {
+                console.error('Erro ao buscar dados do livro:', error);
+              }
+            }
+          }
+        }
+
+        // Atualiza estatísticas
+        updateUserStatistics(completedLoans, activeLoans, today);
+        
+        // Preenche tabelas
+        populateCompletedLoansTable(completedLoans);
+        populateActiveLoansTable(activeLoans, today);
+
+        // Armazena dados para impressão
+        window.currentUserHistory = {
+          userData,
+          completedLoans,
+          activeLoans,
+          statistics: {
+            totalBooks: completedLoans.length,
+            currentLoans: activeLoans.length,
+            overdueLoans: activeLoans.filter(loan => {
+              const returnDate = parseDate(loan.returnDate);
+              return returnDate < today;
+            }).length
+          }
+        };
+
+        // Abre o modal
+        const modal = new bootstrap.Modal(document.getElementById('userHistoryModal'));
+        modal.show();
+
+      } catch (error) {
+        console.error('Erro ao carregar histórico:', error);
+        showAlert('danger', 'Erro ao carregar histórico do usuário.');
+      }
+    }
+
+    // Função para atualizar estatísticas
+    function updateUserStatistics(completedLoans, activeLoans, today) {
+      const totalBooks = completedLoans.length;
+      const currentLoans = activeLoans.length;
+      
+      // Calcula empréstimos em atraso
+      const overdueLoans = activeLoans.filter(loan => {
+        const returnDate = parseDate(loan.returnDate);
+        return returnDate < today;
+      }).length;
+
+      // Calcula tempo médio de leitura
+      let averageReadingTime = 0;
+      if (completedLoans.length > 0) {
+        const totalDays = completedLoans.reduce((sum, loan) => {
+          const loanDate = parseDate(loan.loanDate);
+          const returnDate = parseDate(loan.actualReturnDate || loan.returnDate);
+          const diffTime = Math.abs(returnDate - loanDate);
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          return sum + diffDays;
+        }, 0);
+        averageReadingTime = Math.round(totalDays / completedLoans.length);
+      }
+
+      // Atualiza elementos do DOM
+      document.getElementById('totalBooksRead').textContent = totalBooks;
+      document.getElementById('currentLoans').textContent = currentLoans;
+      document.getElementById('overdueLoans').textContent = overdueLoans;
+      document.getElementById('averageReadingTime').textContent = averageReadingTime;
+    }
+
+    // Função para preencher tabela de livros devolvidos
+    function populateCompletedLoansTable(completedLoans) {
+      const tbody = document.getElementById('completedLoansTable');
+      
+      if (completedLoans.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhum livro devolvido</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = completedLoans.map(loan => {
+        const loanDate = parseDate(loan.loanDate);
+        const returnDate = parseDate(loan.actualReturnDate || loan.returnDate);
+        const diffTime = Math.abs(returnDate - loanDate);
+        const readingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        return `
+          <tr>
+            <td>
+              <div>
+                <strong>${loan.bookTitle}</strong>
+                ${loan.quantity > 1 ? `<span class="badge bg-secondary ms-2">${loan.quantity}x</span>` : ''}
+              </div>
+            </td>
+            <td>${loan.loanDate}</td>
+            <td>${loan.actualReturnDate || loan.returnDate}</td>
+            <td>
+              <span class="badge ${readingDays <= 7 ? 'bg-success' : readingDays <= 14 ? 'bg-warning' : 'bg-info'}">
+                ${readingDays} dias
+              </span>
+            </td>
+            <td><span class="badge bg-success">Devolvido</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Função para preencher tabela de empréstimos ativos
+    function populateActiveLoansTable(activeLoans, today) {
+      const tbody = document.getElementById('activeLoansTable');
+      
+      if (activeLoans.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhum empréstimo ativo</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = activeLoans.map(loan => {
+        const returnDate = parseDate(loan.returnDate);
+        const diffTime = returnDate - today;
+        const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        let statusClass = 'bg-success';
+        let statusText = 'No Prazo';
+        
+        if (daysRemaining < 0) {
+          statusClass = 'bg-danger';
+          statusText = 'Atrasado';
+        } else if (daysRemaining <= 2) {
+          statusClass = 'bg-warning';
+          statusText = 'Vence em Breve';
+        }
+
+        return `
+          <tr>
+            <td>
+              <div>
+                <strong>${loan.bookTitle}</strong>
+                ${loan.quantity > 1 ? `<span class="badge bg-secondary ms-2">${loan.quantity}x</span>` : ''}
+              </div>
+            </td>
+            <td>${loan.loanDate}</td>
+            <td>${loan.returnDate}</td>
+            <td>
+              <span class="badge ${daysRemaining >= 0 ? 'bg-info' : 'bg-danger'}">
+                ${daysRemaining >= 0 ? `${daysRemaining} dias` : `${Math.abs(daysRemaining)} dias atraso`}
+              </span>
+            </td>
+            <td><span class="badge ${statusClass}">${statusText}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Função para fazer parse de data no formato DD/MM/AAAA
+    function parseDate(dateString) {
+      if (!dateString) return new Date();
+      const parts = dateString.split('/');
+      if (parts.length !== 3) return new Date();
+      return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+
+    // Função para imprimir relatório do histórico
+    function printUserHistory() {
+      if (!window.currentUserHistory) {
+        showAlert('warning', 'Nenhum histórico carregado para impressão.');
+        return;
+      }
+
+      const { userData, completedLoans, activeLoans, statistics } = window.currentUserHistory;
+      const currentDate = new Date().toLocaleDateString('pt-BR');
+
+      const printContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Relatório de Histórico - ${userData.nome}</title>
+    <meta charset="utf-8">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            line-height: 1.6;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            color: #007bff;
+            margin: 0;
+        }
+        .user-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .statistics {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #007bff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .section-title {
+            color: #007bff;
+            border-bottom: 1px solid #007bff;
+            padding-bottom: 5px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-success { background-color: #d4edda; color: #155724; }
+        .status-warning { background-color: #fff3cd; color: #856404; }
+        .status-danger { background-color: #f8d7da; color: #721c24; }
+        .status-info { background-color: #d1ecf1; color: #0c5460; }
+        @media print {
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Relatório de Histórico de Leitura</h1>
+        <p>Sistema de Gerenciamento de Biblioteca - SIGEB</p>
+        <p>Data: ${currentDate}</p>
+    </div>
+
+    <div class="user-info">
+        <h3>Dados do Usuário</h3>
+        <p><strong>Nome:</strong> ${userData.nome || 'N/A'}</p>
+        <p><strong>Matrícula:</strong> ${userData.matricula || 'N/A'}</p>
+        <p><strong>Função:</strong> ${userData.funcao || 'N/A'}</p>
+        <p><strong>Email:</strong> ${userData.email || 'N/A'}</p>
+        <p><strong>Telefone:</strong> ${userData.telefone || 'N/A'}</p>
+    </div>
+
+    <div class="statistics">
+        <div class="stat-card">
+            <div class="stat-number">${statistics.totalBooks}</div>
+            <div>Livros Lidos</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">${statistics.currentLoans}</div>
+            <div>Empréstimos Ativos</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">${statistics.overdueLoans}</div>
+            <div>Em Atraso</div>
+        </div>
+    </div>
+
+    <h3 class="section-title">Livros Devolvidos (${completedLoans.length})</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Livro</th>
+                <th>Data Empréstimo</th>
+                <th>Data Devolução</th>
+                <th>Dias de Leitura</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${completedLoans.length > 0 ? completedLoans.map(loan => {
+              const loanDate = parseDate(loan.loanDate);
+              const returnDate = parseDate(loan.actualReturnDate || loan.returnDate);
+              const diffTime = Math.abs(returnDate - loanDate);
+              const readingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              
+              return `
+                <tr>
+                    <td>${loan.bookTitle} ${loan.quantity > 1 ? `(${loan.quantity}x)` : ''}</td>
+                    <td>${loan.loanDate}</td>
+                    <td>${loan.actualReturnDate || loan.returnDate}</td>
+                    <td>${readingDays} dias</td>
+                </tr>
+              `;
+            }).join('') : '<tr><td colspan="4" style="text-align: center;">Nenhum livro devolvido</td></tr>'}
+        </tbody>
+    </table>
+
+    <h3 class="section-title">Empréstimos Ativos (${activeLoans.length})</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Livro</th>
+                <th>Data Empréstimo</th>
+                <th>Data Prevista</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${activeLoans.length > 0 ? activeLoans.map(loan => {
+              const today = new Date();
+              const returnDate = parseDate(loan.returnDate);
+              const diffTime = returnDate - today;
+              const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              
+              let status = 'No Prazo';
+              if (daysRemaining < 0) status = `Atrasado (${Math.abs(daysRemaining)} dias)`;
+              else if (daysRemaining <= 2) status = `Vence em ${daysRemaining} dias`;
+              
+              return `
+                <tr>
+                    <td>${loan.bookTitle} ${loan.quantity > 1 ? `(${loan.quantity}x)` : ''}</td>
+                    <td>${loan.loanDate}</td>
+                    <td>${loan.returnDate}</td>
+                    <td>${status}</td>
+                </tr>
+              `;
+            }).join('') : '<tr><td colspan="4" style="text-align: center;">Nenhum empréstimo ativo</td></tr>'}
+        </tbody>
+    </table>
+
+    <p style="text-align: center; margin-top: 40px; font-size: 12px; color: #666;">
+        Relatório gerado automaticamente pelo Sistema SIGEB<br>
+        Este documento contém informações confidenciais do usuário
+    </p>
+</body>
+</html>
+      `;
+
+      // Abre janela de impressão
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+
+      showAlert('success', 'Relatório de histórico enviado para impressão!');
+    }
   </script>
 </body>
 </html>

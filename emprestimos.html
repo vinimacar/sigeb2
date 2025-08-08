@@ -4100,23 +4100,11 @@ ${whatsappNumber ? `
 <i class="bx bxl-whatsapp"></i>
 </a>
 ` : ''}
-<div class="btn-group">
-    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Opções de Impressão">
-        <i class="bx bx-printer"></i>
-    </button>
-    <ul class="dropdown-menu">
-        <li>
-            <a class="dropdown-item" href="#" onclick="printBlockedUserReport('${userData.loans.map(l => l.id).join(',')}')">
-                <i class="bx bx-file-blank me-2"></i>Imprimir Relatório
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item" href="#" onclick="printBlockedUserWarning('${userData.loans[0].userId}', '${userData.loans.map(l => l.id).join(',')}')">
-                <i class="bx bx-error-circle me-2"></i>Imprimir Advertência
-            </a>
-        </li>
-    </ul>
-</div>
+<button class="btn btn-outline-primary" 
+        onclick="printBlockedUserWarning('${userData.loans[0].userId}', '${userData.loans.map(l => l.id).join(',')}')" 
+        title="Imprimir Advertência">
+<i class="bx bx-printer"></i>
+</button>
 </div>
 </td>
 </tr>

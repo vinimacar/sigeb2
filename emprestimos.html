@@ -691,15 +691,17 @@ min-width: 0;
 </div>
 <div id="userSearchResults" class="dropdown-menu w-100"></div>
 <input type="hidden" id="selectedUserId">
-<input type="hidden" id="selectedUserEmail">
+<input type="hidden" id="selectedUserPhone">
 <div class="form-text">Selecione o usuário para o empréstimo.</div>
 </div>
 </div>
-<!-- Email do usuário e opção de envio automático -->
-<div class="row mb-3" id="emailSection" style="display: none;">
+<!-- WhatsApp do usuário -->
+<div class="row mb-3" id="whatsappSection" style="display: none;">
 <div class="col-md-8">
-<label class="form-label" for="userEmail">Email do Usuário</label>
-<input type="email" class="form-control" id="userEmail" readonly>
+<label class="form-label" for="userPhone">
+    <i class="bx bxl-whatsapp me-1"></i>WhatsApp do Usuário
+</label>
+<input type="tel" class="form-control" id="userPhone" readonly>
 </div>
 <div class="col-md-4 d-flex align-items-end">
 
@@ -1499,12 +1501,12 @@ document.getElementById('addLoanForm').reset();
 
 // Limpa campos específicos
 document.getElementById('selectedUserId').value = '';
-document.getElementById('selectedUserEmail').value = '';
+document.getElementById('selectedUserPhone').value = '';
 document.getElementById('userSearchResults').innerHTML = '';
 
-// Esconde seção de email
-document.getElementById('emailSection').style.display = 'none';
-document.getElementById('userEmail').value = '';
+// Esconde seção de WhatsApp
+document.getElementById('whatsappSection').style.display = 'none';
+document.getElementById('userPhone').value = '';
 
 // Oculta botão WhatsApp
 document.getElementById('btnEnviarWhatsappForm').style.display = 'none';
@@ -1716,25 +1718,22 @@ a.onclick = (e) => {
 e.preventDefault();
 // Exibe os dados do usuário selecionado em campos abaixo do input (ou em algum local desejado)
 document.getElementById('selectedUserId').value = doc.id;
-document.getElementById('selectedUserEmail').value = userData.email || '';
+document.getElementById('selectedUserPhone').value = userData.telefone || '';
 
 // Verificar pendências do usuário imediatamente
 verificarEmprestimosPendentesAoSelecionar(doc.id);
 
-// Mostrar seção de email se o usuário tiver email
-const emailSection = document.getElementById('emailSection');
-const userEmailInput = document.getElementById('userEmail');
+// Mostrar seção de WhatsApp se o usuário tiver telefone
+const whatsappSection = document.getElementById('whatsappSection');
+const userPhoneInput = document.getElementById('userPhone');
 
-if (userData.email && userData.email.trim() !== '') {
-userEmailInput.value = userData.email;
-emailSection.style.display = 'block';
+if (userData.telefone && userData.telefone.trim() !== '') {
+    userPhoneInput.value = userData.telefone;
+    whatsappSection.style.display = 'block';
 } else {
-emailSection.style.display = 'none';
-// Desmarca o checkbox se não há email
-
-}
-
-// Exemplo: Mostra dados em um bloco abaixo do campo de busca
+    whatsappSection.style.display = 'none';
+    // Limpa o campo se não há telefone
+}// Exemplo: Mostra dados em um bloco abaixo do campo de busca
 let userDetails = `
 <div class="alert alert-info mt-2 mb-0 p-2">
 <div><strong>Nome:</strong> ${userData.nome || '-'}</div>
@@ -3916,8 +3915,8 @@ tbody.innerHTML += `
 <button class="btn btn-outline-primary" onclick="printSimpleWarning('${doc.id}', '${daysLate}', '${warningType}')" title="Imprimir">
 <i class="bx bx-printer"></i>
 </button>
-<button class="btn btn-outline-info" onclick="sendWarningEmail('${doc.id}')" title="Enviar Email">
-<i class="bx bx-envelope"></i>
+<button class="btn btn-outline-success" onclick="sendWarningWhatsApp('${doc.id}')" title="Enviar WhatsApp">
+<i class="bx bxl-whatsapp"></i>
 </button>
 </div>
 </td>
@@ -4101,11 +4100,23 @@ ${whatsappNumber ? `
 <i class="bx bxl-whatsapp"></i>
 </a>
 ` : ''}
-<button class="btn btn-outline-primary" 
-        onclick="printBlockedUserReport('${userData.loans.map(l => l.id).join(',')}')" 
-        title="Imprimir Relatório">
-<i class="bx bx-printer"></i>
-</button>
+<div class="btn-group">
+    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Opções de Impressão">
+        <i class="bx bx-printer"></i>
+    </button>
+    <ul class="dropdown-menu">
+        <li>
+            <a class="dropdown-item" href="#" onclick="printBlockedUserReport('${userData.loans.map(l => l.id).join(',')}')">
+                <i class="bx bx-file-blank me-2"></i>Imprimir Relatório
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" href="#" onclick="printBlockedUserWarning('${userData.loans[0].userId}', '${userData.loans.map(l => l.id).join(',')}')">
+                <i class="bx bx-error-circle me-2"></i>Imprimir Advertência
+            </a>
+        </li>
+    </ul>
+</div>
 </div>
 </td>
 </tr>
@@ -4343,6 +4354,370 @@ doc.save(`Notificacao_Bloqueio_${userData.nome?.replace(/\s+/g, '_') || 'Usuario
 } catch (error) {
 console.error('Erro ao imprimir relatório:', error);
 showAlert('danger', 'Erro ao imprimir relatório.');
+}
+}
+
+// Função para imprimir advertência de usuário bloqueado
+async function printBlockedUserWarning(userId, loanIds) {
+try {
+    // Busca dados do usuário
+    const userDoc = await db.collection('usuarios').doc(userId).get();
+    if (!userDoc.exists) {
+        showAlert('danger', 'Usuário não encontrado.');
+        return;
+    }
+    
+    const userData = userDoc.data();
+    
+    // Busca dados dos empréstimos em atraso
+    const loanIdsArray = loanIds.split(',');
+    const loanPromises = loanIdsArray.map(id => db.collection('emprestimos').doc(id).get());
+    const loanDocs = await Promise.all(loanPromises);
+    
+    const today = getDataBrasilia();
+    today.setHours(0, 0, 0, 0);
+    
+    let maxDaysLate = 0;
+    let totalBooks = [];
+    let loanDetails = [];
+    
+    // Processa cada empréstimo
+    for (const loanDoc of loanDocs) {
+        if (!loanDoc.exists) continue;
+        
+        const loanData = loanDoc.data();
+        
+        // Calcula dias de atraso
+        let daysLate = 0;
+        if (loanData.returnDate) {
+            const dateParts = loanData.returnDate.split('/');
+            if (dateParts.length === 3) {
+                const returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                returnDate.setHours(0, 0, 0, 0);
+                const diffTime = Math.abs(today - returnDate);
+                daysLate = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            }
+        }
+        
+        maxDaysLate = Math.max(maxDaysLate, daysLate);
+        
+        // Busca títulos dos livros
+        if (Array.isArray(loanData.books)) {
+            for (const book of loanData.books) {
+                try {
+                    const bookDoc = await db.collection('livros').doc(book.bookId).get();
+                    if (bookDoc.exists) {
+                        totalBooks.push(`${bookDoc.data().titulo} (${book.quantity})`);
+                    }
+                } catch (error) {
+                    console.error('Erro ao buscar livro:', error);
+                }
+            }
+        }
+        
+        loanDetails.push({
+            registroNumero: loanData.registroNumero,
+            loanDate: loanData.loanDate,
+            returnDate: loanData.returnDate,
+            daysLate: daysLate
+        });
+    }
+    
+    // Determina tipo de advertência baseado no maior atraso
+    let warningType = '';
+    if (maxDaysLate >= 1 && maxDaysLate <= 2) warningType = 'Orientação';
+    else if (maxDaysLate >= 3 && maxDaysLate <= 6) warningType = 'Advertência Leve';
+    else if (maxDaysLate >= 7 && maxDaysLate <= 13) warningType = 'Advertência Grave';
+    else if (maxDaysLate >= 14) warningType = 'Suspensão';
+    
+    const currentDate = formatarDataBrasil(getDataBrasilia());
+    
+    // Gera o HTML para impressão
+    const printContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Advertência por Atraso - ${userData.nome}</title>
+    <meta charset="utf-8">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            line-height: 1.6;
+            color: #333;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #dc3545;
+            padding-bottom: 20px;
+        }
+        .header-content {
+            text-align: center;
+            flex-grow: 1;
+        }
+        .logo { 
+            width: 80px; 
+            height: 80px; 
+            object-fit: contain; 
+        }
+        .system-logo { 
+            width: 120px; 
+            height: auto; 
+            object-fit: contain; 
+            margin: 10px 0; 
+        }
+        .warning-box { 
+            border: 2px solid #dc3545; 
+            padding: 15px; 
+            margin: 20px 0; 
+            background-color: #fff5f5; 
+            border-radius: 5px;
+        }
+        .info-box { 
+            background-color: #f8f9fa; 
+            padding: 15px; 
+            border-left: 4px solid #007bff; 
+            margin: 15px 0; 
+            border-radius: 0 5px 5px 0;
+        }
+        .signature-section { 
+            margin-top: 60px; 
+            display: flex; 
+            justify-content: space-between; 
+            gap: 30px;
+        }
+        .signature-box { 
+            width: 45%; 
+            text-align: center;
+        }
+        .signature-line { 
+            border-top: 1px solid #000; 
+            margin-bottom: 5px; 
+            height: 60px;
+            margin-top: 0;
+        }
+        .signature-label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .loan-detail {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        @media print {
+            .logo { width: 60px; height: 60px; }
+            .system-logo { width: 100px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="logobias.png" alt="Logo da Escola" class="logo" onerror="this.style.display='none'">
+        <div class="header-content">
+            <h2 style="color: #dc3545; margin: 0;">ADVERTÊNCIA POR ATRASO</h2>
+            <h4 style="margin: 5px 0;">${SYSTEM_CONFIG.schoolName}</h4>
+            <img src="SISTEMA DE GERENCIAMENTO DE BIBLIOTECA.png" alt="Logo do Sistema" class="system-logo" onerror="this.style.display='none'">
+            <p style="margin: 5px 0;">Sistema de Gerenciamento de Biblioteca</p>
+            <p style="margin: 5px 0;">Data: ${currentDate}</p>
+        </div>
+        <img src="logobias.png" alt="Logo da Escola" class="logo" onerror="this.style.display='none'" style="opacity: 0.3;">
+    </div>
+
+    <div class="warning-box">
+        <h3 style="color: #dc3545; margin-top: 0;">TIPO: ${warningType.toUpperCase()}</h3>
+        <p><strong>Máximo de Dias de Atraso:</strong> ${maxDaysLate} dias</p>
+        <p><strong>Status:</strong> <span style="color: #dc3545; font-weight: bold;">USUÁRIO BLOQUEADO</span></p>
+    </div>
+
+    <div class="info-box">
+        <h4>Dados do Usuário:</h4>
+        <p><strong>Nome:</strong> ${userData.nome || 'N/A'}</p>
+        <p><strong>Matrícula:</strong> ${userData.matricula || 'N/A'}</p>
+        <p><strong>Função:</strong> ${userData.funcao || 'N/A'}</p>
+        ${userData.telefone ? `<p><strong>Telefone:</strong> ${userData.telefone}</p>` : ''}
+    </div>
+
+    <div class="info-box">
+        <h4>Detalhes dos Empréstimos em Atraso:</h4>
+        ${loanDetails.map(loan => `
+            <div class="loan-detail">
+                <p><strong>Registro:</strong> ${loan.registroNumero || 'N/A'}</p>
+                <p><strong>Data do Empréstimo:</strong> ${loan.loanDate}</p>
+                <p><strong>Data de Devolução:</strong> ${loan.returnDate}</p>
+                <p><strong>Dias de Atraso:</strong> ${loan.daysLate} dias</p>
+            </div>
+        `).join('')}
+        
+        <h5 style="margin-top: 20px;">Livros em Atraso:</h5>
+        <ul>
+            ${totalBooks.map(title => `<li>${title}</li>`).join('')}
+        </ul>
+    </div>
+
+    <div class="warning-box">
+        <h4>Consequências do Bloqueio:</h4>
+        <ul>
+            <li>Impossibilidade de realizar novos empréstimos</li>
+            <li>Bloqueio permanente até regularização</li>
+            <li>Possível aplicação de multa conforme regulamento</li>
+        </ul>
+        
+        <h4>Ações Necessárias:</h4>
+        <ol>
+            <li>Devolução imediata de todos os materiais em atraso</li>
+            <li>Pagamento de eventual multa aplicada</li>
+            <li>Assinatura deste termo de advertência</li>
+            <li>Comparecimento à coordenação da biblioteca</li>
+        </ol>
+    </div>
+
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-label">Assinatura do Usuário</div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div class="signature-label">Assinatura do Responsável</div>
+        </div>
+    </div>
+
+    <p style="text-align: center; margin-top: 30px; font-size: 12px; color: #666;">
+        Este documento foi gerado automaticamente pelo Sistema SIGEB<br>
+        ${SYSTEM_CONFIG.schoolName}<br>
+        Usuário encontra-se <strong>BLOQUEADO</strong> até regularização da situação
+    </p>
+</body>
+</html>
+`;
+
+    // Abre janela de impressão
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+
+    showAlert('success', 'Advertência de usuário bloqueado enviada para impressão!');
+
+} catch (error) {
+    console.error('Erro ao imprimir advertência:', error);
+    showAlert('danger', 'Erro ao gerar advertência para impressão.');
+}
+}
+
+// Função para enviar advertência via WhatsApp
+async function sendWarningWhatsApp(loanId) {
+try {
+const doc = await db.collection('emprestimos').doc(loanId).get();
+if (!doc.exists) {
+showAlert('danger', 'Empréstimo não encontrado.');
+return;
+}
+
+const loanData = doc.data();
+
+// Busca dados do usuário
+const userDoc = await db.collection('usuarios').doc(loanData.userId).get();
+if (!userDoc.exists) {
+showAlert('danger', 'Usuário não encontrado.');
+return;
+}
+
+const userData = userDoc.data();
+
+// Verifica se o usuário tem telefone
+if (!userData.telefone) {
+showAlert('warning', 'Usuário não possui telefone cadastrado para envio via WhatsApp.');
+return;
+}
+
+// Calcula dias de atraso
+const today = getDataBrasilia();
+today.setHours(0, 0, 0, 0);
+let daysLate = 0;
+
+if (loanData.returnDate) {
+const dateParts = loanData.returnDate.split('/');
+if (dateParts.length === 3) {
+const returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+returnDate.setHours(0, 0, 0, 0);
+const diffTime = Math.abs(today - returnDate);
+daysLate = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+}
+
+// Busca títulos dos livros
+let bookTitles = [];
+if (Array.isArray(loanData.books)) {
+for (const book of loanData.books) {
+try {
+const bookDoc = await db.collection('livros').doc(book.bookId).get();
+if (bookDoc.exists) {
+bookTitles.push(bookDoc.data().titulo);
+}
+} catch (error) {
+console.error('Erro ao buscar livro:', error);
+}
+}
+}
+
+// Determina tipo de advertência
+let warningType = '';
+if (daysLate >= 1 && daysLate <= 2) warningType = 'Orientação';
+else if (daysLate >= 3 && daysLate <= 6) warningType = 'Advertência Leve';
+else if (daysLate >= 7 && daysLate <= 13) warningType = 'Advertência Grave';
+else if (daysLate >= 14) warningType = 'Suspensão';
+
+// Monta a mensagem do WhatsApp
+const message = `🚨 *${warningType.toUpperCase()}* - ${SYSTEM_CONFIG.schoolName}
+
+📚 *Livro(s) em atraso:*
+${bookTitles.map(title => `• ${title}`).join('\n')}
+
+👤 *Usuário:* ${userData.nome}
+📅 *Data de Devolução:* ${loanData.returnDate}
+⏰ *Dias de Atraso:* ${daysLate} dias
+
+⚠️ *Ação Necessária:*
+Devolução imediata do(s) material(is) em atraso.
+
+O não cumprimento desta advertência poderá resultar em suspensão de novos empréstimos.
+
+---
+📧 Sistema SIGEB - ${SYSTEM_CONFIG.schoolName}`;
+
+// Limpa o telefone (remove caracteres especiais)
+let phoneNumber = userData.telefone.replace(/\D/g, '');
+
+// Adiciona código do país se não tiver (assume Brasil)
+if (phoneNumber.length === 11 && phoneNumber.startsWith('0')) {
+phoneNumber = '55' + phoneNumber.substring(1);
+} else if (phoneNumber.length === 10) {
+phoneNumber = '55' + phoneNumber;
+} else if (phoneNumber.length === 11 && !phoneNumber.startsWith('55')) {
+phoneNumber = '55' + phoneNumber;
+}
+
+// Codifica a mensagem para URL
+const encodedMessage = encodeURIComponent(message);
+
+// Monta URL do WhatsApp
+const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+
+// Abre WhatsApp Web
+window.open(whatsappUrl, '_blank');
+
+showAlert('success', `Mensagem de advertência enviada para ${userData.nome} via WhatsApp!`);
+
+} catch (error) {
+console.error('Erro ao enviar WhatsApp:', error);
+showAlert('danger', 'Erro ao enviar mensagem via WhatsApp.');
 }
 }
 

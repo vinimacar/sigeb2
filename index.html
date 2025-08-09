@@ -5,29 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SIGEB - Escola Estadual Governador Bias Fortes</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
   <link rel="icon" type="image/png" href="SISTEMA DE GERENCIAMENTO DE BIBLIOTECA.png" />
   <style>
   :root {
-    /* Cores da identidade SIGEB - Educação e Conhecimento */
-    --primary: #0d2847;          /* Azul acadêmico profundo */
-    --secondary: #1a4971;        /* Azul médio educacional */
-    --accent1: #ffd700;          /* Dourado conhecimento */
-    --accent2: #2e8b57;          /* Verde sabedoria */
-    --accent3: #4a90e2;          /* Azul claro confiança */
-    --light-blue: #e8f4fd;       /* Azul muito claro para backgrounds */
-    --danger: #dc3545;           /* Vermelho padrão para erros */
-    --success: #28a745;          /* Verde padrão para sucesso */
-    --warning: #ffc107;          /* Amarelo para avisos */
-    --text-light: #ffffff;       /* Texto branco puro */
-    --text-secondary: #f8f9fa;   /* Texto secundário claro */
-    --text-muted: #e9ecef;       /* Texto suave */
-    --text-dark: #e9eef3;        /* Texto escuro */
-    --shadow-md: 0 8px 25px rgba(13, 40, 71, 0.15);
-    --shadow-lg: 0 15px 35px rgba(13, 40, 71, 0.25);
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Design System Moderno - SIGEB */
+    --primary: #1e293b;          /* Slate-800 - Azul escuro moderno */
+    --secondary: #334155;        /* Slate-700 - Azul médio */
+    --accent: #3b82f6;           /* Blue-500 - Azul vibrante */
+    --accent-light: #60a5fa;     /* Blue-400 - Azul claro */
+    --white: #ffffff;            /* Branco puro */
+    --gray-50: #f8fafc;          /* Background claro */
+    --gray-100: #f1f5f9;         /* Background suave */
+    --gray-900: #0f172a;         /* Texto escuro */
+    --green: #10b981;            /* Emerald-500 - Verde sucesso */
+    --red: #ef4444;              /* Red-500 - Vermelho erro */
+    --amber: #f59e0b;            /* Amber-500 - Amarelo aviso */
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    --radius: 0.5rem;            /* 8px - Border radius padrão */
+    --radius-lg: 0.75rem;        /* 12px - Border radius grande */
+    --transition: all 150ms ease-in-out;
   }
 
   html, body {
@@ -40,558 +41,267 @@
   }
 
   body {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     min-height: 100vh;
     background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-    color: var(--text-light);
+    color: var(--white);
     font-weight: 400;
+    line-height: 1.6;
+    font-size: 16px;
   }    .hero-container {
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding-top: 48px;
-      padding-bottom: 48px;
+      justify-content: center;
+      padding: 2rem 1rem;
       background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
     }
 
     .logo-container {
-      margin-bottom: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      margin-bottom: 2rem;
+      text-align: center;
     }
 
     .school-logo {
-      width: 200px;
-      height: 200px;
-      object-fit: contain;
-      margin-bottom: 1rem;
-      filter: drop-shadow(0 0 40px var(--accent1)) drop-shadow(0 10px 20px rgba(255, 215, 0, 0.4)) drop-shadow(0 0 60px rgba(255, 215, 0, 0.2));
-      border-radius: 50%;
-      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-      padding: 15px;
-      border: 6px solid var(--accent1);
-      transition: var(--transition);
-      position: relative;
-      z-index: 5;
-      box-shadow: 0 0 80px rgba(255, 215, 0, 0.3), 0 8px 32px rgba(0, 0, 0, 0.15);
-    }
-
-    .institutional-logo {
       width: 120px;
       height: 120px;
       object-fit: contain;
-      margin: 0 15px;
-      filter: drop-shadow(0 0 20px var(--accent2)) drop-shadow(0 4px 12px rgba(46, 139, 87, 0.3));
-      border-radius: 50%;
-      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-      padding: 8px;
-      border: 3px solid var(--accent2);
+      margin-bottom: 1rem;
+      border-radius: var(--radius-lg);
+      background: var(--white);
+      padding: 1rem;
+      box-shadow: var(--shadow-lg);
       transition: var(--transition);
     }
 
-    .institutional-logo:hover {
-      transform: scale(1.05) rotate(2deg);
-      filter: drop-shadow(0 0 25px var(--accent2)) drop-shadow(0 6px 16px rgba(46, 139, 87, 0.4));
-      border-color: var(--accent1);
-    }
-
-    .logos-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 1rem;
-    }
-
     .school-logo:hover {
-      transform: scale(1.1) rotate(-3deg);
-      filter: drop-shadow(0 0 60px var(--accent1)) drop-shadow(0 15px 30px rgba(255, 215, 0, 0.5)) drop-shadow(0 0 80px rgba(255, 215, 0, 0.3));
-      border-color: var(--accent2);
-      box-shadow: 0 0 100px rgba(255, 215, 0, 0.4), 0 12px 40px rgba(0, 0, 0, 0.2);
-    }
-
-    .logo-glow {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 300px;
-      height: 300px;
-      background: radial-gradient(circle, var(--accent1) 0%, var(--accent2) 40%, transparent 70%);
-      border-radius: 50%;
-      filter: blur(40px);
-      opacity: 0.4;
-      z-index: 1;
-      animation: pulse 3s ease-in-out infinite alternate;
-    }
-
-    @keyframes pulse {
-      0% { 
-        opacity: 0.3; 
-        transform: translate(-50%, -50%) scale(0.95);
-        filter: blur(40px);
-      }
-      100% { 
-        opacity: 0.5; 
-        transform: translate(-50%, -50%) scale(1.05);
-        filter: blur(35px);
-      }
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-xl);
     }
 
     .hero-title {
-      font-weight: 800;
+      font-weight: 700;
       font-size: 2.5rem;
       margin-bottom: 0.5rem;
-      background: linear-gradient(135deg, var(--accent1) 0%, #fff 50%, var(--accent1) 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      display: inline-block;
-      letter-spacing: 3px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-      position: relative;
-    }
-
-    .hero-title::after {
-      content: '';
-      position: absolute;
-      bottom: -4px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80px;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent2), var(--accent1));
-      border-radius: 2px;
+      color: var(--white);
+      letter-spacing: -0.025em;
     }
 
     .hero-subtitle {
-      color: var(--text-secondary);
+      color: var(--gray-100);
       margin-bottom: 2rem;
-      font-size: 1.2rem;
-      line-height: 1.6;
+      font-size: 1.125rem;
+      font-weight: 400;
+      opacity: 0.9;
+      max-width: 400px;
       text-align: center;
-      max-width: 450px;
-      margin-left: auto;
-      margin-right: auto;
-      opacity: 0.95;
-      font-weight: 500;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
 
     .main-content {
       width: 100%;
-      max-width: 460px;
-      margin: 0 auto;
-      background: linear-gradient(145deg, rgba(13, 40, 71, 0.95) 0%, rgba(26, 73, 113, 0.98) 100%);
-      backdrop-filter: blur(20px);
-      border-radius: 32px;
-      box-shadow: 
-        0 20px 60px rgba(13, 40, 71, 0.3),
-        0 8px 30px rgba(0, 0, 0, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 215, 0, 0.2);
-      padding: 3rem 2.5rem;
-      color: #ffffff;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      animation: slideInUp 0.8s ease-out;
-    }
-
-    .main-content::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent1), transparent);
-      opacity: 0.6;
-    }
-
-    .main-content::after {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(45deg, transparent 30%, rgba(255, 215, 0, 0.03) 50%, transparent 70%);
-      transform: rotate(45deg);
-      pointer-events: none;
-      animation: shimmer 6s ease-in-out infinite;
-    }
-
-    @keyframes slideInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px) scale(0.95);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    @keyframes shimmer {
-      0%, 100% { transform: translateX(-100%) rotate(45deg); }
-      50% { transform: translateX(100%) rotate(45deg); }
+      max-width: 400px;
+      margin: 0 auto 2rem;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 2rem;
+      box-shadow: var(--shadow-xl);
+      transition: var(--transition);
     }
 
     .main-content:hover {
-      transform: translateY(-5px);
-      box-shadow: 
-        0 25px 80px rgba(13, 40, 71, 0.4),
-        0 12px 40px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.15);
-      border-color: rgba(255, 215, 0, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
     }
 
     .form-label {
-      color: #ffd700;
-      font-size: 1rem;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-      margin-bottom: 0.7rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .form-label::before {
-      content: '';
-      width: 4px;
-      height: 4px;
-      background: var(--accent1);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--accent1);
+      color: var(--white);
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      display: block;
     }
 
     .form-control {
-      font-size: 1.1rem;
-      background: rgba(255, 255, 255, 0.08);
-      border: 2px solid rgba(74, 144, 226, 0.3);
-      border-radius: 16px;
-      color: #ffffff;
-      padding: 1rem 1.2rem;
-      font-weight: 500;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      backdrop-filter: blur(10px);
-      box-shadow: 
-        inset 0 1px 4px rgba(0, 0, 0, 0.1),
-        0 1px 0 rgba(255, 255, 255, 0.05);
-      position: relative;
-    }
-
-    .form-control:focus {
-      border-color: #ffd700;
-      background: rgba(255, 255, 255, 0.12);
-      box-shadow: 
-        0 0 0 4px rgba(255, 215, 0, 0.15),
-        inset 0 1px 4px rgba(0, 0, 0, 0.1),
-        0 4px 20px rgba(255, 215, 0, 0.1);
-      outline: none;
-      color: #ffffff;
-      transform: translateY(-1px);
-    }
-
-    .form-control::placeholder {
-      color: rgba(233, 236, 239, 0.7);
-      opacity: 1;
-      transition: opacity 0.3s ease;
-    }
-
-    .form-control:focus::placeholder {
-      opacity: 0.5;
-    }
-
-    .btn-primary, .btn-success, .btn-secondary {
-      font-weight: 700;
-      letter-spacing: 1px;
-      border-radius: 16px;
-      border: none;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      padding: 1rem 2rem;
-      font-size: 1.1rem;
-      text-transform: uppercase;
-      position: relative;
-      overflow: hidden;
-      backdrop-filter: blur(10px);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #4a90e2 0%, #2e8b57 100%);
-      color: #fff;
-      font-weight: 700;
-      box-shadow: 
-        0 6px 20px rgba(46, 139, 87, 0.25),
-        0 2px 10px rgba(0, 0, 0, 0.1);
-      border: 1px solid rgba(255, 215, 0, 0.2);
-    }
-
-    .btn-primary::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
       width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.5s ease;
-    }
-
-    .btn-primary:hover {
-      background: linear-gradient(135deg, #2e8b57 0%, #4a90e2 100%);
-      transform: translateY(-3px) scale(1.02);
-      box-shadow: 
-        0 12px 30px rgba(46, 139, 87, 0.35),
-        0 6px 20px rgba(0, 0, 0, 0.15);
-      border-color: rgba(255, 215, 0, 0.4);
-    }
-
-    .btn-primary:hover::before {
-      left: 100%;
-    }
-
-    .btn-primary:active {
-      transform: translateY(-1px) scale(1.01);
-      transition: transform 0.1s ease;
-    }
-
-    .btn-success {
-      background: linear-gradient(135deg, var(--success) 0%, #20c997 100%);
-      color: var(--text-light);
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-    }
-    .btn-success:hover {
-      background: linear-gradient(135deg, #20c997 0%, var(--success) 100%);
-      color: var(--text-light);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
-    }
-    .btn-secondary {
-      background: linear-gradient(135deg, var(--accent1) 0%, #f39c12 100%);
-      color: var(--text-dark);
-      text-shadow: 1px 1px 2px rgba(255,255,255,0.3);
-      font-weight: 800;
-    }
-    .btn-secondary:hover {
-      background: linear-gradient(135deg, #f39c12 0%, var(--accent1) 100%);
-      color: var(--text-dark);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
-    }
-    .btn-light {
-      color: var(--text-dark);
-      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-      border: 2px solid var(--accent1);
-      font-weight: 600;
-      border-radius: 10px;
-      padding: 0.75rem 1.5rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius);
+      color: var(--white);
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
       transition: var(--transition);
-    }
-    .btn-light:hover {
-      background: linear-gradient(135deg, var(--accent1) 0%, #ffffff 100%);
-      color: var(--text-dark);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-    }
-    .btn-link {
-      color: rgba(255, 215, 0, 0.9) !important;
-      text-decoration: none !important;
-      font-weight: 500;
-      font-size: 0.95rem;
-      padding: 0.5rem 1rem;
-      border-radius: 12px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
       backdrop-filter: blur(5px);
     }
 
-    .btn-link:hover {
-      color: #fff !important;
-      background: rgba(255, 215, 0, 0.1);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
-    .btn-link::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      width: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--accent1), var(--accent2));
-      transition: all 0.3s ease;
-      transform: translateX(-50%);
+    .form-control::placeholder {
+      color: rgba(255, 255, 255, 0.6);
     }
 
-    .btn-link:hover::after {
-      width: 80%;
-    }
-
-    .feature-section {
-      margin-top: 2.5rem;
-      margin-bottom: 2rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2rem;
-      justify-content: center;
-    }
-
-    .feature-card {
-      background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 100%);
-      backdrop-filter: blur(15px);
-      border-radius: 18px;
-      padding: 1.8rem 1.5rem 1.5rem 1.5rem;
-      min-width: 240px;
-      max-width: 280px;
-      flex: 1 1 240px;
+    .btn-primary, .btn-success, .btn-secondary, .btn-light {
+      font-weight: 600;
+      border-radius: var(--radius);
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.875rem;
       transition: var(--transition);
       cursor: pointer;
-      box-shadow: var(--shadow-md);
-      border: 1px solid rgba(255,255,255,0.25);
-      text-align: center;
-      color: var(--text-light);
-      position: relative;
-      overflow: hidden;
-    }
-    .feature-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent1), var(--accent2));
-    }
-    .feature-card:hover {
-      transform: translateY(-10px) scale(1.02);
-      background: linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(46,139,87,0.10) 100%);
-      border: 1px solid var(--accent1);
-      color: #ffffff !important;
-      box-shadow: 0 15px 40px rgba(255, 215, 0, 0.2);
-    }
-    .feature-card:hover h6 {
-      color: #ffffff !important;
-    }
-    .feature-card:hover p {
-      color: #ffffff !important;
-    }
-    .feature-icon {
-      font-size: 2.8rem;
-      margin-bottom: 1rem;
-      background: linear-gradient(135deg, var(--accent1), var(--accent2));
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      display: inline-block;
-      filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
-    }
-
-    .text-danger {
-      color: #ff6b6b !important;
-      font-weight: 600;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-    }
-    .text-success {
-      color: #51cf66 !important;
-      font-weight: 600;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-    }
-    .text-muted {
-      color: #e9ecef !important;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-    }
-
-    /* WhatsApp button highlight */
-    .btn-whatsapp {
-      background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
-      color: #fff !important;
-      border: none;
-      font-weight: 700;
-      border-radius: 18px;
-      box-shadow: 
-        0 8px 25px rgba(37, 211, 102, 0.3),
-        0 3px 12px rgba(0, 0, 0, 0.15);
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      padding: 1rem 2rem;
-      font-size: 1.1rem;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
       display: inline-flex;
       align-items: center;
-      gap: 0.8rem;
-      position: relative;
-      overflow: hidden;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      justify-content: center;
+      gap: 0.5rem;
+      text-decoration: none;
     }
 
-    .btn-whatsapp::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.6s ease;
+    .btn-primary {
+      background: var(--accent);
+      color: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-light);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-light {
+      background: var(--white);
+      color: var(--gray-900);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-light:hover {
+      background: var(--gray-50);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-whatsapp {
+      background: #25d366;
+      color: var(--white);
+      font-weight: 600;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      padding: 0.75rem 1.5rem;
+      font-size: 0.875rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      border: none;
     }
 
     .btn-whatsapp:hover {
-      background: linear-gradient(135deg, #128c7e 0%, #25d366 100%);
-      transform: translateY(-3px) scale(1.02);
-      box-shadow: 
-        0 12px 35px rgba(37, 211, 102, 0.4),
-        0 6px 20px rgba(0, 0, 0, 0.2);
-      border-color: rgba(255, 255, 255, 0.2);
+      background: #20b559;
+      color: var(--white);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+    .btn-link {
+      color: var(--gray-100);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.875rem;
+      padding: 0.5rem;
+      border-radius: var(--radius);
+      transition: var(--transition);
     }
 
-    .btn-whatsapp:hover::before {
-      left: 100%;
+    .btn-link:hover {
+      color: var(--white);
+      background: rgba(255, 255, 255, 0.1);
     }
+
+    .feature-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      min-width: 200px;
+      flex: 1;
+      transition: var(--transition);
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: var(--accent-light);
+      display: block;
+    }
+
+    .feature-card h6 {
+      color: var(--white);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .feature-card p {
+      color: var(--gray-100);
+      margin-bottom: 0;
+      font-size: 0.875rem;
+      line-height: 1.4;
+    }
+
+    .text-danger {
+      color: var(--red);
+      font-weight: 500;
+    }
+    .text-success {
+      color: var(--green);
+      font-weight: 500;
+    }
+    .text-muted {
+      color: var(--gray-100);
+      opacity: 0.8;
+    }
+
+    /* WhatsApp button styling handled above */
 
     /* Login form enhancements */
     #loginForm {
       position: relative;
-      z-index: 2;
     }
 
     #loginForm h5 {
-      color: #ffffff;
-      font-size: 1.4rem;
-      font-weight: 700;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      color: var(--white);
+      font-size: 1.25rem;
+      font-weight: 600;
       margin-bottom: 1.5rem;
       text-align: center;
-      background: linear-gradient(135deg, var(--accent1) 0%, #fff 50%, var(--accent1) 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      position: relative;
     }
 
-    #loginForm h5::after {
-      content: '';
-      position: absolute;
-      bottom: -8px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 50px;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent1), var(--accent2));
-      border-radius: 2px;
-    }
-
-    .mb-2 {
-      margin-bottom: 1.2rem !important;
-      position: relative;
+    .mb-2, .mb-3 {
+      margin-bottom: 1rem;
     }
 
     .position-relative {
@@ -600,305 +310,143 @@
 
     .toggle-password {
       position: absolute;
-      right: 1rem;
+      right: 0.75rem;
       top: 50%;
       transform: translateY(-50%);
       cursor: pointer;
-      color: rgba(255, 215, 0, 0.8);
-      font-size: 1.2rem;
-      transition: all 0.3s ease;
-      z-index: 3;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 1.125rem;
+      transition: var(--transition);
     }
 
     .toggle-password:hover {
-      color: var(--accent1);
-      transform: translateY(-50%) scale(1.1);
+      color: var(--white);
     }
 
-    /* Responsividade melhorada */
+    /* Responsividade */
     @media (max-width: 768px) {
       .hero-container {
-        padding: 20px 15px;
+        padding: 1.5rem 1rem;
       }
       
       .main-content {
-        max-width: 95%;
-        padding: 2rem 1.5rem;
-        margin: 0 auto 1rem;
+        max-width: 90%;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
       }
       
       .school-logo {
-        width: 160px;
-        height: 160px;
-      }
-      
-      .institutional-logo {
         width: 100px;
         height: 100px;
       }
       
       .hero-title {
-        font-size: 2.5rem;
+        font-size: 2rem;
       }
       
       .hero-subtitle {
         font-size: 1rem;
       }
       
-      .form-control {
-        font-size: 1rem;
-        padding: 0.9rem 1rem;
+      .feature-section {
+        gap: 0.75rem;
       }
       
-      .btn-primary {
-        padding: 0.9rem 1.5rem;
-        font-size: 1rem;
+      .feature-card {
+        min-width: 150px;
+        padding: 1rem;
       }
     }
 
     @media (max-width: 480px) {
       .main-content {
-        padding: 1.5rem 1.2rem;
+        padding: 1.25rem;
       }
       
       .hero-title {
-        font-size: 2.2rem;
-        letter-spacing: 2px;
+        font-size: 1.75rem;
       }
       
-      .logos-container {
-        flex-direction: column;
-        gap: 15px;
-      }
-      
-      .institutional-logo {
-        width: 80px;
-        height: 80px;
-      }
-    }
-
-    /* Animações de entrada */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes bounceIn {
-      0% {
-        opacity: 0;
-        transform: scale(0.3);
-      }
-      50% {
-        opacity: 1;
-        transform: scale(1.05);
-      }
-      70% {
-        transform: scale(0.9);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    .logo-container {
-      animation: bounceIn 1s ease-out 0.3s both;
-    }
-
-    .hero-title, .hero-subtitle {
-      animation: fadeInUp 0.8s ease-out 0.6s both;
-    }
-
-    /* Enhanced modal styling */
-    .modal-content {
-      background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%) !important;
-      border: 2px solid var(--accent1) !important;
-      border-radius: 15px !important;
-      box-shadow: var(--shadow-lg) !important;
-    }
-    .modal-header {
-      border-bottom: 1px solid rgba(255, 215, 0, 0.3) !important;
-    }
-    .modal-title {
-      color: var(--accent1) !important;
-      font-weight: 600;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-    }
-    .alert {
-      border-radius: 10px !important;
-    }
-
-    /* Subtle animations for better UX */
-    .form-control {
-      transition: all 0.3s ease;
-    }
-    .form-control:hover {
-      border-color: #ffd700;
-      background: rgba(255,255,255,0.15);
-      color: #ffffff;
-    }
-    
-    .feature-card h6 {
-      color: #ffffff !important;
-      font-weight: 700;
-      margin-bottom: 0.75rem;
-      text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
-      font-size: 1.1rem;
-    }
-    
-    .feature-card p {
-      color: #ffffff !important;
-      margin-bottom: 0;
-      opacity: 1;
-      line-height: 1.4;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-      font-weight: 500;
-      font-size: 0.95rem;
-    }
-
-    /* Toggle password styling */
-    .toggle-password {
-      position: absolute;
-      right: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      cursor: pointer;
-      color: #ffd700;
-      font-size: 1.2rem;
-      transition: var(--transition);
-      z-index: 10;
-    }
-    .toggle-password:hover {
-      color: #ffffff;
-      transform: translateY(-50%) scale(1.1);
-    }
-
-    /* Loading spinner animation */
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .loading {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-      border-top-color: var(--accent1);
-      animation: spin 1s ease-in-out infinite;
-    }
-
-    /* Responsive */
-    @media (max-width: 600px) {
-      .main-content {
-        padding: 1.2rem 0.5rem 1rem 0.5rem;
-      }
-      .feature-section {
-        gap: 0.7rem;
-      }
       .feature-card {
-        min-width: 140px;
-        max-width: 100%;
-        padding: 1rem 0.5rem 0.7rem 0.5rem;
-      }
-      .logos-container {
-        gap: 5px;
-      }
-      .institutional-logo {
-        width: 80px;
-        height: 80px;
-        margin: 0 8px;
-      }
-      .school-logo {
-        width: 140px;
-        height: 140px;
-        border: 4px solid var(--accent1) !important;
-        box-shadow: 0 0 50px rgba(255, 215, 0, 0.3), 0 4px 20px rgba(0, 0, 0, 0.15) !important;
-      }
-      .logo-glow {
-        width: 180px;
-        height: 180px;
-        opacity: 0.3;
-      }
-      .hero-title {
-        font-size: 1.5rem;
+        min-width: 100%;
       }
     }
 
     footer {
-      background: linear-gradient(135deg, rgba(13,40,71,0.95) 0%, rgba(26,73,113,0.9) 100%);
-      color: var(--text-secondary);
-      font-size: 0.85rem;
+      background: rgba(0, 0, 0, 0.3);
+      color: var(--gray-100);
+      font-size: 0.875rem;
       padding: 1.5rem 0;
       text-align: center;
       margin-top: 2rem;
       width: 100%;
-      letter-spacing: 0.5px;
-      border-top: 1px solid rgba(255,215,0,0.2);
-      box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
-    }
-    footer a {
-      color: var(--accent1) !important;
-      text-decoration: none;
-      font-weight: 600;
-      transition: var(--transition);
-    }
-    footer a:hover {
-      color: var(--text-light) !important;
-      text-shadow: 0 0 10px var(--accent1);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* Títulos com gradiente dourado */
-    .hero-title {
-      background: linear-gradient(90deg, #ffd700 0%, #4a90e2 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight: 900;
-      letter-spacing: 2px;
-      text-shadow: 2px 2px 8px rgba(0,0,0,0.18);
+    footer a {
+      color: var(--accent-light);
+      text-decoration: none;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    footer a:hover {
+      color: var(--white);
+    }
+
+    /* Enhanced modal styling */
+    .modal-content {
+      background: var(--primary);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+    }
+
+    .modal-header {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-title {
+      color: var(--white);
+      font-weight: 600;
+    }
+
+    .alert {
+      border-radius: var(--radius);
+      border: none;
+      font-weight: 500;
+    }
+
+    .alert-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--red);
+      border: 1px solid rgba(239, 68, 68, 0.2);
     }
   </style>
 </head>
 <body>
-  <div class="hero-container" style="padding-top:32px; padding-bottom:32px;">
-    <div class="logo-container" style="position:relative; margin-bottom: 1.2rem;">
-      <div class="logo-glow"></div>
-      <div class="logos-container">
-        <img src="logobias.png" alt="Logo da Escola" class="institutional-logo">
-        <img src="SISTEMA DE GERENCIAMENTO DE BIBLIOTECA.png" alt="Logo do SIGEB" class="school-logo" style="width: 220px; height: 220px; box-shadow: 0 0 80px rgba(255, 215, 0, 0.4), 0 8px 40px rgba(0, 0, 0, 0.2); border: 8px solid var(--accent1); background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); filter: drop-shadow(0 0 50px var(--accent1)) brightness(1.05);">
-        <img src="logobias.png" alt="Logo da Escola" class="institutional-logo">
-      </div>
-      <h1 class="hero-title" style="font-size:3.2rem; margin-top:0.7rem; margin-bottom:0.3rem; background:linear-gradient(90deg,var(--accent1),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 4px 24px var(--accent2),0 2px 10px rgba(0,0,0,0.12);letter-spacing:3px;">SIGEB</h1>
-      <div class="hero-subtitle" style="font-size:1.15rem; color:#b8e0ff; margin-bottom:0.5rem; opacity:0.92;">
+  <div class="hero-container">
+    <div class="logo-container">
+      <img src="SISTEMA DE GERENCIAMENTO DE BIBLIOTECA.png" alt="Logo do SIGEB" class="school-logo">
+      <h1 class="hero-title">SIGEB</h1>
+      <p class="hero-subtitle">
         Sistema de Gestão de Biblioteca<br>
         Escola Estadual Governador Bias Fortes
-      </div>
+      </p>
     </div>
-    <div class="main-content" style="max-width: 430px; margin-bottom: 1.2rem;">
-      <div id="login-container" style="display:block;">
+    
+    <div class="main-content">
+      <div id="login-container">
         <form id="loginForm">
-          <h5 class="mb-3">🔐 Acesso ao Sistema</h5>
+          <h5>🔐 Acesso ao Sistema</h5>
           <div class="mb-3">
-            <label for="loginEmail" class="form-label">
-              <i class="bx bx-user"></i>
-              E-mail ou Usuário
-            </label>
+            <label for="loginEmail" class="form-label">E-mail ou Usuário</label>
             <input type="text" class="form-control" id="loginEmail" required autocomplete="username" placeholder="Digite seu e-mail ou nome de usuário">
-            <small class="text-muted" style="font-size:0.85rem;color:rgba(233,236,239,0.8);margin-top:0.3rem;display:block;">Você pode usar seu e-mail ou nome de usuário para fazer login</small>
+            <small class="text-muted">Você pode usar seu e-mail ou nome de usuário para fazer login</small>
           </div>
           <div class="mb-3 position-relative">
-            <label for="loginPassword" class="form-label">
-              <i class="bx bx-lock-alt"></i>
-              Senha
-            </label>
-            <input type="password" class="form-control" id="loginPassword" required autocomplete="current-password" style="padding-right: 3.5rem;">
+            <label for="loginPassword" class="form-label">Senha</label>
+            <input type="password" class="form-control" id="loginPassword" required autocomplete="current-password" style="padding-right: 3rem;">
             <span class="toggle-password" toggle="#loginPassword">
               <i class="bx bx-show"></i>
             </span>
@@ -907,7 +455,7 @@
             <i class="bx bx-log-in"></i>
             Entrar no Sistema
           </button>
-          <div id="loginError" class="alert alert-danger text-center" style="display:none;font-size:0.9rem;border-radius:12px;"></div>
+          <div id="loginError" class="alert alert-danger text-center" style="display:none;"></div>
           <div class="text-center">
             <button type="button" id="forgotPasswordBtn" class="btn btn-link">
               <i class="bx bx-help-circle"></i>
@@ -916,24 +464,24 @@
           </div>
         </form>
         
-        <!-- Divisor elegante -->
+        <!-- Divisor -->
         <div class="d-flex align-items-center my-4">
-          <hr class="flex-grow-1" style="border-color: rgba(255, 215, 0, 0.3); height: 1px;">
-          <span class="px-3 text-muted" style="font-size: 0.9rem; font-weight: 500;">ou</span>
-          <hr class="flex-grow-1" style="border-color: rgba(255, 215, 0, 0.3); height: 1px;">
+          <hr class="flex-grow-1" style="border-color: rgba(255, 255, 255, 0.2); height: 1px;">
+          <span class="px-3 text-muted">ou</span>
+          <hr class="flex-grow-1" style="border-color: rgba(255, 255, 255, 0.2); height: 1px;">
         </div>
         
         <!-- Google Login Button -->
         <div class="text-center">
-          <button type="button" id="googleLoginBtn" class="btn btn-light w-100 mb-3" style="border:1px solid rgba(255,215,0,0.3); font-weight: 600;">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width:20px; margin-right:10px; vertical-align:middle;">
-            <i class="bx bxl-google" style="margin-right: 8px; font-size: 1.1rem;"></i>
+          <button type="button" id="googleLoginBtn" class="btn btn-light w-100 mb-3">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width:20px; margin-right:8px;">
             Entrar com Google
           </button>
         </div>
+        
         <!-- Links úteis -->
         <div class="text-center mb-3">
-          <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#usuariosExemplo" style="font-size:0.9rem;">
+          <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#usuariosExemplo">
             <i class="bx bx-info-circle"></i> Ver usuários de exemplo
           </button>
         </div>
@@ -941,27 +489,28 @@
         <!-- WhatsApp Support Button -->
         <div class="text-center">
           <a href="https://wa.me/5534999188660" target="_blank" class="btn btn-whatsapp w-100">
-            <i class="bx bxl-whatsapp" style="font-size:1.3rem;"></i>
+            <i class="bx bxl-whatsapp"></i>
             Suporte via WhatsApp
           </a>
         </div>
       </div>
     </div>
-    <div class="feature-section" style="margin-top: 1.2rem;">
-      <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+    
+    <div class="feature-section">
+      <div class="feature-card">
         <i class="bx bx-book-reader feature-icon"></i>
-        <h6 style="color: #ffffff !important; font-weight: 700; text-shadow: 2px 2px 6px rgba(17, 16, 16, 0.8);">Gestão de Acervo</h6>
-        <p style="font-size:0.95rem; color: #ffffff !important; font-weight: 500; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">Controle completo dos livros e materiais.</p>
+        <h6>Gestão de Acervo</h6>
+        <p>Controle completo dos livros e materiais.</p>
       </div>
-      <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+      <div class="feature-card">
         <i class="bx bx-user-check feature-icon"></i>
-        <h6 style="color: #ffffff !important; font-weight: 700; text-shadow: 2px 2px 6px rgba(22, 21, 21, 0.8);">Controle de Usuários</h6>
-        <p style="font-size:0.95rem; color: #ffffff !important; font-weight: 500; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">Gerenciamento eficiente de membros.</p>
+        <h6>Controle de Usuários</h6>
+        <p>Gerenciamento eficiente de membros.</p>
       </div>
-      <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+      <div class="feature-card">
         <i class="bx bx-transfer-alt feature-icon"></i>
-        <h6 style="color: #ffffff !important; font-weight: 700; text-shadow: 2px 2px 6px rgba(26, 24, 24, 0.8);">Empréstimos</h6>
-        <p style="font-size:0.95rem; color: #ffffff !important; font-weight: 500; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">Sistema inteligente de empréstimos.</p>
+        <h6>Empréstimos</h6>
+        <p>Sistema inteligente de empréstimos.</p>
       </div>
     </div>
   </div>
@@ -975,15 +524,15 @@
   <!-- Modal com usuários de exemplo -->
   <div class="modal fade" id="usuariosExemplo" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
-      <div class="modal-content" style="background: var(--secondary); color: var(--text-light); border: 1px solid var(--accent2);">
-        <div class="modal-header" style="border-bottom: 1px solid var(--accent2);">
-          <h5 class="modal-title" style="color: var(--accent2);">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
             <i class="bx bx-users"></i> Usuários de Exemplo
           </h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <p style="color: var(--text-light); margin-bottom: 1rem;">Você pode fazer login com qualquer uma dessas opções:</p>
+          <p style="color: var(--white); margin-bottom: 1rem;">Você pode fazer login com qualquer uma dessas opções:</p>
           
           <div class="row mb-3">
             <div class="col-6"><strong>Administrador:</strong></div>
@@ -1009,12 +558,12 @@
             </div>
           </div>
           
-          <div class="alert" style="background: rgba(255,193,7,0.1); border: 1px solid #ffc107; color: #ffc107; font-size: 0.9rem;">
+          <div class="alert" style="background: rgba(255,193,7,0.1); border: 1px solid var(--amber); color: var(--amber);">
             <i class="bx bx-info-circle"></i> 
             <strong>Senha padrão para todos:</strong> <code>123456</code>
           </div>
           
-          <p style="font-size: 0.85rem; color: #b8e0ff; margin-bottom: 0;">
+          <p style="font-size: 0.875rem; color: var(--gray-100); margin-bottom: 0;">
             <i class="bx bx-shield-check"></i> 
             Altere as senhas após o primeiro login por segurança.
           </p>
@@ -1022,18 +571,7 @@
       </div>
     </div>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-  <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      AOS.init({ 
-        duration: 1000, 
-        once: true, 
-        offset: 100,
-        delay: 100
-      });
-    });
-
     // Esconde o botão antigo, se existir
     const oldBtn = document.querySelector('.access-button');
     if (oldBtn) oldBtn.style.display = 'none';
@@ -1231,4 +769,3 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

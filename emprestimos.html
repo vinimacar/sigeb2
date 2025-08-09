@@ -2914,8 +2914,7 @@ tbody.innerHTML += `
 <td>${data.loanDate}</td>
 <td>${data.returnDate}</td>
 <td>
-<span class="loan-status status-atrasado">ATRASADO</span><br>
-<span class="badge badge-atraso">${diffDays} ${diffDays === 1 ? 'dia' : 'dias'} de atraso</span>
+<span class="loan-status status-atrasado">ATRASADO</span>
 </td>
 <td>
 <div class="action-buttons">
@@ -3053,14 +3052,11 @@ actionBtns += `
 let statusText = data.status;
 let statusDisplay = `<span class="loan-status ${statusClass}">${statusText}</span>`;
 
-if (data.status === 'ATRASADO' && diffDays > 0) {
-statusDisplay = `
-<span class="loan-status ${statusClass}">ATRASADO</span><br>
-<span class="badge badge-atraso">${diffDays} ${diffDays === 1 ? 'dia' : 'dias'} de atraso</span>
-`;
-}
-
-if (tbody) {
+                if (data.status === 'ATRASADO' && diffDays > 0) {
+                    statusDisplay = `
+                    <span class="loan-status ${statusClass}">ATRASADO</span>
+                    `;
+                }if (tbody) {
 tbody.innerHTML += `
 <tr>
 <td>${livros}</td>

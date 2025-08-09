@@ -63,21 +63,46 @@
       text-align: center;
     }
 
+    .logos-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
     .school-logo {
-      width: 120px;
-      height: 120px;
+      width: 100px;
+      height: 100px;
       object-fit: contain;
-      margin-bottom: 1rem;
       border-radius: var(--radius-lg);
       background: var(--white);
-      padding: 1rem;
+      padding: 0.75rem;
       box-shadow: var(--shadow-lg);
       transition: var(--transition);
     }
 
-    .school-logo:hover {
-      transform: translateY(-2px);
+    .sigeb-logo {
+      width: 140px;
+      height: 140px;
+      object-fit: contain;
+      border-radius: var(--radius-lg);
+      background: var(--white);
+      padding: 1rem;
       box-shadow: var(--shadow-xl);
+      transition: var(--transition);
+      border: 3px solid var(--accent);
+    }
+
+    .school-logo:hover, .sigeb-logo:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-xl);
+    }
+
+    .sigeb-logo:hover {
+      border-color: var(--accent-light);
+      box-shadow: 0 25px 50px -12px rgba(59, 130, 246, 0.25);
     }
 
     .hero-title {
@@ -335,9 +360,18 @@
         margin-bottom: 1rem;
       }
       
+      .logos-row {
+        gap: 1rem;
+      }
+      
       .school-logo {
-        width: 100px;
-        height: 100px;
+        width: 80px;
+        height: 80px;
+      }
+      
+      .sigeb-logo {
+        width: 110px;
+        height: 110px;
       }
       
       .hero-title {
@@ -361,6 +395,21 @@
     @media (max-width: 480px) {
       .main-content {
         padding: 1.25rem;
+      }
+      
+      .logos-row {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      
+      .school-logo {
+        width: 70px;
+        height: 70px;
+      }
+      
+      .sigeb-logo {
+        width: 100px;
+        height: 100px;
       }
       
       .hero-title {
@@ -427,7 +476,11 @@
 <body>
   <div class="hero-container">
     <div class="logo-container">
-      <img src="SISTEMA DE GERENCIAMENTO DE BIBLIOTECA.png" alt="Logo do SIGEB" class="school-logo">
+      <div class="logos-row">
+        <img src="logobias.png" alt="Logo da Escola Bias Fortes" class="school-logo">
+        <img src="SISTEMA DE GERENCIAMENTO DE BIBLIOTECA.png" alt="Logo do SIGEB" class="sigeb-logo">
+        <img src="logobias.png" alt="Logo da Escola Bias Fortes" class="school-logo">
+      </div>
       <h1 class="hero-title">SIGEB</h1>
       <p class="hero-subtitle">
         Sistema de Gestão de Biblioteca<br>
@@ -440,8 +493,8 @@
         <form id="loginForm">
           <h5>🔐 Acesso ao Sistema</h5>
           <div class="mb-3">
-            <label for="loginEmail" class="form-label">E-mail ou Usuário</label>
-            <input type="text" class="form-control" id="loginEmail" required autocomplete="username" placeholder="Digite seu e-mail ou nome de usuário">
+            <label for="loginEmail" class="form-label">E-mail</label>
+            <input type="text" class="form-control" id="loginEmail" required autocomplete="username" placeholder="Digite seu e-mail. ">
             <small class="text-muted">Você pode usar seu e-mail ou nome de usuário para fazer login</small>
           </div>
           <div class="mb-3 position-relative">

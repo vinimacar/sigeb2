@@ -1604,19 +1604,23 @@ if (statusAtual === 'EMPRESTADO') statusClass = 'status-emprestado';
 else if (statusAtual === 'ATRASADO') statusClass = 'status-atrasado';
 else if (statusAtual === 'DEVOLVIDO') statusClass = 'status-devolvido';
 
-// Calcula dias de atraso se aplicável
-let diffDays = 0;
-if (statusAtual === 'ATRASADO' && data.returnDate) {
-const dateParts = data.returnDate.split('/');
-if (dateParts.length === 3) {
-const returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
-returnDate.setHours(0, 0, 0, 0);
-const diffTime = Math.abs(hoje - returnDate);
-diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-}
-}
-
-// Botões de ação baseados no status atual
+        // Calcula dias de atraso se aplicável
+        let diffDays = 0;
+        if (statusAtual === 'ATRASADO' && data.returnDate) {
+            const dateParts = data.returnDate.split('/');
+            if (dateParts.length === 3) {
+                const returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                returnDate.setHours(0, 0, 0, 0);
+                // Como sabemos que returnDate < hoje (já verificado acima), usamos hoje - returnDate
+                const diffTime = hoje.getTime() - returnDate.getTime();
+                diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                // Garantir que diffDays seja um número válido e positivo
+                if (isNaN(diffDays) || diffDays <= 0) {
+                    diffDays = 1; // Se há atraso mas o cálculo falhou, assume pelo menos 1 dia
+                }
+            }
+        }// Botões de ação baseados no status atual
 let actionBtns = `
 <button class="btn btn-sm btn-outline-secondary" title="Editar" onclick="openEditLoanModal('${doc.id}')">
 <i class="bx bx-edit"></i>
@@ -2869,20 +2873,22 @@ else userName = 'Usuário não encontrado';
 userName = 'Usuário não encontrado';
 }
 
-// Calcula dias de atraso usando o mesmo método da função loadLoans
-let diffDays = 0;
-if (returnDate && returnDate instanceof Date && !isNaN(returnDate.getTime()) && 
-    today && today instanceof Date && !isNaN(today.getTime())) {
-const diffTime = Math.abs(today.getTime() - returnDate.getTime());
-diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-}
+                // Calcula dias de atraso usando o mesmo método da função loadLoans
+                let diffDays = 0;
+                if (returnDate && returnDate instanceof Date && !isNaN(returnDate.getTime()) && 
+                    today && today instanceof Date && !isNaN(today.getTime())) {
+                    // Como sabemos que returnDate < today (já verificado acima), usamos today - returnDate
+                    const diffTime = today.getTime() - returnDate.getTime();
+                    diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    console.log(`Empréstimo ${doc.id}: diffTime = ${diffTime}, diffDays = ${diffDays}`);
+                }
 
-// Garantir que diffDays seja um número válido
-if (isNaN(diffDays) || diffDays < 0) {
-diffDays = 0;
-}
-
-let actionBtns = `
+                // Garantir que diffDays seja um número válido e positivo
+                if (isNaN(diffDays) || diffDays <= 0) {
+                    console.warn(`Empréstimo ${doc.id}: diffDays inválido (${diffDays}), definindo como 1`);
+                    diffDays = 1; // Se há atraso mas o cálculo falhou, assume pelo menos 1 dia
+                }let actionBtns = `
 <button class="btn btn-sm btn-outline-secondary" title="Editar" onclick="openEditLoanModal('${doc.id}')">
 <i class="bx bx-edit"></i>
 </button>

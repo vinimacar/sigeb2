@@ -4091,6 +4091,462 @@
               </div>
             `;
 
+          } else if (modelo === 'otimizacao') {
+            // Analytics Avançado - Otimização
+            
+            // Métricas de Performance da Biblioteca
+            const metricas = {
+              eficienciaColecao: 0,
+              utilizacaoEspaco: 0,
+              satisfacaoUsuarios: 0,
+              rotividadeAcervo: 0,
+              custoOperacional: 0,
+              tempoMedioEmprestimo: 0
+            };
+
+            // Análise da eficiência da coleção
+            const livrosComEmprestimos = {};
+            const livrosSemMovimento = [];
+            const dataAtual = new Date();
+            const seiseMesesAtras = new Date(dataAtual.getTime() - (6 * 30 * 24 * 60 * 60 * 1000));
+
+            emprestimosSnapshot.docs.forEach(doc => {
+              const emp = doc.data();
+              if (!livrosComEmprestimos[emp.bookId]) {
+                livrosComEmprestimos[emp.bookId] = {
+                  totalEmprestimos: 0,
+                  ultimoEmprestimo: null,
+                  usuarios: new Set()
+                };
+              }
+              livrosComEmprestimos[emp.bookId].totalEmprestimos++;
+              livrosComEmprestimos[emp.bookId].usuarios.add(emp.userId);
+              
+              if (emp.loanDate) {
+                const dateParts = emp.loanDate.split('/');
+                if (dateParts.length === 3) {
+                  const loanDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                  if (!livrosComEmprestimos[emp.bookId].ultimoEmprestimo || 
+                      loanDate > livrosComEmprestimos[emp.bookId].ultimoEmprestimo) {
+                    livrosComEmprestimos[emp.bookId].ultimoEmprestimo = loanDate;
+                  }
+                }
+              }
+            });
+
+            // Identificar livros sem movimento recente
+            livrosSnapshot.docs.forEach(doc => {
+              const livroId = doc.id;
+              const livroData = doc.data();
+              const info = livrosComEmprestimos[livroId];
+              
+              if (!info || !info.ultimoEmprestimo || info.ultimoEmprestimo < seiseMesesAtras) {
+                livrosSemMovimento.push({
+                  id: livroId,
+                  titulo: livroData.title || 'Título não informado',
+                  autor: livroData.author || 'Autor não informado',
+                  categoria: livroData.category || 'Categoria não informada',
+                  totalEmprestimos: info ? info.totalEmprestimos : 0,
+                  ultimoEmprestimo: info ? info.ultimoEmprestimo : null
+                });
+              }
+            });
+
+            // Calcular métricas
+            const totalLivros = livrosSnapshot.size;
+            const livrosAtivos = Object.keys(livrosComEmprestimos).length;
+            metricas.eficienciaColecao = totalLivros > 0 ? ((livrosAtivos / totalLivros) * 100).toFixed(1) : 0;
+            metricas.utilizacaoEspaco = totalLivros > 0 ? (((totalLivros - livrosSemMovimento.length) / totalLivros) * 100).toFixed(1) : 0;
+
+            // Análise de padrões de uso por categoria
+            const categoriaMetricas = {};
+            const horarioPico = {};
+            const diasSemana = {};
+
+            emprestimosSnapshot.docs.forEach(doc => {
+              const emp = doc.data();
+              
+              // Métricas por categoria
+              if (emp.bookCategory) {
+                if (!categoriaMetricas[emp.bookCategory]) {
+                  categoriaMetricas[emp.bookCategory] = {
+                    emprestimos: 0,
+                    usuarios: new Set(),
+                    rotatividade: 0
+                  };
+                }
+                categoriaMetricas[emp.bookCategory].emprestimos++;
+                categoriaMetricas[emp.bookCategory].usuarios.add(emp.userId);
+              }
+
+              // Análise temporal (simulada)
+              if (emp.loanDate) {
+                const dateParts = emp.loanDate.split('/');
+                if (dateParts.length === 3) {
+                  const loanDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                  const diaSemana = loanDate.getDay();
+                  const hora = loanDate.getHours();
+                  
+                  if (!diasSemana[diaSemana]) diasSemana[diaSemana] = 0;
+                  diasSemana[diaSemana]++;
+                  
+                  if (!horarioPico[hora]) horarioPico[hora] = 0;
+                  horarioPico[hora]++;
+                }
+              }
+            });
+
+            // Calcular rotatividade por categoria
+            Object.keys(categoriaMetricas).forEach(categoria => {
+              const livrosDaCategoria = livrosSnapshot.docs.filter(doc => 
+                doc.data().category === categoria
+              ).length;
+              
+              if (livrosDaCategoria > 0) {
+                categoriaMetricas[categoria].rotatividade = 
+                  (categoriaMetricas[categoria].emprestimos / livrosDaCategoria).toFixed(2);
+              }
+            });
+
+            // Identificar horários de pico
+            const horariosOrdenados = Object.entries(horarioPico)
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 3);
+
+            // Identificar dias mais movimentados
+            const diasNomes = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+            const diasOrdenados = Object.entries(diasSemana)
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 3);
+
+            // Recomendações de otimização
+            const recomendacoes = {
+              colecao: [],
+              operacional: [],
+              espacial: [],
+              temporal: [],
+              experiencia: []
+            };
+
+            // Recomendações baseadas na eficiência da coleção
+            if (metricas.eficienciaColecao < 70) {
+              recomendacoes.colecao.push({
+                prioridade: 'Alta',
+                titulo: 'Revisar Coleção Inativa',
+                descricao: `${livrosSemMovimento.length} livros sem movimento nos últimos 6 meses`,
+                acao: 'Considerar remanejamento, doação ou promoção especial'
+              });
+            }
+
+            if (livrosSemMovimento.length > totalLivros * 0.3) {
+              recomendacoes.espacial.push({
+                prioridade: 'Média',
+                titulo: 'Otimização de Espaço',
+                descricao: 'Mais de 30% do acervo com baixa movimentação',
+                acao: 'Reorganizar layout para destacar livros populares'
+              });
+            }
+
+            // Recomendações operacionais
+            const categoriasPopulares = Object.entries(categoriaMetricas)
+              .sort((a, b) => b[1].emprestimos - a[1].emprestimos)
+              .slice(0, 3);
+
+            if (categoriasPopulares.length > 0) {
+              recomendacoes.operacional.push({
+                prioridade: 'Média',
+                titulo: 'Ampliar Categorias Populares',
+                descricao: `${categoriasPopulares[0][0]} é a categoria mais procurada`,
+                acao: 'Considerar aquisição de mais títulos desta categoria'
+              });
+            }
+
+            // Recomendações temporais
+            if (horariosOrdenados.length > 0) {
+              recomendacoes.temporal.push({
+                prioridade: 'Baixa',
+                titulo: 'Otimizar Horários de Atendimento',
+                descricao: `Pico de movimento às ${horariosOrdenados[0][0]}h`,
+                acao: 'Considerar aumentar equipe nos horários de pico'
+              });
+            }
+
+            // Recomendações de experiência
+            recomendacoes.experiencia.push({
+              prioridade: 'Média',
+              titulo: 'Sistema de Recomendações',
+              descricao: 'Implementar sugestões personalizadas',
+              acao: 'Usar dados de preferências para recomendar livros'
+            });
+
+            html = `
+              <div class="mb-4">
+                <div class="d-flex align-items-center mb-3">
+                  <i class='bx bx-cog' style="font-size: 2rem; color: #f093fb; margin-right: 10px;"></i>
+                  <h4 class="text-dark mb-0">Analytics Avançado - Otimização</h4>
+                </div>
+                <p class="text-muted">Sistema inteligente de análise e recomendações para otimização da biblioteca</p>
+              </div>
+
+              <!-- Métricas de Performance -->
+              <div class="row mb-4">
+                <div class="col-lg-4 col-md-6 mb-3">
+                  <div class="card border-primary h-100">
+                    <div class="card-body text-center">
+                      <i class='bx bx-trending-up' style="font-size: 2.5rem; color: #007bff;"></i>
+                      <h3 class="text-primary mt-2">${metricas.eficienciaColecao}%</h3>
+                      <p class="card-text mb-0">Eficiência da Coleção</p>
+                      <small class="text-muted">Livros com movimento ativo</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-3">
+                  <div class="card border-success h-100">
+                    <div class="card-body text-center">
+                      <i class='bx bx-building' style="font-size: 2.5rem; color: #28a745;"></i>
+                      <h3 class="text-success mt-2">${metricas.utilizacaoEspaco}%</h3>
+                      <p class="card-text mb-0">Utilização do Espaço</p>
+                      <small class="text-muted">Aproveitamento do acervo</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-3">
+                  <div class="card border-warning h-100">
+                    <div class="card-body text-center">
+                      <i class='bx bx-refresh' style="font-size: 2.5rem; color: #ffc107;"></i>
+                      <h3 class="text-warning mt-2">${livrosAtivos}</h3>
+                      <p class="card-text mb-0">Livros Ativos</p>
+                      <small class="text-muted">de ${totalLivros} total</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Análise por Categoria -->
+              <div class="row mb-4">
+                <div class="col-12">
+                  <h5><i class='bx bx-category'></i> Performance por Categoria</h5>
+                  <div class="table-responsive">
+                    <table class="table table-bordered">
+                      <thead class="table-primary">
+                        <tr>
+                          <th>Categoria</th>
+                          <th class="text-center">Empréstimos</th>
+                          <th class="text-center">Usuários Únicos</th>
+                          <th class="text-center">Rotatividade</th>
+                          <th class="text-center">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+            `;
+
+            Object.entries(categoriaMetricas)
+              .sort((a, b) => b[1].emprestimos - a[1].emprestimos)
+              .forEach(([categoria, dados]) => {
+                const rotatividade = parseFloat(dados.rotatividade);
+                const status = rotatividade > 2 ? 'Excelente' : 
+                              rotatividade > 1 ? 'Boa' : 
+                              rotatividade > 0.5 ? 'Regular' : 'Baixa';
+                const corStatus = rotatividade > 2 ? 'success' : 
+                                 rotatividade > 1 ? 'primary' : 
+                                 rotatividade > 0.5 ? 'warning' : 'danger';
+
+                html += `
+                  <tr>
+                    <td><strong>${categoria}</strong></td>
+                    <td class="text-center">${dados.emprestimos}</td>
+                    <td class="text-center">${dados.usuarios.size}</td>
+                    <td class="text-center">${dados.rotatividade}</td>
+                    <td class="text-center">
+                      <span class="badge bg-${corStatus}">${status}</span>
+                    </td>
+                  </tr>
+                `;
+              });
+
+            html += `
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Análise Temporal -->
+              <div class="row mb-4">
+                <div class="col-md-6">
+                  <h6><i class='bx bx-time'></i> Horários de Maior Movimento</h6>
+                  <div class="list-group">
+            `;
+
+            horariosOrdenados.forEach(([hora, quantidade], index) => {
+              const posicao = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
+              html += `
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                  <span>${posicao} ${hora}:00 - ${parseInt(hora) + 1}:00</span>
+                  <span class="badge bg-primary rounded-pill">${quantidade} empréstimos</span>
+                </div>
+              `;
+            });
+
+            html += `
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <h6><i class='bx bx-calendar'></i> Dias Mais Movimentados</h6>
+                  <div class="list-group">
+            `;
+
+            diasOrdenados.forEach(([dia, quantidade], index) => {
+              const posicao = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
+              html += `
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                  <span>${posicao} ${diasNomes[dia]}</span>
+                  <span class="badge bg-success rounded-pill">${quantidade} empréstimos</span>
+                </div>
+              `;
+            });
+
+            html += `
+                  </div>
+                </div>
+              </div>
+
+              <!-- Livros com Baixa Movimentação -->
+              <div class="row mb-4">
+                <div class="col-12">
+                  <h5><i class='bx bx-error-circle'></i> Livros com Baixa Movimentação (Top 10)</h5>
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>Título</th>
+                          <th>Autor</th>
+                          <th>Categoria</th>
+                          <th class="text-center">Total Empréstimos</th>
+                          <th class="text-center">Último Empréstimo</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+            `;
+
+            livrosSemMovimento
+              .sort((a, b) => a.totalEmprestimos - b.totalEmprestimos)
+              .slice(0, 10)
+              .forEach(livro => {
+                const ultimoEmprestimoTexto = livro.ultimoEmprestimo ? 
+                  livro.ultimoEmprestimo.toLocaleDateString('pt-BR') : 'Nunca';
+                
+                html += `
+                  <tr>
+                    <td><strong>${livro.titulo}</strong></td>
+                    <td>${livro.autor}</td>
+                    <td>${livro.categoria}</td>
+                    <td class="text-center">${livro.totalEmprestimos}</td>
+                    <td class="text-center">${ultimoEmprestimoTexto}</td>
+                  </tr>
+                `;
+              });
+
+            html += `
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recomendações de Otimização -->
+              <div class="row mb-4">
+                <div class="col-12">
+                  <h5><i class='bx bx-bulb'></i> Recomendações de Otimização</h5>
+                </div>
+            `;
+
+            const todasRecomendacoes = [
+              ...recomendacoes.colecao,
+              ...recomendacoes.operacional,
+              ...recomendacoes.espacial,
+              ...recomendacoes.temporal,
+              ...recomendacoes.experiencia
+            ];
+
+            todasRecomendacoes.forEach((rec, index) => {
+              const corPrioridade = rec.prioridade === 'Alta' ? 'danger' : 
+                                   rec.prioridade === 'Média' ? 'warning' : 'info';
+              const iconePrioridade = rec.prioridade === 'Alta' ? 'bx-error' : 
+                                     rec.prioridade === 'Média' ? 'bx-info-circle' : 'bx-check-circle';
+
+              html += `
+                <div class="col-md-6 mb-3">
+                  <div class="alert alert-${corPrioridade}">
+                    <div class="d-flex align-items-start">
+                      <i class='bx ${iconePrioridade}' style="font-size: 1.5rem; margin-right: 10px; margin-top: 2px;"></i>
+                      <div class="flex-grow-1">
+                        <h6 class="alert-heading mb-1">
+                          <span class="badge bg-${corPrioridade} me-2">${rec.prioridade}</span>
+                          ${rec.titulo}
+                        </h6>
+                        <p class="mb-1"><strong>Diagnóstico:</strong> ${rec.descricao}</p>
+                        <p class="mb-0"><strong>Ação Recomendada:</strong> ${rec.acao}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `;
+            });
+
+            html += `
+              </div>
+
+              <!-- Painel de Insights Estratégicos -->
+              <div class="alert alert-light border">
+                <h6><i class='bx bx-brain'></i> Insights Estratégicos:</h6>
+                <div class="row">
+                  <div class="col-md-6">
+                    <strong>📊 Análise de Performance:</strong>
+                    <ul class="mt-2">
+                      <li><strong>Eficiência Atual:</strong> ${metricas.eficienciaColecao}% da coleção em uso ativo</li>
+                      <li><strong>Oportunidade:</strong> ${livrosSemMovimento.length} livros podem ser otimizados</li>
+                      <li><strong>Categoria Líder:</strong> ${categoriasPopulares[0] ? categoriasPopulares[0][0] : 'N/A'} com maior rotatividade</li>
+                    </ul>
+                  </div>
+                  <div class="col-md-6">
+                    <strong>🎯 Próximos Passos:</strong>
+                    <ul class="mt-2">
+                      <li>Implementar sistema de recomendações personalizadas</li>
+                      <li>Criar campanhas para livros com baixa movimentação</li>
+                      <li>Otimizar horários de atendimento baseado nos picos</li>
+                      <li>Desenvolver programa de fidelidade para categorias populares</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Score de Otimização Geral -->
+              <div class="text-center mt-4">
+                <div class="alert alert-primary">
+                  <h5><i class='bx bx-award'></i> Score de Otimização da Biblioteca</h5>
+            `;
+
+            const scoreGeral = (
+              (parseFloat(metricas.eficienciaColecao) * 0.4) +
+              (parseFloat(metricas.utilizacaoEspaco) * 0.3) +
+              ((livrosAtivos / totalLivros) * 100 * 0.3)
+            ).toFixed(1);
+
+            const classificacao = scoreGeral >= 80 ? { texto: 'Excelente', cor: 'success', emoji: '🏆' } :
+                                  scoreGeral >= 70 ? { texto: 'Muito Bom', cor: 'primary', emoji: '🥇' } :
+                                  scoreGeral >= 60 ? { texto: 'Bom', cor: 'info', emoji: '👍' } :
+                                  scoreGeral >= 50 ? { texto: 'Regular', cor: 'warning', emoji: '⚠️' } :
+                                  { texto: 'Precisa Melhorar', cor: 'danger', emoji: '🔄' };
+
+            html += `
+                  <h2 class="text-${classificacao.cor}">${classificacao.emoji} ${scoreGeral}/100</h2>
+                  <h4 class="text-${classificacao.cor}">${classificacao.texto}</h4>
+                  <p class="mb-0">Sua biblioteca está operando com <strong>${scoreGeral}%</strong> de eficiência geral</p>
+                </div>
+              </div>
+            `;
+
           } else {
             // Outros modelos em desenvolvimento
             html = `

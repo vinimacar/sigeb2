@@ -1999,27 +1999,19 @@
                 // Adicionar medalhas após desenhar a célula
                 autoTableConfig.didDrawCell = function(data) {
                   if (data.column.index === 0 && data.row.index < 3) {
-                    // Adicionar medalha como imagem para as 3 primeiras posições (exceto a primeira)
+                    // Adicionar medalha como imagem para as 3 primeiras posições
                     const posicao = data.row.index + 1;
+                    const medalhaImg = criarImagemMedalha(posicao);
                     
-                    if (posicao > 1) { // Só adiciona medalha para 2º e 3º lugar
-                      const medalhaImg = criarImagemMedalha(posicao);
-                      
-                      // Posicionar a medalha no centro-esquerda da célula
-                      const medalhaX = data.cell.x + 2;
-                      const medalhaY = data.cell.y + (data.cell.height - 10) / 2;
-                      doc.addImage(medalhaImg, 'PNG', medalhaX, medalhaY, 10, 10);
-                      
-                      // Ajustar o texto para ficar ao lado da medalha
-                      doc.setFontSize(9);
-                      doc.setFont('helvetica', 'bold');
-                      doc.text(`${posicao}º`, medalhaX + 12, medalhaY + 5.5);
-                    } else {
-                      // Para o 1º lugar, apenas mostrar o número sem medalha
-                      doc.setFontSize(9);
-                      doc.setFont('helvetica', 'bold');
-                      doc.text(`${posicao}`, data.cell.x + 2, data.cell.y + (data.cell.height + 3) / 2);
-                    }
+                    // Posicionar a medalha no centro-esquerda da célula
+                    const medalhaX = data.cell.x + 2;
+                    const medalhaY = data.cell.y + (data.cell.height - 10) / 2;
+                    doc.addImage(medalhaImg, 'PNG', medalhaX, medalhaY, 10, 10);
+                    
+                    // Ajustar o texto para ficar ao lado da medalha
+                    doc.setFontSize(9);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`${posicao}º`, medalhaX + 12, medalhaY + 5.5);
                   }
                 };
               }

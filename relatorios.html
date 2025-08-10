@@ -1853,125 +1853,1453 @@
       // Relatórios de Análises Detalhadas
       if (reportType.value === 'estatisticas') {
         try {
+          const periodo = document.getElementById('estatisticasPeriodo').value;
+          
+          // Buscar dados de todas as coleções
+          const [livrosSnapshot, usuariosSnapshot, emprestimosSnapshot] = await Promise.all([
+            db.collection('livros').get(),
+            db.collection('usuarios').get(),
+            db.collection('emprestimos').get()
+          ]);
+
+          // Calcular estatísticas dos livros
+          const totalLivros = livrosSnapshot.size;
+          const totalExemplares = livrosSnapshot.docs.reduce((total, doc) => {
+            const livro = doc.data();
+            return total + (livro.quantidade || 0);
+          }, 0);
+          
+          const exemplariesDisponiveis = livrosSnapshot.docs.reduce((total, doc) => {
+            const livro = doc.data();
+            return total + (livro.quantidadeDisponivel || 0);
+          }, 0);
+          
+          const exemplariesEmprestados = livrosSnapshot.docs.reduce((total, doc) => {
+            const livro = doc.data();
+            return total + (livro.emprestados || 0);
+          }, 0);
+
+          // Análise por gêneros
+          const generos = {};
+          livrosSnapshot.docs.forEach(doc => {
+            const livro = doc.data();
+            const genero = livro.genero || 'Não classificado';
+            if (!generos[genero]) {
+              generos[genero] = { titulos: 0, exemplares: 0 };
+            }
+            generos[genero].titulos++;
+            generos[genero].exemplares += (livro.quantidade || 0);
+          });
+
+          // Estatísticas dos usuários
+          const totalUsuarios = usuariosSnapshot.size;
+          const usuariosAtivos = usuariosSnapshot.docs.filter(doc => {
+            const usuario = doc.data();
+            return !usuario.status || usuario.status === 'Ativo';
+          }).length;
+
+          // Análise por função
+          const funcoes = {};
+          usuariosSnapshot.docs.forEach(doc => {
+            const usuario = doc.data();
+            const funcao = usuario.funcao || usuario.papel || 'Não informado';
+            funcoes[funcao] = (funcoes[funcao] || 0) + 1;
+          });
+
+          // Estatísticas dos empréstimos
+          const totalEmprestimos = emprestimosSnapshot.size;
+          const emprestimosAtivos = emprestimosSnapshot.docs.filter(doc => {
+            const emp = doc.data();
+            return emp.status !== 'DEVOLVIDO';
+          }).length;
+          
+          const emprestimosFinalizados = emprestimosSnapshot.docs.filter(doc => {
+            const emp = doc.data();
+            return emp.status === 'DEVOLVIDO';
+          }).length;
+
+          // Calcular empréstimos atrasados
+          const hoje = new Date();
+          hoje.setHours(0, 0, 0, 0);
+          let emprestimosAtrasados = 0;
+          
+          emprestimosSnapshot.docs.forEach(doc => {
+            const emp = doc.data();
+            if (emp.status !== 'DEVOLVIDO' && emp.returnDate) {
+              const dateParts = emp.returnDate.split('/');
+              if (dateParts.length === 3) {
+                const returnDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                returnDate.setHours(0, 0, 0, 0);
+                if (returnDate < hoje) {
+                  emprestimosAtrasados++;
+                }
+              }
+            }
+          });
+
+          // Taxa de rotatividade
+          const taxaRotatividade = totalExemplares > 0 ? ((emprestimosFinalizados / totalExemplares) * 100).toFixed(1) : 0;
+          
+          // Taxa de ocupação
+          const taxaOcupacao = totalExemplares > 0 ? ((exemplariesEmprestados / totalExemplares) * 100).toFixed(1) : 0;
+
           html = `
-            <div class="text-center py-5">
-              <i class='bx bx-bar-chart-alt-2' style="font-size: 4rem; color: #667eea; margin-bottom: 20px;"></i>
-              <h5 class="text-dark">Estatísticas Gerais da Biblioteca</h5>
-              <p class="text-muted">Relatório em desenvolvimento. Em breve você terá acesso a análises estatísticas completas com:</p>
-              <div class="row mt-4">
-                <div class="col-md-3">
-                  <div class="stats-card">
-                    <div class="stats-number">📊</div>
-                    <div class="stats-label">Gráficos Interativos</div>
-                  </div>
+            <div class="mb-4">
+              <div class="d-flex align-items-center mb-3">
+                <i class='bx bx-bar-chart-alt-2' style="font-size: 2rem; color: #667eea; margin-right: 10px;"></i>
+                <h4 class="text-dark mb-0">Estatísticas Gerais da Biblioteca</h4>
+              </div>
+              <p class="text-muted">Período: ${periodo === 'completo' ? 'Histórico Completo' : periodo.charAt(0).toUpperCase() + periodo.slice(1)}</p>
+            </div>
+
+            <!-- Indicadores Principais -->
+            <div class="row mb-4">
+              <div class="col-md-3">
+                <div class="stats-card text-center">
+                  <div class="stats-number" style="color: #667eea;">${totalLivros}</div>
+                  <div class="stats-label">Títulos Cadastrados</div>
                 </div>
-                <div class="col-md-3">
-                  <div class="stats-card">
-                    <div class="stats-number">📈</div>
-                    <div class="stats-label">Métricas de Crescimento</div>
-                  </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stats-card text-center">
+                  <div class="stats-number" style="color: #4facfe;">${totalExemplares}</div>
+                  <div class="stats-label">Total de Exemplares</div>
                 </div>
-                <div class="col-md-3">
-                  <div class="stats-card">
-                    <div class="stats-number">🎯</div>
-                    <div class="stats-label">KPIs da Biblioteca</div>
-                  </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stats-card text-center">
+                  <div class="stats-number" style="color: #28a745;">${usuariosAtivos}</div>
+                  <div class="stats-label">Usuários Ativos</div>
                 </div>
-                <div class="col-md-3">
-                  <div class="stats-card">
-                    <div class="stats-number">📋</div>
-                    <div class="stats-label">Comparativos</div>
+              </div>
+              <div class="col-md-3">
+                <div class="stats-card text-center">
+                  <div class="stats-number" style="color: #ffc107;">${totalEmprestimos}</div>
+                  <div class="stats-label">Total Empréstimos</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Métricas de Performance -->
+            <div class="row mb-4">
+              <div class="col-md-4">
+                <div class="alert alert-info">
+                  <h6><i class='bx bx-trending-up'></i> Taxa de Rotatividade</h6>
+                  <h4 class="mb-0">${taxaRotatividade}%</h4>
+                  <small>Empréstimos por exemplar</small>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="alert alert-success">
+                  <h6><i class='bx bx-check-circle'></i> Taxa de Ocupação</h6>
+                  <h4 class="mb-0">${taxaOcupacao}%</h4>
+                  <small>Exemplares em empréstimo</small>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="alert ${emprestimosAtrasados > 0 ? 'alert-warning' : 'alert-success'}">
+                  <h6><i class='bx bx-time'></i> Empréstimos Atrasados</h6>
+                  <h4 class="mb-0">${emprestimosAtrasados}</h4>
+                  <small>Requerem atenção</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Distribuição por Gêneros -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <h5><i class='bx bx-category'></i> Distribuição por Gêneros</h5>
+                <div class="table-responsive">
+                  <table class="table table-sm">
+                    <thead class="table-primary">
+                      <tr>
+                        <th>Gênero</th>
+                        <th class="text-center">Títulos</th>
+                        <th class="text-center">Exemplares</th>
+                        <th class="text-center">% do Acervo</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+          `;
+          
+          Object.entries(generos)
+            .sort((a, b) => b[1].exemplares - a[1].exemplares)
+            .slice(0, 8)
+            .forEach(([genero, dados]) => {
+              const percentual = ((dados.exemplares / totalExemplares) * 100).toFixed(1);
+              html += `
+                <tr>
+                  <td><strong>${genero}</strong></td>
+                  <td class="text-center">${dados.titulos}</td>
+                  <td class="text-center">${dados.exemplares}</td>
+                  <td class="text-center">
+                    <span class="badge bg-primary">${percentual}%</span>
+                  </td>
+                </tr>
+              `;
+            });
+
+          html += `
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <h5><i class='bx bx-group'></i> Usuários por Função</h5>
+                <div class="table-responsive">
+                  <table class="table table-sm">
+                    <thead class="table-success">
+                      <tr>
+                        <th>Função</th>
+                        <th class="text-center">Quantidade</th>
+                        <th class="text-center">% do Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+          `;
+          
+          Object.entries(funcoes)
+            .sort((a, b) => b[1] - a[1])
+            .forEach(([funcao, quantidade]) => {
+              const percentual = ((quantidade / totalUsuarios) * 100).toFixed(1);
+              html += `
+                <tr>
+                  <td><strong>${funcao}</strong></td>
+                  <td class="text-center">${quantidade}</td>
+                  <td class="text-center">
+                    <span class="badge bg-success">${percentual}%</span>
+                  </td>
+                </tr>
+              `;
+            });
+
+          html += `
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status dos Empréstimos -->
+            <div class="row">
+              <div class="col-12">
+                <h5><i class='bx bx-bookmark'></i> Status dos Empréstimos</h5>
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="card border-primary">
+                      <div class="card-body text-center">
+                        <i class='bx bx-book-open' style="font-size: 2rem; color: #007bff;"></i>
+                        <h4 class="text-primary">${emprestimosAtivos}</h4>
+                        <p class="card-text">Empréstimos Ativos</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="card border-success">
+                      <div class="card-body text-center">
+                        <i class='bx bx-check-circle' style="font-size: 2rem; color: #28a745;"></i>
+                        <h4 class="text-success">${emprestimosFinalizados}</h4>
+                        <p class="card-text">Devoluções Realizadas</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="card border-warning">
+                      <div class="card-body text-center">
+                        <i class='bx bx-time' style="font-size: 2rem; color: #ffc107;"></i>
+                        <h4 class="text-warning">${emprestimosAtrasados}</h4>
+                        <p class="card-text">Em Atraso</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+
+            <div class="alert alert-info mt-4">
+              <h6><i class='bx bx-info-circle'></i> Interpretação dos Dados:</h6>
+              <ul class="mb-0">
+                <li><strong>Taxa de Rotatividade:</strong> Indica quantas vezes cada exemplar foi emprestado. Valores altos indicam boa circulação do acervo.</li>
+                <li><strong>Taxa de Ocupação:</strong> Percentual do acervo atualmente emprestado. Ideal entre 60-80%.</li>
+                <li><strong>Distribuição por Gêneros:</strong> Ajuda a identificar lacunas ou excessos no acervo.</li>
+              </ul>
+            </div>
           `;
+
         } catch (error) {
           html = `<p class="text-danger">Erro ao carregar estatísticas: ${error.message}</p>`;
+          console.error('Erro ao buscar estatísticas:', error);
         }
       }
 
       if (reportType.value === 'tendencias') {
         try {
-          html = `
-            <div class="text-center py-5">
-              <i class='bx bx-trending-up' style="font-size: 4rem; color: #4facfe; margin-bottom: 20px;"></i>
-              <h5 class="text-dark">Análise de Tendências</h5>
-              <p class="text-muted">Funcionalidade em desenvolvimento. Características futuras:</p>
-              <ul class="list-unstyled mt-4">
-                <li><i class='bx bx-check-circle text-success'></i> Padrões sazonais de empréstimos</li>
-                <li><i class='bx bx-check-circle text-success'></i> Livros em alta por período</li>
-                <li><i class='bx bx-check-circle text-success'></i> Comportamento dos usuários</li>
-                <li><i class='bx bx-check-circle text-success'></i> Previsões de demanda</li>
-              </ul>
-            </div>
-          `;
+          const metrica = document.getElementById('tendenciasMetrica').value;
+          
+          // Buscar dados necessários
+          const [livrosSnapshot, usuariosSnapshot, emprestimosSnapshot] = await Promise.all([
+            db.collection('livros').get(),
+            db.collection('usuarios').get(),
+            db.collection('emprestimos').get()
+          ]);
+
+          if (metrica === 'emprestimos') {
+            // Análise de Tendências de Empréstimos
+            const tendenciasMensais = {};
+            const hoje = new Date();
+            
+            // Inicializar últimos 12 meses
+            for (let i = 11; i >= 0; i--) {
+              const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+              const chave = `${data.getFullYear()}-${(data.getMonth() + 1).toString().padStart(2, '0')}`;
+              tendenciasMensais[chave] = {
+                emprestimos: 0,
+                devolucoes: 0,
+                nome: data.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+              };
+            }
+
+            emprestimosSnapshot.docs.forEach(doc => {
+              const emp = doc.data();
+              if (emp.loanDate) {
+                const dateParts = emp.loanDate.split('/');
+                if (dateParts.length === 3) {
+                  const chave = `${dateParts[2]}-${dateParts[1]}`;
+                  if (tendenciasMensais[chave]) {
+                    tendenciasMensais[chave].emprestimos++;
+                    if (emp.status === 'DEVOLVIDO') {
+                      tendenciasMensais[chave].devolucoes++;
+                    }
+                  }
+                }
+              }
+            });
+
+            html = `
+              <div class="mb-4">
+                <div class="d-flex align-items-center mb-3">
+                  <i class='bx bx-trending-up' style="font-size: 2rem; color: #4facfe; margin-right: 10px;"></i>
+                  <h4 class="text-dark mb-0">Análise de Tendências - Empréstimos</h4>
+                </div>
+                <p class="text-muted">Evolução mensal dos empréstimos nos últimos 12 meses</p>
+              </div>
+
+              <!-- Gráfico de Tendências -->
+              <div class="row mb-4">
+                <div class="col-12">
+                  <h5><i class='bx bx-line-chart'></i> Evolução Mensal</h5>
+                  <div class="table-responsive">
+                    <table class="table table-bordered">
+                      <thead class="table-primary">
+                        <tr>
+                          <th>Mês</th>
+                          <th class="text-center">Empréstimos</th>
+                          <th class="text-center">Devoluções</th>
+                          <th class="text-center">Taxa de Devolução</th>
+                          <th class="text-center">Tendência</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+            `;
+
+            const meses = Object.keys(tendenciasMensais).sort();
+            const valores = meses.map(m => tendenciasMensais[m].emprestimos);
+            
+            meses.forEach((chave, index) => {
+              const dados = tendenciasMensais[chave];
+              const taxaDevolucao = dados.emprestimos > 0 ? ((dados.devolucoes / dados.emprestimos) * 100).toFixed(1) : 0;
+              
+              let tendencia = '➡️';
+              if (index > 0) {
+                const anterior = valores[index - 1];
+                const atual = valores[index];
+                if (atual > anterior) tendencia = '📈';
+                else if (atual < anterior) tendencia = '📉';
+              }
+
+              html += `
+                <tr>
+                  <td><strong>${dados.nome}</strong></td>
+                  <td class="text-center">${dados.emprestimos}</td>
+                  <td class="text-center">${dados.devolucoes}</td>
+                  <td class="text-center">
+                    <span class="badge ${taxaDevolucao > 80 ? 'bg-success' : taxaDevolucao > 60 ? 'bg-warning' : 'bg-danger'}">${taxaDevolucao}%</span>
+                  </td>
+                  <td class="text-center" style="font-size: 1.2rem;">${tendencia}</td>
+                </tr>
+              `;
+            });
+
+            // Calcular estatísticas
+            const totalEmprestimos = valores.reduce((a, b) => a + b, 0);
+            const mediaEmprestimos = (totalEmprestimos / valores.length).toFixed(1);
+            const maxEmprestimos = Math.max(...valores);
+            const minEmprestimos = Math.min(...valores);
+            const crescimentoTotal = valores.length > 1 ? ((valores[valores.length - 1] - valores[0]) / valores[0] * 100).toFixed(1) : 0;
+
+            html += `
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Estatísticas da Tendência -->
+              <div class="row mb-4">
+                <div class="col-md-3">
+                  <div class="stats-card text-center">
+                    <div class="stats-number" style="color: #4facfe;">${totalEmprestimos}</div>
+                    <div class="stats-label">Total no Período</div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stats-card text-center">
+                    <div class="stats-number" style="color: #28a745;">${mediaEmprestimos}</div>
+                    <div class="stats-label">Média Mensal</div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stats-card text-center">
+                    <div class="stats-number" style="color: #ffc107;">${maxEmprestimos}</div>
+                    <div class="stats-label">Pico Máximo</div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stats-card text-center">
+                    <div class="stats-number" style="color: ${crescimentoTotal >= 0 ? '#28a745' : '#dc3545'};">${crescimentoTotal}%</div>
+                    <div class="stats-label">Crescimento Total</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Insights -->
+              <div class="alert alert-info">
+                <h6><i class='bx bx-lightbulb'></i> Insights Identificados:</h6>
+                <ul class="mb-0">
+                  <li><strong>Período de Pico:</strong> ${meses[valores.indexOf(maxEmprestimos)] ? tendenciasMensais[meses[valores.indexOf(maxEmprestimos)]].nome : 'N/A'} (${maxEmprestimos} empréstimos)</li>
+                  <li><strong>Período de Baixa:</strong> ${meses[valores.indexOf(minEmprestimos)] ? tendenciasMensais[meses[valores.indexOf(minEmprestimos)]].nome : 'N/A'} (${minEmprestimos} empréstimos)</li>
+                  <li><strong>Tendência Geral:</strong> ${crescimentoTotal > 10 ? 'Crescimento forte' : crescimentoTotal > 0 ? 'Crescimento moderado' : crescimentoTotal < -10 ? 'Declínio acentuado' : crescimentoTotal < 0 ? 'Declínio leve' : 'Estabilidade'}</li>
+                  <li><strong>Sazonalidade:</strong> ${valores[valores.length - 1] > valores[valores.length - 4] ? 'Trimestre em alta' : 'Possível sazonalidade negativa'}</li>
+                </ul>
+              </div>
+            `;
+
+          } else if (metrica === 'generos') {
+            // Análise de Popularidade por Gênero
+            const generosTendencia = {};
+            
+            // Processar empréstimos por gênero ao longo do tempo
+            for (const empDoc of emprestimosSnapshot.docs) {
+              const emp = empDoc.data();
+              if (emp.books && Array.isArray(emp.books) && emp.loanDate) {
+                const dateParts = emp.loanDate.split('/');
+                if (dateParts.length === 3) {
+                  const trimestre = Math.ceil(parseInt(dateParts[1]) / 3);
+                  const ano = dateParts[2];
+                  const periodo = `${ano}-T${trimestre}`;
+                  
+                  for (const book of emp.books) {
+                    try {
+                      const livroDoc = await db.collection('livros').doc(book.bookId).get();
+                      if (livroDoc.exists) {
+                        const livro = livroDoc.data();
+                        const genero = livro.genero || 'Não classificado';
+                        
+                        if (!generosTendencia[genero]) {
+                          generosTendencia[genero] = {};
+                        }
+                        if (!generosTendencia[genero][periodo]) {
+                          generosTendencia[genero][periodo] = 0;
+                        }
+                        generosTendencia[genero][periodo] += (book.quantity || 1);
+                      }
+                    } catch (error) {
+                      console.error('Erro ao processar livro:', error);
+                    }
+                  }
+                }
+              }
+            }
+
+            html = `
+              <div class="mb-4">
+                <div class="d-flex align-items-center mb-3">
+                  <i class='bx bx-trending-up' style="font-size: 2rem; color: #4facfe; margin-right: 10px;"></i>
+                  <h4 class="text-dark mb-0">Análise de Tendências - Popularidade por Gênero</h4>
+                </div>
+                <p class="text-muted">Evolução da demanda por gêneros literários ao longo dos trimestres</p>
+              </div>
+
+              <!-- Ranking de Gêneros por Popularidade -->
+              <div class="row mb-4">
+                <div class="col-12">
+                  <h5><i class='bx bx-category'></i> Ranking de Gêneros Mais Populares</h5>
+                  <div class="table-responsive">
+                    <table class="table table-bordered">
+                      <thead class="table-success">
+                        <tr>
+                          <th>Posição</th>
+                          <th>Gênero</th>
+                          <th class="text-center">Total Empréstimos</th>
+                          <th class="text-center">Últimos 2 Trimestres</th>
+                          <th class="text-center">Tendência</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+            `;
+
+            const generosRanking = Object.entries(generosTendencia)
+              .map(([genero, periodos]) => {
+                const total = Object.values(periodos).reduce((a, b) => a + b, 0);
+                const periodosOrdenados = Object.keys(periodos).sort();
+                const ultimos2 = periodosOrdenados.slice(-2).map(p => periodos[p] || 0);
+                const tendencia = ultimos2.length === 2 ? ultimos2[1] - ultimos2[0] : 0;
+                
+                return {
+                  genero,
+                  total,
+                  ultimos2: ultimos2.reduce((a, b) => a + b, 0),
+                  tendencia
+                };
+              })
+              .sort((a, b) => b.total - a.total)
+              .slice(0, 10);
+
+            generosRanking.forEach((item, index) => {
+              const posicao = index + 1;
+              let medalha = '';
+              if (posicao === 1) medalha = '🥇';
+              else if (posicao === 2) medalha = '🥈';
+              else if (posicao === 3) medalha = '🥉';
+              
+              const tendenciaIcon = item.tendencia > 0 ? '📈' : item.tendencia < 0 ? '📉' : '➡️';
+              const tendenciaClass = item.tendencia > 0 ? 'text-success' : item.tendencia < 0 ? 'text-danger' : 'text-muted';
+
+              html += `
+                <tr>
+                  <td class="text-center"><strong>${medalha} ${posicao}º</strong></td>
+                  <td><strong>${item.genero}</strong></td>
+                  <td class="text-center">${item.total}</td>
+                  <td class="text-center">${item.ultimos2}</td>
+                  <td class="text-center ${tendenciaClass}">
+                    ${tendenciaIcon} ${item.tendencia > 0 ? '+' : ''}${item.tendencia}
+                  </td>
+                </tr>
+              `;
+            });
+
+            html += `
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Insights por Gênero -->
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="alert alert-success">
+                    <h6><i class='bx bx-trending-up'></i> Gêneros em Alta</h6>
+                    <ul class="mb-0">
+            `;
+            
+            const generosEmAlta = generosRanking.filter(g => g.tendencia > 0).slice(0, 3);
+            generosEmAlta.forEach(genero => {
+              html += `<li><strong>${genero.genero}</strong> (+${genero.tendencia} empréstimos)</li>`;
+            });
+            
+            html += `
+                    </ul>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="alert alert-warning">
+                    <h6><i class='bx bx-trending-down'></i> Gêneros em Declínio</h6>
+                    <ul class="mb-0">
+            `;
+            
+            const generosEmDeclinio = generosRanking.filter(g => g.tendencia < 0).slice(0, 3);
+            generosEmDeclinio.forEach(genero => {
+              html += `<li><strong>${genero.genero}</strong> (${genero.tendencia} empréstimos)</li>`;
+            });
+            
+            html += `
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert alert-info mt-4">
+                <h6><i class='bx bx-lightbulb'></i> Recomendações:</h6>
+                <ul class="mb-0">
+                  <li><strong>Expandir:</strong> Considere adquirir mais títulos dos gêneros em alta</li>
+                  <li><strong>Promover:</strong> Crie campanhas para revitalizar gêneros em declínio</li>
+                  <li><strong>Equilibrar:</strong> Mantenha diversidade para atender diferentes perfis de leitores</li>
+                </ul>
+              </div>
+            `;
+
+          } else {
+            // Outros tipos (usuarios, sazonalidade) - placeholder
+            html = `
+              <div class="text-center py-5">
+                <i class='bx bx-trending-up' style="font-size: 4rem; color: #4facfe; margin-bottom: 20px;"></i>
+                <h5 class="text-dark">Análise de Tendências - ${metrica.charAt(0).toUpperCase() + metrica.slice(1)}</h5>
+                <p class="text-muted">Análise específica em desenvolvimento.</p>
+                
+                <div class="alert alert-info mt-4">
+                  <h6>Em Breve:</h6>
+                  <p class="mb-0">
+                    ${metrica === 'usuarios' ? 'Análise do comportamento e padrões de atividade dos usuários ao longo do tempo.' : 'Análise sazonal completa com identificação de padrões por épocas do ano.'}
+                  </p>
+                </div>
+              </div>
+            `;
+          }
+
         } catch (error) {
           html = `<p class="text-danger">Erro ao carregar análise de tendências: ${error.message}</p>`;
+          console.error('Erro ao buscar tendências:', error);
         }
       }
 
       if (reportType.value === 'performance') {
         try {
-          html = `
-            <div class="text-center py-5">
-              <i class='bx bx-line-chart' style="font-size: 4rem; color: #FFD54F; margin-bottom: 20px;"></i>
-              <h5 class="text-dark">Performance da Biblioteca</h5>
-              <p class="text-muted">Relatório de performance em construção. Incluirá:</p>
-              <div class="alert alert-info mt-4">
-                <h6><i class='bx bx-info-circle'></i> Métricas Planejadas:</h6>
-                <div class="row">
-                  <div class="col-md-6">
-                    <ul class="mb-0">
-                      <li>Taxa de rotatividade do acervo</li>
-                      <li>Tempo médio de empréstimo</li>
-                      <li>Eficiência do sistema</li>
-                    </ul>
+          const indicador = document.getElementById('performanceIndicador').value;
+          
+          // Buscar dados necessários
+          const [livrosSnapshot, usuariosSnapshot, emprestimosSnapshot] = await Promise.all([
+            db.collection('livros').get(),
+            db.collection('usuarios').get(),
+            db.collection('emprestimos').get()
+          ]);
+
+          if (indicador === 'rotatividade') {
+            // Análise da Taxa de Rotatividade
+            const rotatividades = {};
+            const totalExemplares = livrosSnapshot.docs.reduce((total, doc) => {
+              const livro = doc.data();
+              return total + (livro.quantidade || 0);
+            }, 0);
+
+            // Calcular rotatividade por livro
+            for (const livroDoc of livrosSnapshot.docs) {
+              const livro = livroDoc.data();
+              const livroId = livroDoc.id;
+              const quantidade = livro.quantidade || 0;
+              
+              if (quantidade > 0) {
+                let emprestimosDoLivro = 0;
+                
+                emprestimosSnapshot.docs.forEach(empDoc => {
+                  const emp = empDoc.data();
+                  if (emp.books && Array.isArray(emp.books)) {
+                    emp.books.forEach(book => {
+                      if (book.bookId === livroId) {
+                        emprestimosDoLivro += (book.quantity || 1);
+                      }
+                    });
+                  }
+                });
+
+                const taxaRotatividade = emprestimosDoLivro / quantidade;
+                rotatividades[livroId] = {
+                  titulo: livro.titulo || 'Título não informado',
+                  genero: livro.genero || 'Não classificado',
+                  quantidade,
+                  emprestimos: emprestimosDoLivro,
+                  rotatividade: taxaRotatividade
+                };
+              }
+            }
+
+            const livrosOrdenados = Object.values(rotatividades).sort((a, b) => b.rotatividade - a.rotatividade);
+            const mediaRotatividade = livrosOrdenados.length > 0 ? 
+              (livrosOrdenados.reduce((sum, l) => sum + l.rotatividade, 0) / livrosOrdenados.length).toFixed(2) : 0;
+
+            html = `
+              <div class="mb-4">
+                <div class="d-flex align-items-center mb-3">
+                  <i class='bx bx-line-chart' style="font-size: 2rem; color: #FFD54F; margin-right: 10px;"></i>
+                  <h4 class="text-dark mb-0">Performance da Biblioteca - Taxa de Rotatividade</h4>
+                </div>
+                <p class="text-muted">Análise da eficiência de circulação do acervo baseada em empréstimos por exemplar</p>
+              </div>
+
+              <!-- Indicadores Gerais -->
+              <div class="row mb-4">
+                <div class="col-md-4">
+                  <div class="stats-card text-center">
+                    <div class="stats-number" style="color: #FFD54F;">${mediaRotatividade}</div>
+                    <div class="stats-label">Rotatividade Média</div>
                   </div>
-                  <div class="col-md-6">
-                    <ul class="mb-0">
-                      <li>Índices de satisfação</li>
-                      <li>Performance por categoria</li>
-                      <li>Comparativos mensais</li>
-                    </ul>
+                </div>
+                <div class="col-md-4">
+                  <div class="stats-card text-center">
+                    <div class="stats-number" style="color: #28a745;">${livrosOrdenados.filter(l => l.rotatividade >= 2).length}</div>
+                    <div class="stats-label">Livros Alta Rotatividade</div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="stats-card text-center">
+                    <div class="stats-number" style="color: #dc3545;">${livrosOrdenados.filter(l => l.rotatividade < 0.5).length}</div>
+                    <div class="stats-label">Livros Baixa Rotatividade</div>
                   </div>
                 </div>
               </div>
-            </div>
-          `;
+
+              <!-- Top 10 Maior Rotatividade -->
+              <div class="row mb-4">
+                <div class="col-md-6">
+                  <h5><i class='bx bx-trophy'></i> Top 10 - Maior Rotatividade</h5>
+                  <div class="table-responsive">
+                    <table class="table table-sm">
+                      <thead class="table-success">
+                        <tr>
+                          <th>Pos.</th>
+                          <th>Título</th>
+                          <th>Gênero</th>
+                          <th class="text-center">Taxa</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+            `;
+
+            livrosOrdenados.slice(0, 10).forEach((livro, index) => {
+              const posicao = index + 1;
+              let medalha = '';
+              if (posicao === 1) medalha = '🥇';
+              else if (posicao === 2) medalha = '🥈';
+              else if (posicao === 3) medalha = '🥉';
+
+              html += `
+                <tr>
+                  <td class="text-center">${medalha} ${posicao}º</td>
+                  <td><strong>${livro.titulo.length > 25 ? livro.titulo.substring(0, 25) + '...' : livro.titulo}</strong></td>
+                  <td><span class="badge bg-primary">${livro.genero}</span></td>
+                  <td class="text-center">
+                    <span class="badge bg-success">${livro.rotatividade.toFixed(2)}</span>
+                  </td>
+                </tr>
+              `;
+            });
+
+            html += `
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                
+                <div class="col-md-6">
+                  <h5><i class='bx bx-error'></i> Menor Rotatividade (Atenção Necessária)</h5>
+                  <div class="table-responsive">
+                    <table class="table table-sm">
+                      <thead class="table-warning">
+                        <tr>
+                          <th>Título</th>
+                          <th>Gênero</th>
+                          <th class="text-center">Taxa</th>
+                          <th class="text-center">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+            `;
+
+            livrosOrdenados.filter(l => l.rotatividade < 0.5).slice(0, 8).forEach(livro => {
+              const status = livro.rotatividade === 0 ? 'Nunca emprestado' : 'Baixa demanda';
+              const badgeClass = livro.rotatividade === 0 ? 'bg-danger' : 'bg-warning';
+
+              html += `
+                <tr>
+                  <td><strong>${livro.titulo.length > 20 ? livro.titulo.substring(0, 20) + '...' : livro.titulo}</strong></td>
+                  <td><span class="badge bg-secondary">${livro.genero}</span></td>
+                  <td class="text-center">${livro.rotatividade.toFixed(2)}</td>
+                  <td class="text-center">
+                    <span class="badge ${badgeClass}">${status}</span>
+                  </td>
+                </tr>
+              `;
+            });
+
+            html += `
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Análise por Gênero -->
+              <div class="row">
+                <div class="col-12">
+                  <h5><i class='bx bx-category'></i> Performance por Gênero</h5>
+                  <div class="table-responsive">
+                    <table class="table table-bordered">
+                      <thead class="table-primary">
+                        <tr>
+                          <th>Gênero</th>
+                          <th class="text-center">Títulos</th>
+                          <th class="text-center">Exemplares</th>
+                          <th class="text-center">Total Empréstimos</th>
+                          <th class="text-center">Rotatividade Média</th>
+                          <th class="text-center">Performance</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+            `;
+
+            const generos = {};
+            livrosOrdenados.forEach(livro => {
+              if (!generos[livro.genero]) {
+                generos[livro.genero] = {
+                  titulos: 0,
+                  exemplares: 0,
+                  emprestimos: 0,
+                  rotatividades: []
+                };
+              }
+              generos[livro.genero].titulos++;
+              generos[livro.genero].exemplares += livro.quantidade;
+              generos[livro.genero].emprestimos += livro.emprestimos;
+              generos[livro.genero].rotatividades.push(livro.rotatividade);
+            });
+
+            Object.entries(generos)
+              .map(([genero, dados]) => ({
+                genero,
+                ...dados,
+                rotatividadeMedia: dados.rotatividades.reduce((a, b) => a + b, 0) / dados.rotatividades.length
+              }))
+              .sort((a, b) => b.rotatividadeMedia - a.rotatividadeMedia)
+              .forEach(genero => {
+                const performance = genero.rotatividadeMedia >= 2 ? 'Excelente' : 
+                                  genero.rotatividadeMedia >= 1 ? 'Boa' : 
+                                  genero.rotatividadeMedia >= 0.5 ? 'Regular' : 'Baixa';
+                const performanceClass = genero.rotatividadeMedia >= 2 ? 'bg-success' : 
+                                        genero.rotatividadeMedia >= 1 ? 'bg-primary' : 
+                                        genero.rotatividadeMedia >= 0.5 ? 'bg-warning' : 'bg-danger';
+
+                html += `
+                  <tr>
+                    <td><strong>${genero.genero}</strong></td>
+                    <td class="text-center">${genero.titulos}</td>
+                    <td class="text-center">${genero.exemplares}</td>
+                    <td class="text-center">${genero.emprestimos}</td>
+                    <td class="text-center">${genero.rotatividadeMedia.toFixed(2)}</td>
+                    <td class="text-center">
+                      <span class="badge ${performanceClass}">${performance}</span>
+                    </td>
+                  </tr>
+                `;
+              });
+
+            html += `
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert alert-info mt-4">
+                <h6><i class='bx bx-info-circle'></i> Interpretação:</h6>
+                <ul class="mb-0">
+                  <li><strong>Taxa de Rotatividade:</strong> Número de empréstimos ÷ Número de exemplares</li>
+                  <li><strong>Boa rotatividade:</strong> 1-2 empréstimos por exemplar/ano</li>
+                  <li><strong>Alta rotatividade:</strong> Acima de 2 (considere mais exemplares)</li>
+                  <li><strong>Baixa rotatividade:</strong> Abaixo de 0.5 (avalie relevância no acervo)</li>
+                </ul>
+              </div>
+            `;
+
+          } else if (indicador === 'tempo-medio') {
+            // Análise do Tempo Médio de Empréstimo
+            const temposEmprestimo = [];
+            const hoje = new Date();
+
+            emprestimosSnapshot.docs.forEach(doc => {
+              const emp = doc.data();
+              if (emp.loanDate && emp.status === 'DEVOLVIDO' && emp.actualReturnDate) {
+                try {
+                  const loanParts = emp.loanDate.split('/');
+                  const returnParts = emp.actualReturnDate.split('/');
+                  
+                  if (loanParts.length === 3 && returnParts.length === 3) {
+                    const loanDate = new Date(loanParts[2], loanParts[1] - 1, loanParts[0]);
+                    const returnDate = new Date(returnParts[2], returnParts[1] - 1, returnParts[0]);
+                    
+                    const diasEmprestimo = Math.ceil((returnDate - loanDate) / (1000 * 60 * 60 * 24));
+                    if (diasEmprestimo > 0 && diasEmprestimo <= 365) { // Filtrar valores válidos
+                      temposEmprestimo.push(diasEmprestimo);
+                    }
+                  }
+                } catch (error) {
+                  console.error('Erro ao calcular tempo:', error);
+                }
+              }
+            });
+
+            const tempoMedio = temposEmprestimo.length > 0 ? 
+              (temposEmprestimo.reduce((a, b) => a + b, 0) / temposEmprestimo.length).toFixed(1) : 0;
+            const tempoMinimo = temposEmprestimo.length > 0 ? Math.min(...temposEmprestimo) : 0;
+            const tempoMaximo = temposEmprestimo.length > 0 ? Math.max(...temposEmprestimo) : 0;
+
+            // Distribuição por faixas
+            const faixas = {
+              '1-7 dias': temposEmprestimo.filter(t => t <= 7).length,
+              '8-15 dias': temposEmprestimo.filter(t => t > 7 && t <= 15).length,
+              '16-30 dias': temposEmprestimo.filter(t => t > 15 && t <= 30).length,
+              '31-60 dias': temposEmprestimo.filter(t => t > 30 && t <= 60).length,
+              'Mais de 60 dias': temposEmprestimo.filter(t => t > 60).length
+            };
+
+            html = `
+              <div class="mb-4">
+                <div class="d-flex align-items-center mb-3">
+                  <i class='bx bx-line-chart' style="font-size: 2rem; color: #FFD54F; margin-right: 10px;"></i>
+                  <h4 class="text-dark mb-0">Performance da Biblioteca - Tempo Médio de Empréstimo</h4>
+                </div>
+                <p class="text-muted">Análise do tempo que os usuários mantêm os livros emprestados</p>
+              </div>
+
+              <!-- Indicadores Principais -->
+              <div class="row mb-4">
+                <div class="col-md-3">
+                  <div class="stats-card text-center">
+                    <div class="stats-number" style="color: #FFD54F;">${tempoMedio}</div>
+                    <div class="stats-label">Dias (Tempo Médio)</div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stats-card text-center">
+                    <div class="stats-number" style="color: #28a745;">${tempoMinimo}</div>
+                    <div class="stats-label">Dias (Mínimo)</div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stats-card text-center">
+                    <div class="stats-number" style="color: #dc3545;">${tempoMaximo}</div>
+                    <div class="stats-label">Dias (Máximo)</div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stats-card text-center">
+                    <div class="stats-number" style="color: #4facfe;">${temposEmprestimo.length}</div>
+                    <div class="stats-label">Empréstimos Analisados</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Distribuição por Faixas de Tempo -->
+              <div class="row">
+                <div class="col-12">
+                  <h5><i class='bx bx-time'></i> Distribuição por Tempo de Empréstimo</h5>
+                  <div class="table-responsive">
+                    <table class="table table-bordered">
+                      <thead class="table-primary">
+                        <tr>
+                          <th>Faixa de Tempo</th>
+                          <th class="text-center">Quantidade</th>
+                          <th class="text-center">Percentual</th>
+                          <th class="text-center">Classificação</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+            `;
+
+            Object.entries(faixas).forEach(([faixa, quantidade]) => {
+              const percentual = temposEmprestimo.length > 0 ? ((quantidade / temposEmprestimo.length) * 100).toFixed(1) : 0;
+              let classificacao = '';
+              let badgeClass = '';
+              
+              switch(faixa) {
+                case '1-7 dias':
+                  classificacao = 'Muito Rápido';
+                  badgeClass = 'bg-info';
+                  break;
+                case '8-15 dias':
+                  classificacao = 'Ideal';
+                  badgeClass = 'bg-success';
+                  break;
+                case '16-30 dias':
+                  classificacao = 'Normal';
+                  badgeClass = 'bg-primary';
+                  break;
+                case '31-60 dias':
+                  classificacao = 'Longo';
+                  badgeClass = 'bg-warning';
+                  break;
+                case 'Mais de 60 dias':
+                  classificacao = 'Muito Longo';
+                  badgeClass = 'bg-danger';
+                  break;
+              }
+
+              html += `
+                <tr>
+                  <td><strong>${faixa}</strong></td>
+                  <td class="text-center">${quantidade}</td>
+                  <td class="text-center">${percentual}%</td>
+                  <td class="text-center">
+                    <span class="badge ${badgeClass}">${classificacao}</span>
+                  </td>
+                </tr>
+              `;
+            });
+
+            const avaliacaoGeral = tempoMedio <= 15 ? 'Excelente' : 
+                                  tempoMedio <= 30 ? 'Boa' : 
+                                  tempoMedio <= 45 ? 'Regular' : 'Precisa Atenção';
+            const avaliacaoClass = tempoMedio <= 15 ? 'alert-success' : 
+                                  tempoMedio <= 30 ? 'alert-primary' : 
+                                  tempoMedio <= 45 ? 'alert-warning' : 'alert-danger';
+
+            html += `
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="${avaliacaoClass} mt-4">
+                <h6><i class='bx bx-check-circle'></i> Avaliação Geral: ${avaliacaoGeral}</h6>
+                <p class="mb-0">
+                  ${tempoMedio <= 15 ? 'O tempo médio está dentro do ideal. Os usuários estão devolvendo os livros rapidamente.' : 
+                    tempoMedio <= 30 ? 'Tempo médio aceitável. A maioria dos usuários respeita os prazos.' : 
+                    tempoMedio <= 45 ? 'Tempo médio um pouco alto. Considere campanhas de conscientização.' : 
+                    'Tempo médio muito alto. Revise políticas de empréstimo e implemente lembretes automáticos.'}
+                </p>
+              </div>
+
+              <div class="alert alert-info mt-3">
+                <h6><i class='bx bx-lightbulb'></i> Recomendações:</h6>
+                <ul class="mb-0">
+                  <li><strong>Tempo Ideal:</strong> 7-15 dias para a maioria dos livros</li>
+                  <li><strong>Monitoramento:</strong> Acompanhe usuários com empréstimos muito longos</li>
+                  <li><strong>Políticas:</strong> Ajuste prazos conforme tipo de material</li>
+                  <li><strong>Lembretes:</strong> Implemente notificações próximo ao vencimento</li>
+                </ul>
+              </div>
+            `;
+
+          } else {
+            // Outros indicadores (eficiencia, satisfacao) - placeholder
+            html = `
+              <div class="text-center py-5">
+                <i class='bx bx-line-chart' style="font-size: 4rem; color: #FFD54F; margin-bottom: 20px;"></i>
+                <h5 class="text-dark">Performance da Biblioteca - ${indicador.charAt(0).toUpperCase() + indicador.slice(1).replace('-', ' ')}</h5>
+                <p class="text-muted">Indicador em desenvolvimento.</p>
+                
+                <div class="alert alert-info mt-4">
+                  <h6>Funcionalidades Planejadas:</h6>
+                  <p class="mb-0">
+                    ${indicador === 'eficiencia' ? 
+                      'Análise da eficiência operacional incluindo tempo de catalogação, processamento de empréstimos e gestão do acervo.' : 
+                      'Métricas de satisfação dos usuários baseadas em feedback, reclamações e avaliações do serviço.'}
+                  </p>
+                </div>
+              </div>
+            `;
+          }
+
         } catch (error) {
           html = `<p class="text-danger">Erro ao carregar performance: ${error.message}</p>`;
+          console.error('Erro ao buscar performance:', error);
         }
       }
 
       if (reportType.value === 'analytics') {
         try {
-          html = `
-            <div class="text-center py-5">
-              <i class='bx bx-stats' style="font-size: 4rem; color: #f093fb; margin-bottom: 20px;"></i>
-              <h5 class="text-dark">Analytics Avançado</h5>
-              <p class="text-muted">Módulo de analytics em desenvolvimento. Recursos futuros:</p>
-              <div class="row mt-4">
-                <div class="col-md-6">
-                  <div class="feature-highlight">
-                    <h6><i class='bx bx-brain'></i> Inteligência Artificial</h6>
-                    <p>Análises preditivas baseadas em machine learning para otimização do acervo</p>
-                  </div>
+          const modelo = document.getElementById('analyticsModelo').value;
+          
+          // Buscar dados para análises
+          const [livrosSnapshot, usuariosSnapshot, emprestimosSnapshot] = await Promise.all([
+            db.collection('livros').get(),
+            db.collection('usuarios').get(),
+            db.collection('emprestimos').get()
+          ]);
+
+          if (modelo === 'correlacao') {
+            // Análise de Correlação entre Gêneros e Padrões de Empréstimo
+            const correlacoesGenero = {};
+            const padroesTemporal = {};
+            
+            // Processar empréstimos para análise de correlação
+            for (const empDoc of emprestimosSnapshot.docs) {
+              const emp = empDoc.data();
+              if (emp.books && Array.isArray(emp.books)) {
+                for (const book of emp.books) {
+                  try {
+                    const livroDoc = await db.collection('livros').doc(book.bookId).get();
+                    if (livroDoc.exists) {
+                      const livro = livroDoc.data();
+                      const genero = livro.genero || 'Não classificado';
+                      
+                      if (!correlacoesGenero[genero]) {
+                        correlacoesGenero[genero] = {
+                          emprestimos: 0,
+                          usuarios: new Set(),
+                          tempoMedio: [],
+                          popularidade: 0
+                        };
+                      }
+                      
+                      correlacoesGenero[genero].emprestimos++;
+                      correlacoesGenero[genero].usuarios.add(emp.userId);
+                      correlacoesGenero[genero].popularidade += (book.quantity || 1);
+                      
+                      // Análise temporal se houver datas
+                      if (emp.loanDate) {
+                        const dateParts = emp.loanDate.split('/');
+                        if (dateParts.length === 3) {
+                          const mes = dateParts[1];
+                          if (!padroesTemporal[mes]) padroesTemporal[mes] = {};
+                          if (!padroesTemporal[mes][genero]) padroesTemporal[mes][genero] = 0;
+                          padroesTemporal[mes][genero]++;
+                        }
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Erro ao processar livro:', error);
+                  }
+                }
+              }
+            }
+
+            html = `
+              <div class="mb-4">
+                <div class="d-flex align-items-center mb-3">
+                  <i class='bx bx-stats' style="font-size: 2rem; color: #f093fb; margin-right: 10px;"></i>
+                  <h4 class="text-dark mb-0">Analytics Avançado - Análise de Correlação</h4>
                 </div>
-                <div class="col-md-6">
-                  <div class="feature-highlight">
-                    <h6><i class='bx bx-network-chart'></i> Correlações Avançadas</h6>
-                    <p>Identificação de padrões complexos entre usuários, livros e períodos</p>
+                <p class="text-muted">Identificação de padrões e correlações entre gêneros literários e comportamento dos usuários</p>
+              </div>
+
+              <!-- Correlações por Gênero -->
+              <div class="row mb-4">
+                <div class="col-12">
+                  <h5><i class='bx bx-network-chart'></i> Correlações entre Gêneros e Padrões de Uso</h5>
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                      <thead class="table-primary">
+                        <tr>
+                          <th>Gênero</th>
+                          <th class="text-center">Total Empréstimos</th>
+                          <th class="text-center">Usuários Únicos</th>
+                          <th class="text-center">Índice de Popularidade</th>
+                          <th class="text-center">Fidelidade (Emp/Usuário)</th>
+                          <th class="text-center">Score de Correlação</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+            `;
+
+            Object.entries(correlacoesGenero)
+              .sort((a, b) => b[1].emprestimos - a[1].emprestimos)
+              .forEach(([genero, dados]) => {
+                const usuariosUnicos = dados.usuarios.size;
+                const fidelidade = usuariosUnicos > 0 ? (dados.emprestimos / usuariosUnicos).toFixed(1) : 0;
+                const scoreCorrelacao = ((dados.emprestimos * 0.4) + (usuariosUnicos * 0.3) + (dados.popularidade * 0.3)).toFixed(0);
+                
+                let badgeClass = 'bg-secondary';
+                if (scoreCorrelacao > 50) badgeClass = 'bg-success';
+                else if (scoreCorrelacao > 25) badgeClass = 'bg-warning';
+                else if (scoreCorrelacao > 10) badgeClass = 'bg-info';
+
+                html += `
+                  <tr>
+                    <td><strong>${genero}</strong></td>
+                    <td class="text-center">${dados.emprestimos}</td>
+                    <td class="text-center">${usuariosUnicos}</td>
+                    <td class="text-center">${dados.popularidade}</td>
+                    <td class="text-center">
+                      <span class="badge bg-primary">${fidelidade}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge ${badgeClass}">${scoreCorrelacao}</span>
+                    </td>
+                  </tr>
+                `;
+              });
+
+            html += `
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
-              <div class="alert alert-warning mt-4">
-                <strong>Em Breve:</strong> Sistema completo de analytics com dashboard interativo e relatórios automatizados.
+
+              <!-- Padrões Temporais -->
+              <div class="row mb-4">
+                <div class="col-12">
+                  <h5><i class='bx bx-calendar'></i> Padrões Temporais por Mês</h5>
+                  <div class="table-responsive">
+                    <table class="table table-sm">
+                      <thead class="table-success">
+                        <tr>
+                          <th>Mês</th>
+            `;
+            
+            // Adicionar cabeçalhos dos gêneros mais populares
+            const generosPopulares = Object.keys(correlacoesGenero).slice(0, 5);
+            generosPopulares.forEach(genero => {
+              html += `<th class="text-center">${genero}</th>`;
+            });
+            
+            html += `
+                          <th class="text-center">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+            `;
+            
+            for (let mes = 1; mes <= 12; mes++) {
+              const mesStr = mes.toString().padStart(2, '0');
+              const nomeMes = new Date(2024, mes - 1).toLocaleDateString('pt-BR', { month: 'long' });
+              
+              html += `<tr><td><strong>${nomeMes}</strong></td>`;
+              
+              let totalMes = 0;
+              generosPopulares.forEach(genero => {
+                const valor = padroesTemporal[mesStr] ? (padroesTemporal[mesStr][genero] || 0) : 0;
+                totalMes += valor;
+                html += `<td class="text-center">${valor}</td>`;
+              });
+              
+              html += `<td class="text-center"><strong>${totalMes}</strong></td></tr>`;
+            }
+
+            html += `
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
-            </div>
-          `;
+
+              <!-- Insights e Recomendações -->
+              <div class="alert alert-info">
+                <h6><i class='bx bx-brain'></i> Insights Identificados:</h6>
+                <ul class="mb-0">
+                  <li><strong>Gênero Líder:</strong> ${Object.entries(correlacoesGenero).sort((a, b) => b[1].emprestimos - a[1].emprestimos)[0]?.[0] || 'N/A'} demonstra maior engajamento</li>
+                  <li><strong>Fidelidade:</strong> Usuários de alguns gêneros tendem a fazer mais empréstimos recorrentes</li>
+                  <li><strong>Sazonalidade:</strong> Padrões temporais indicam preferências por período</li>
+                  <li><strong>Diversificação:</strong> Análise da distribuição ajuda no planejamento de aquisições</li>
+                </ul>
+              </div>
+            `;
+
+          } else if (modelo === 'predicao') {
+            // Análise Preditiva
+            const hoje = new Date();
+            const tresUltimosMeses = [];
+            
+            for (let i = 2; i >= 0; i--) {
+              const data = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+              tresUltimosMeses.push({
+                mes: data.getMonth() + 1,
+                ano: data.getFullYear(),
+                nome: data.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+              });
+            }
+
+            // Calcular tendências
+            const tendenciaEmprestimos = [];
+            
+            for (const periodo of tresUltimosMeses) {
+              let emprestimosNoMes = 0;
+              emprestimosSnapshot.docs.forEach(doc => {
+                const emp = doc.data();
+                if (emp.loanDate) {
+                  const dateParts = emp.loanDate.split('/');
+                  if (dateParts.length === 3) {
+                    const empMes = parseInt(dateParts[1]);
+                    const empAno = parseInt(dateParts[2]);
+                    if (empMes === periodo.mes && empAno === periodo.ano) {
+                      emprestimosNoMes++;
+                    }
+                  }
+                }
+              });
+              tendenciaEmprestimos.push(emprestimosNoMes);
+            }
+
+            // Calcular projeção linear simples
+            const crescimento = tendenciaEmprestimos.length >= 2 ? 
+              ((tendenciaEmprestimos[tendenciaEmprestimos.length - 1] - tendenciaEmprestimos[0]) / tendenciaEmprestimos.length) : 0;
+            
+            const proximoMes = tendenciaEmprestimos[tendenciaEmprestimos.length - 1] + crescimento;
+            const proximosMeses = [proximoMes, proximoMes + crescimento, proximoMes + (crescimento * 2)];
+
+            html = `
+              <div class="mb-4">
+                <div class="d-flex align-items-center mb-3">
+                  <i class='bx bx-stats' style="font-size: 2rem; color: #f093fb; margin-right: 10px;"></i>
+                  <h4 class="text-dark mb-0">Analytics Avançado - Análise Preditiva</h4>
+                </div>
+                <p class="text-muted">Previsões baseadas em dados históricos para planejamento estratégico</p>
+              </div>
+
+              <!-- Tendência Histórica -->
+              <div class="row mb-4">
+                <div class="col-md-6">
+                  <h5><i class='bx bx-trending-up'></i> Tendência de Empréstimos (Últimos 3 Meses)</h5>
+                  <div class="table-responsive">
+                    <table class="table table-bordered">
+                      <thead class="table-primary">
+                        <tr>
+                          <th>Período</th>
+                          <th class="text-center">Empréstimos</th>
+                          <th class="text-center">Variação</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+            `;
+
+            tresUltimosMeses.forEach((periodo, index) => {
+              const emprestimos = tendenciaEmprestimos[index];
+              const variacao = index > 0 ? tendenciaEmprestimos[index] - tendenciaEmprestimos[index - 1] : 0;
+              const variacaoIcon = variacao > 0 ? '📈' : variacao < 0 ? '📉' : '➡️';
+              
+              html += `
+                <tr>
+                  <td><strong>${periodo.nome}</strong></td>
+                  <td class="text-center">${emprestimos}</td>
+                  <td class="text-center">
+                    ${variacaoIcon} ${variacao > 0 ? '+' : ''}${variacao}
+                  </td>
+                </tr>
+              `;
+            });
+
+            html += `
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                
+                <div class="col-md-6">
+                  <h5><i class='bx bx-crystal-ball'></i> Projeções Futuras</h5>
+                  <div class="alert alert-warning">
+                    <h6>Projeção para os Próximos Meses:</h6>
+                    <ul class="mb-0">
+                      <li><strong>Próximo mês:</strong> ~${Math.round(proximosMeses[0])} empréstimos</li>
+                      <li><strong>Em 2 meses:</strong> ~${Math.round(proximosMeses[1])} empréstimos</li>
+                      <li><strong>Em 3 meses:</strong> ~${Math.round(proximosMeses[2])} empréstimos</li>
+                    </ul>
+                  </div>
+                  
+                  <div class="alert ${crescimento > 0 ? 'alert-success' : crescimento < 0 ? 'alert-danger' : 'alert-info'}">
+                    <h6>Tendência Identificada:</h6>
+                    <p class="mb-0">
+                      ${crescimento > 5 ? 'Crescimento forte' : crescimento > 0 ? 'Crescimento moderado' : crescimento < -5 ? 'Declínio acentuado' : crescimento < 0 ? 'Declínio leve' : 'Estabilidade'} 
+                      (${crescimento > 0 ? '+' : ''}${crescimento.toFixed(1)} empréstimos/mês)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recomendações Estratégicas -->
+              <div class="row">
+                <div class="col-12">
+                  <h5><i class='bx bx-lightbulb'></i> Recomendações Estratégicas</h5>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="feature-highlight">
+                        <h6>📚 Gestão do Acervo</h6>
+                        <p>${crescimento > 0 ? 'Considere expandir o acervo para atender à demanda crescente' : 'Foque na otimização e renovação do acervo atual'}</p>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="feature-highlight">
+                        <h6>👥 Engajamento</h6>
+                        <p>${crescimento < 0 ? 'Implemente campanhas para incentivar mais empréstimos' : 'Mantenha as estratégias atuais de engajamento'}</p>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="feature-highlight">
+                        <h6>📈 Planejamento</h6>
+                        <p>Base a aquisição de novos livros nas tendências identificadas e projeções futuras</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert alert-info mt-4">
+                <h6><i class='bx bx-info-circle'></i> Metodologia:</h6>
+                <p class="mb-0">As previsões são baseadas em análise de tendência linear dos últimos 3 meses. Para maior precisão, recomenda-se análise com histórico mais extenso e consideração de fatores sazonais.</p>
+              </div>
+            `;
+
+          } else {
+            // Outros modelos (segmentacao, otimizacao)
+            html = `
+              <div class="text-center py-5">
+                <i class='bx bx-stats' style="font-size: 4rem; color: #f093fb; margin-bottom: 20px;"></i>
+                <h5 class="text-dark">Analytics Avançado - ${modelo.charAt(0).toUpperCase() + modelo.slice(1)}</h5>
+                <p class="text-muted">Módulo em desenvolvimento. Recursos planejados para este modelo:</p>
+                
+                ${modelo === 'segmentacao' ? `
+                  <div class="row mt-4">
+                    <div class="col-md-6">
+                      <div class="feature-highlight">
+                        <h6><i class='bx bx-group'></i> Segmentação de Usuários</h6>
+                        <ul class="text-start">
+                          <li>Leitores frequentes vs esporádicos</li>
+                          <li>Preferências por gênero</li>
+                          <li>Padrões de devolução</li>
+                          <li>Perfis comportamentais</li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="feature-highlight">
+                        <h6><i class='bx bx-target-lock'></i> Personalização</h6>
+                        <ul class="text-start">
+                          <li>Recomendações personalizadas</li>
+                          <li>Campanhas direcionadas</li>
+                          <li>Estratégias por segmento</li>
+                          <li>Métricas customizadas</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                ` : `
+                  <div class="row mt-4">
+                    <div class="col-md-6">
+                      <div class="feature-highlight">
+                        <h6><i class='bx bx-cog'></i> Otimização de Processos</h6>
+                        <ul class="text-start">
+                          <li>Eficiência da catalogação</li>
+                          <li>Otimização de prazos</li>
+                          <li>Redução de atrasos</li>
+                          <li>Automação de tarefas</li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="feature-highlight">
+                        <h6><i class='bx bx-rocket'></i> Melhorias Sugeridas</h6>
+                        <ul class="text-start">
+                          <li>Layout otimizado do acervo</li>
+                          <li>Horários de maior movimento</li>
+                          <li>Recursos subutilizados</li>
+                          <li>Pontos de melhoria</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                `}
+                
+                <div class="alert alert-warning mt-4">
+                  <strong>Em Desenvolvimento:</strong> Este modelo estará disponível em uma próxima atualização do sistema.
+                </div>
+              </div>
+            `;
+          }
+
         } catch (error) {
           html = `<p class="text-danger">Erro ao carregar analytics: ${error.message}</p>`;
+          console.error('Erro ao buscar analytics:', error);
         }
       }
 

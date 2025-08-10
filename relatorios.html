@@ -667,6 +667,51 @@
         </div>
       </div>
 
+      <!-- Cards de Análises Detalhadas -->
+      <div class="settings-card mt-4">
+        <h5>
+          <i class='bx bx-chart-bar'></i> Análises Detalhadas
+          <span class="tooltip-info">
+            <i class='bx bx-info-circle' style="font-size: 1.2rem; color: #667eea;"></i>
+            <span class="tooltip-text">Relatórios avançados com análises estatísticas e insights da biblioteca.</span>
+          </span>
+        </h5>
+        
+        <div class="report-type-cards mt-3">
+          <div class="report-card" data-type="estatisticas">
+            <div class="report-card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+              <i class='bx bx-bar-chart-alt-2'></i>
+            </div>
+            <h4>Estatísticas Gerais</h4>
+            <p>Análise completa do acervo, empréstimos e usuários com gráficos e métricas detalhadas</p>
+          </div>
+          
+          <div class="report-card" data-type="tendencias">
+            <div class="report-card-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+              <i class='bx bx-trending-up'></i>
+            </div>
+            <h4>Análise de Tendências</h4>
+            <p>Identificação de padrões de empréstimo, livros mais populares e comportamento dos usuários</p>
+          </div>
+          
+          <div class="report-card" data-type="performance">
+            <div class="report-card-icon" style="background: linear-gradient(135deg, #FFD54F 0%, #FF9800 100%);">
+              <i class='bx bx-line-chart'></i>
+            </div>
+            <h4>Performance da Biblioteca</h4>
+            <p>Métricas de desempenho, rotatividade do acervo e eficiência do sistema</p>
+          </div>
+          
+          <div class="report-card" data-type="analytics">
+            <div class="report-card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+              <i class='bx bx-stats'></i>
+            </div>
+            <h4>Analytics Avançado</h4>
+            <p>Análises preditivas, correlações e insights estratégicos para gestão da biblioteca</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Campo oculto para manter compatibilidade -->
       <select class="form-select d-none" id="reportType" name="reportType">
         <option value="livros">Livros</option>
@@ -674,6 +719,10 @@
         <option value="emprestimos">Empréstimos</option>
         <option value="leitores">Ranking de Leitores</option>
         <option value="advertencias">Advertências</option>
+        <option value="estatisticas">Estatísticas Gerais</option>
+        <option value="tendencias">Análise de Tendências</option>
+        <option value="performance">Performance da Biblioteca</option>
+        <option value="analytics">Analytics Avançado</option>
       </select>
     </div>
 
@@ -764,6 +813,56 @@
           <select class="form-select" id="leitoresOrdem" name="leitoresOrdem">
             <option value="desc">Maior para Menor</option>
             <option value="asc">Menor para Maior</option>
+          </select>
+        </div>
+        
+        <!-- Filtros para Análises Detalhadas -->
+        <div class="col-md-3 d-none" id="estatisticasFilters">
+          <label class="form-label" for="estatisticasPeriodo">
+            <i class='bx bx-calendar'></i> Período de Análise
+          </label>
+          <select class="form-select" id="estatisticasPeriodo" name="estatisticasPeriodo">
+            <option value="atual">Mês Atual</option>
+            <option value="trimestre">Último Trimestre</option>
+            <option value="semestre">Último Semestre</option>
+            <option value="ano">Último Ano</option>
+            <option value="completo">Histórico Completo</option>
+          </select>
+        </div>
+        
+        <div class="col-md-3 d-none" id="tendenciasFilters">
+          <label class="form-label" for="tendenciasMetrica">
+            <i class='bx bx-trending-up'></i> Métrica Principal
+          </label>
+          <select class="form-select" id="tendenciasMetrica" name="tendenciasMetrica">
+            <option value="emprestimos">Tendência de Empréstimos</option>
+            <option value="generos">Popularidade por Gênero</option>
+            <option value="usuarios">Atividade dos Usuários</option>
+            <option value="sazonalidade">Análise Sazonal</option>
+          </select>
+        </div>
+        
+        <div class="col-md-3 d-none" id="performanceFilters">
+          <label class="form-label" for="performanceIndicador">
+            <i class='bx bx-line-chart'></i> Indicador
+          </label>
+          <select class="form-select" id="performanceIndicador" name="performanceIndicador">
+            <option value="rotatividade">Taxa de Rotatividade</option>
+            <option value="tempo-medio">Tempo Médio de Empréstimo</option>
+            <option value="eficiencia">Eficiência do Sistema</option>
+            <option value="satisfacao">Índice de Satisfação</option>
+          </select>
+        </div>
+        
+        <div class="col-md-3 d-none" id="analyticsFilters">
+          <label class="form-label" for="analyticsModelo">
+            <i class='bx bx-stats'></i> Modelo de Análise
+          </label>
+          <select class="form-select" id="analyticsModelo" name="analyticsModelo">
+            <option value="correlacao">Análise de Correlação</option>
+            <option value="predicao">Previsões Futuras</option>
+            <option value="segmentacao">Segmentação de Usuários</option>
+            <option value="otimizacao">Sugestões de Otimização</option>
           </select>
         </div>
         
@@ -945,7 +1044,11 @@
       usuarios: "Lista todos os usuários cadastrados no sistema. Filtre por status para ver apenas usuários ativos ou inativos.",
       emprestimos: "Mostra o histórico completo de empréstimos. Use os filtros de data e situação para análises específicas de período.",
       leitores: "Ranking dos usuários mais ativos na biblioteca. Configure o período e a quantidade de resultados para análises customizadas.",
-      advertencias: "Relatório de empréstimos em atraso para acompanhamento pedagógico e gestão da biblioteca."
+      advertencias: "Relatório de empréstimos em atraso para acompanhamento pedagógico e gestão da biblioteca.",
+      estatisticas: "Análise estatística completa da biblioteca com métricas de acervo, usuários e empréstimos em formato visual.",
+      tendencias: "Identificação de padrões sazonais, livros em alta e comportamento dos usuários ao longo do tempo.",
+      performance: "Métricas de desempenho da biblioteca incluindo taxa de rotatividade, tempo médio de empréstimo e eficiência.",
+      analytics: "Análises avançadas com correlações, previsões e insights estratégicos para tomada de decisões."
     };
 
     // Função para atualizar o card ativo
@@ -1747,6 +1850,131 @@
         }
       }
 
+      // Relatórios de Análises Detalhadas
+      if (reportType.value === 'estatisticas') {
+        try {
+          html = `
+            <div class="text-center py-5">
+              <i class='bx bx-bar-chart-alt-2' style="font-size: 4rem; color: #667eea; margin-bottom: 20px;"></i>
+              <h5 class="text-dark">Estatísticas Gerais da Biblioteca</h5>
+              <p class="text-muted">Relatório em desenvolvimento. Em breve você terá acesso a análises estatísticas completas com:</p>
+              <div class="row mt-4">
+                <div class="col-md-3">
+                  <div class="stats-card">
+                    <div class="stats-number">📊</div>
+                    <div class="stats-label">Gráficos Interativos</div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stats-card">
+                    <div class="stats-number">📈</div>
+                    <div class="stats-label">Métricas de Crescimento</div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stats-card">
+                    <div class="stats-number">🎯</div>
+                    <div class="stats-label">KPIs da Biblioteca</div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stats-card">
+                    <div class="stats-number">📋</div>
+                    <div class="stats-label">Comparativos</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        } catch (error) {
+          html = `<p class="text-danger">Erro ao carregar estatísticas: ${error.message}</p>`;
+        }
+      }
+
+      if (reportType.value === 'tendencias') {
+        try {
+          html = `
+            <div class="text-center py-5">
+              <i class='bx bx-trending-up' style="font-size: 4rem; color: #4facfe; margin-bottom: 20px;"></i>
+              <h5 class="text-dark">Análise de Tendências</h5>
+              <p class="text-muted">Funcionalidade em desenvolvimento. Características futuras:</p>
+              <ul class="list-unstyled mt-4">
+                <li><i class='bx bx-check-circle text-success'></i> Padrões sazonais de empréstimos</li>
+                <li><i class='bx bx-check-circle text-success'></i> Livros em alta por período</li>
+                <li><i class='bx bx-check-circle text-success'></i> Comportamento dos usuários</li>
+                <li><i class='bx bx-check-circle text-success'></i> Previsões de demanda</li>
+              </ul>
+            </div>
+          `;
+        } catch (error) {
+          html = `<p class="text-danger">Erro ao carregar análise de tendências: ${error.message}</p>`;
+        }
+      }
+
+      if (reportType.value === 'performance') {
+        try {
+          html = `
+            <div class="text-center py-5">
+              <i class='bx bx-line-chart' style="font-size: 4rem; color: #FFD54F; margin-bottom: 20px;"></i>
+              <h5 class="text-dark">Performance da Biblioteca</h5>
+              <p class="text-muted">Relatório de performance em construção. Incluirá:</p>
+              <div class="alert alert-info mt-4">
+                <h6><i class='bx bx-info-circle'></i> Métricas Planejadas:</h6>
+                <div class="row">
+                  <div class="col-md-6">
+                    <ul class="mb-0">
+                      <li>Taxa de rotatividade do acervo</li>
+                      <li>Tempo médio de empréstimo</li>
+                      <li>Eficiência do sistema</li>
+                    </ul>
+                  </div>
+                  <div class="col-md-6">
+                    <ul class="mb-0">
+                      <li>Índices de satisfação</li>
+                      <li>Performance por categoria</li>
+                      <li>Comparativos mensais</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        } catch (error) {
+          html = `<p class="text-danger">Erro ao carregar performance: ${error.message}</p>`;
+        }
+      }
+
+      if (reportType.value === 'analytics') {
+        try {
+          html = `
+            <div class="text-center py-5">
+              <i class='bx bx-stats' style="font-size: 4rem; color: #f093fb; margin-bottom: 20px;"></i>
+              <h5 class="text-dark">Analytics Avançado</h5>
+              <p class="text-muted">Módulo de analytics em desenvolvimento. Recursos futuros:</p>
+              <div class="row mt-4">
+                <div class="col-md-6">
+                  <div class="feature-highlight">
+                    <h6><i class='bx bx-brain'></i> Inteligência Artificial</h6>
+                    <p>Análises preditivas baseadas em machine learning para otimização do acervo</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="feature-highlight">
+                    <h6><i class='bx bx-network-chart'></i> Correlações Avançadas</h6>
+                    <p>Identificação de padrões complexos entre usuários, livros e períodos</p>
+                  </div>
+                </div>
+              </div>
+              <div class="alert alert-warning mt-4">
+                <strong>Em Breve:</strong> Sistema completo de analytics com dashboard interativo e relatórios automatizados.
+              </div>
+            </div>
+          `;
+        } catch (error) {
+          html = `<p class="text-danger">Erro ao carregar analytics: ${error.message}</p>`;
+        }
+      }
+
       reportResult.innerHTML = html;
       
       // Restaurar botão
@@ -1779,6 +2007,12 @@
       document.getElementById('usuariosFilters').classList.toggle('d-none', this.value !== 'usuarios');
       document.getElementById('emprestimosFilters').classList.toggle('d-none', this.value !== 'emprestimos');
       document.getElementById('leitoresFilters').classList.toggle('d-none', this.value !== 'leitores');
+      
+      // Filtros para análises detalhadas
+      document.getElementById('estatisticasFilters').classList.toggle('d-none', this.value !== 'estatisticas');
+      document.getElementById('tendenciasFilters').classList.toggle('d-none', this.value !== 'tendencias');
+      document.getElementById('performanceFilters').classList.toggle('d-none', this.value !== 'performance');
+      document.getElementById('analyticsFilters').classList.toggle('d-none', this.value !== 'analytics');
       
       // Controla a exibição dos filtros de data
       const emprestimosDateFilters = document.getElementById('emprestimosDateFilters');

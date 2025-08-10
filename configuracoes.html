@@ -582,6 +582,108 @@
       margin-top: 8px;
       line-height: 1.4;
     }
+    
+    /* Estilos para módulo de usuários do sistema */
+    .user-system-card {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+      margin: 15px 0;
+      backdrop-filter: blur(10px);
+    }
+    
+    .user-type-badge {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    
+    .permission-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    
+    .permission-item {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+    
+    .user-status-active {
+      color: #10b981;
+      font-weight: 600;
+    }
+    
+    .user-status-inactive {
+      color: #6b7280;
+      font-weight: 600;
+    }
+    
+    /* Melhorias no select */
+    select.form-control {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 12px center;
+      background-repeat: no-repeat;
+      background-size: 16px 12px;
+      padding-right: 40px;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+    
+    select.form-control:focus {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23667eea' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    }
+    
+    /* Badges de tipo de usuário */
+    .badge {
+      display: inline-block;
+      padding: 0.35em 0.65em;
+      font-size: 0.75em;
+      font-weight: 700;
+      line-height: 1;
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: baseline;
+      border-radius: 0.375rem;
+    }
+    
+    .bg-danger { background-color: #dc2626 !important; color: white; }
+    .bg-primary { background-color: #2563eb !important; color: white; }
+    .bg-secondary { background-color: #6b7280 !important; color: white; }
+    .bg-success { background-color: #10b981 !important; color: white; }
+    
+    /* Textarea customizado */
+    textarea.form-control {
+      resize: vertical;
+      min-height: 80px;
+    }
+    
+    /* Loading states para formulários */
+    .form-control:disabled {
+      background-color: #f3f4f6;
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    /* Password strength indicator */
+    .password-strength {
+      height: 4px;
+      border-radius: 2px;
+      margin-top: 5px;
+      background: #e5e7eb;
+      transition: all 0.3s ease;
+    }
+    
+    .password-strength.weak { background: #ef4444; width: 25%; }
+    .password-strength.medium { background: #f59e0b; width: 50%; }
+    .password-strength.strong { background: #10b981; width: 75%; }
+    .password-strength.very-strong { background: #059669; width: 100%; }
   </style>
   </style>
 </head>
@@ -859,6 +961,123 @@
       </form>
     </div>
 
+    <div class="settings-card">
+      <h5><i class='bx bxs-user-plus'></i> Gerenciamento de Usuários do Sistema</h5>
+      <div class="d-flex gap-2 mb-3 flex-wrap">
+        <button type="button" class="save-button" id="abrirCadastroUsuario">
+          <i class='bx bx-user-plus'></i>
+          Cadastrar Usuário
+        </button>
+        <button type="button" class="save-button btn-teal" id="listarUsuariosSistema">
+          <i class='bx bx-list-ul'></i>
+          Ver Usuários
+        </button>
+        <button type="button" class="save-button btn-red-gradient" id="excluirUsuarioSistema">
+          <i class='bx bx-user-x'></i>
+          Excluir Usuário
+        </button>
+      </div>
+      
+      <!-- Lista de Usuários do Sistema -->
+      <div id="usuariosListaSistema" style="display:none;">
+        <div class="alert alert-info" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1)); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px;">
+          <h6><i class='bx bx-info-circle'></i> Usuários do Sistema</h6>
+          <p class="mb-0">Lista de todos os usuários administrativos do sistema:</p>
+        </div>
+        <div id="usuariosContainerSistema">
+          <!-- Conteúdo carregado dinamicamente -->
+        </div>
+      </div>
+      
+      <form id="userSystemForm" style="display:none;">
+        <div class="backup-info">
+          <h6><i class='bx bx-info-circle'></i> Tipos de Usuário</h6>
+          <ul>
+            <li><strong>Administrador:</strong> Acesso completo ao sistema, pode gerenciar todas as funcionalidades</li>
+            <li><strong>Bibliotecário:</strong> Pode gerenciar livros, empréstimos e usuários da biblioteca</li>
+            <li><strong>Assistente:</strong> Acesso limitado, apenas consultas e empréstimos básicos</li>
+          </ul>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bx-user'></i> Nome Completo *</label>
+            <input type="text" class="form-control" id="userSystemName" placeholder="Digite o nome completo" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bx-envelope'></i> Email *</label>
+            <input type="email" class="form-control" id="userSystemEmail" placeholder="usuario@biblioteca.com" required>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bx-id-card'></i> CPF *</label>
+            <input type="text" class="form-control" id="userSystemCPF" placeholder="000.000.000-00" required maxlength="14">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bx-phone'></i> Telefone *</label>
+            <input type="text" class="form-control" id="userSystemPhone" placeholder="(99) 99999-9999" required>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bx-user-badge'></i> Tipo de Usuário *</label>
+            <select class="form-control" id="userSystemType" required>
+              <option value="">Selecione o tipo</option>
+              <option value="administrador">Administrador</option>
+              <option value="bibliotecario">Bibliotecário</option>
+              <option value="assistente">Assistente</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bx-briefcase'></i> Cargo/Função</label>
+            <input type="text" class="form-control" id="userSystemPosition" placeholder="Ex: Bibliotecário Chefe">
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bx-lock'></i> Senha Temporária *</label>
+            <input type="password" class="form-control" id="userSystemPassword" placeholder="Senha temporária" required minlength="6">
+            <div class="password-strength" id="passwordStrength"></div>
+            <small class="text-muted">Mínimo 6 caracteres. O usuário deve alterar no primeiro acesso.</small>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bx-lock-alt'></i> Confirmar Senha *</label>
+            <input type="password" class="form-control" id="userSystemPasswordConfirm" placeholder="Confirme a senha" required minlength="6">
+            <small id="passwordMatch" class="text-muted"></small>
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label"><i class='bx bx-note'></i> Observações</label>
+          <textarea class="form-control" id="userSystemNotes" rows="3" placeholder="Observações adicionais sobre o usuário..."></textarea>
+        </div>
+        
+        <div class="mb-3">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="userSystemActive" checked>
+            <label class="form-check-label" for="userSystemActive">
+              <i class='bx bx-check-circle'></i> Usuário ativo (pode fazer login no sistema)
+            </label>
+          </div>
+        </div>
+        
+        <div class="d-flex gap-2 mt-4">
+          <button type="submit" class="save-button">
+            <i class='bx bx-save'></i>
+            Cadastrar Usuário
+          </button>
+          <button type="button" class="save-button btn-red-gradient" onclick="document.getElementById('userSystemForm').style.display='none'; document.getElementById('abrirCadastroUsuario').style.display='inline-flex';">
+            <i class='bx bx-x'></i>
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+
     <div class="d-flex justify-content-end mt-4">
       <button class="save-button" style="padding: 15px 30px; font-size: 1.1rem;">
         <i class='bx bx-save'></i>
@@ -1029,11 +1248,12 @@
         
         // Buscar dados de todas as coleções
         btnBackup.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Coletando dados...';
-        const [usuariosSnapshot, livrosSnapshot, emprestimosSnapshot, escolasSnapshot] = await Promise.all([
+        const [usuariosSnapshot, livrosSnapshot, emprestimosSnapshot, escolasSnapshot, usuariosSistemaSnapshot] = await Promise.all([
           db.collection('usuarios').get(),
           db.collection('livros').get(),
           db.collection('emprestimos').get(),
-          db.collection('escolas').get()
+          db.collection('escolas').get(),
+          db.collection('usuariosSistema').get()
         ]);
 
         btnBackup.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Processando dados...';
@@ -1048,13 +1268,15 @@
             total_livros: livrosSnapshot.size,
             total_emprestimos: emprestimosSnapshot.size,
             total_escolas: escolasSnapshot.size,
+            total_usuarios_sistema: usuariosSistemaSnapshot.size,
             data_backup: new Date().toLocaleString('pt-BR')
           },
           dados: {
             usuarios: [],
             livros: [],
             emprestimos: [],
-            escolas: []
+            escolas: [],
+            usuariosSistema: []
           }
         };
 
@@ -1090,6 +1312,14 @@
           });
         });
 
+        // Exportar usuários do sistema
+        usuariosSistemaSnapshot.forEach(doc => {
+          backupData.dados.usuariosSistema.push({
+            id: doc.id,
+            ...doc.data()
+          });
+        });
+
         btnBackup.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Gerando arquivo...';
 
         // Criar arquivo para download
@@ -1111,7 +1341,7 @@
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         // Confirmar se deve apagar os dados após o backup
-        const confirmarApagar = confirm(`✅ Backup completo realizado com sucesso!\n\n📊 Estatísticas:\n• Usuários: ${backupData.estatisticas.total_usuarios}\n• Livros: ${backupData.estatisticas.total_livros}\n• Empréstimos: ${backupData.estatisticas.total_emprestimos}\n• Escolas: ${backupData.estatisticas.total_escolas}\n\n📁 Arquivo: ${nomeArquivo}\n📐 Tamanho: ${tamanhoKB} KB\n🕒 Data: ${backupData.estatisticas.data_backup}\n\n⚠️ ATENÇÃO: Deseja APAGAR todos os dados do Firestore agora?\n(Esta ação não pode ser desfeita)`);
+        const confirmarApagar = confirm(`✅ Backup completo realizado com sucesso!\n\n📊 Estatísticas:\n• Usuários: ${backupData.estatisticas.total_usuarios}\n• Livros: ${backupData.estatisticas.total_livros}\n• Empréstimos: ${backupData.estatisticas.total_emprestimos}\n• Escolas: ${backupData.estatisticas.total_escolas}\n• Usuários Sistema: ${backupData.estatisticas.total_usuarios_sistema}\n\n📁 Arquivo: ${nomeArquivo}\n📐 Tamanho: ${tamanhoKB} KB\n🕒 Data: ${backupData.estatisticas.data_backup}\n\n⚠️ ATENÇÃO: Deseja APAGAR todos os dados do Firestore agora?\n(Esta ação não pode ser desfeita)`);
         
         if (!confirmarApagar) {
           alert('✅ Backup salvo com sucesso!\n\nOs dados do Firestore foram mantidos.');
@@ -1119,7 +1349,7 @@
         }
         
         // Confirmar novamente para segurança
-        const confirmarDefinitivo = confirm('🚨 CONFIRMAÇÃO FINAL 🚨\n\nVocê está prestes a APAGAR TODOS OS DADOS do sistema:\n• Todos os usuários\n• Todos os livros\n• Todos os empréstimos\n• Todas as escolas\n\nEsta ação é IRREVERSÍVEL!\n\nTem certeza absoluta que deseja continuar?');
+        const confirmarDefinitivo = confirm('🚨 CONFIRMAÇÃO FINAL 🚨\n\nVocê está prestes a APAGAR TODOS OS DADOS do sistema:\n• Todos os usuários\n• Todos os livros\n• Todos os empréstimos\n• Todas as escolas\n• Todos os usuários do sistema\n\nEsta ação é IRREVERSÍVEL!\n\nTem certeza absoluta que deseja continuar?');
         
         if (!confirmarDefinitivo) {
           alert('✅ Backup salvo com sucesso!\n\nOs dados do Firestore foram mantidos.');
@@ -1155,7 +1385,13 @@
           totalApagado++;
         }
         
-        alert(`✅ Backup completo realizado com sucesso!\n🗑️ Todos os dados foram APAGADOS do Firestore!\n\n📊 Estatísticas do Backup:\n• Usuários: ${backupData.estatisticas.total_usuarios}\n• Livros: ${backupData.estatisticas.total_livros}\n• Empréstimos: ${backupData.estatisticas.total_emprestimos}\n• Escolas: ${backupData.estatisticas.total_escolas}\n\n🗑️ Total de registros apagados: ${totalApagado}\n\n📁 Arquivo: ${nomeArquivo}\n📐 Tamanho: ${tamanhoKB} KB\n🕒 Data: ${backupData.estatisticas.data_backup}\n\n⚠️ IMPORTANTE: O sistema agora está vazio. Use a função "Restaurar Backup" para recuperar os dados quando necessário.`);
+        // Apagar usuários do sistema
+        for (const doc of usuariosSistemaSnapshot.docs) {
+          await doc.ref.delete();
+          totalApagado++;
+        }
+        
+        alert(`✅ Backup completo realizado com sucesso!\n🗑️ Todos os dados foram APAGADOS do Firestore!\n\n📊 Estatísticas do Backup:\n• Usuários: ${backupData.estatisticas.total_usuarios}\n• Livros: ${backupData.estatisticas.total_livros}\n• Empréstimos: ${backupData.estatisticas.total_emprestimos}\n• Escolas: ${backupData.estatisticas.total_escolas}\n• Usuários Sistema: ${backupData.estatisticas.total_usuarios_sistema}\n\n🗑️ Total de registros apagados: ${totalApagado}\n\n📁 Arquivo: ${nomeArquivo}\n📐 Tamanho: ${tamanhoKB} KB\n🕒 Data: ${backupData.estatisticas.data_backup}\n\n⚠️ IMPORTANTE: O sistema agora está vazio. Use a função "Restaurar Backup" para recuperar os dados quando necessário.`);
         
       } catch (error) {
         console.error('Erro ao fazer backup completo:', error);
@@ -1217,6 +1453,15 @@
           for (const escola of backupData.dados.escolas) {
             const { id, ...data } = escola;
             await db.collection('escolas').doc(id).set(data);
+            totalRestaurado++;
+          }
+        }
+
+        // Restaurar usuários do sistema (se existir)
+        if (backupData.dados.usuariosSistema) {
+          for (const usuario of backupData.dados.usuariosSistema) {
+            const { id, ...data } = usuario;
+            await db.collection('usuariosSistema').doc(id).set(data);
             totalRestaurado++;
           }
         }
@@ -1388,6 +1633,351 @@
 
     // Disponibilizar função globalmente para uso nos botões HTML
     window.confirmarExclusaoEscola = confirmarExclusaoEscola;
+
+    // ===== MÓDULO DE USUÁRIOS DO SISTEMA =====
+    
+    // Máscaras para CPF e telefone
+    document.getElementById('userSystemCPF').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      value = value.replace(/(\d{3})(\d)/, '$1.$2');
+      value = value.replace(/(\d{3})(\d)/, '$1.$2');
+      value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+      e.target.value = value;
+    });
+    
+    document.getElementById('userSystemPhone').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      value = value.replace(/(\d{2})(\d)/, '($1) $2');
+      value = value.replace(/(\d{5})(\d)/, '$1-$2');
+      e.target.value = value;
+    });
+
+    // Indicador de força da senha
+    document.getElementById('userSystemPassword').addEventListener('input', function(e) {
+      const password = e.target.value;
+      const strengthIndicator = document.getElementById('passwordStrength');
+      const strength = calculatePasswordStrength(password);
+      
+      strengthIndicator.className = 'password-strength ' + strength.class;
+      strengthIndicator.style.display = password.length > 0 ? 'block' : 'none';
+    });
+
+    // Verificação de confirmação de senha
+    document.getElementById('userSystemPasswordConfirm').addEventListener('input', function(e) {
+      const password = document.getElementById('userSystemPassword').value;
+      const confirm = e.target.value;
+      const matchIndicator = document.getElementById('passwordMatch');
+      
+      if (confirm.length > 0) {
+        if (password === confirm) {
+          matchIndicator.innerHTML = '<i class="bx bx-check" style="color: #10b981;"></i> Senhas coincidem';
+          matchIndicator.style.color = '#10b981';
+        } else {
+          matchIndicator.innerHTML = '<i class="bx bx-x" style="color: #ef4444;"></i> Senhas não coincidem';
+          matchIndicator.style.color = '#ef4444';
+        }
+      } else {
+        matchIndicator.innerHTML = '';
+      }
+    });
+
+    // Função para calcular força da senha
+    function calculatePasswordStrength(password) {
+      let score = 0;
+      let feedback = [];
+      
+      if (password.length >= 6) score += 1;
+      if (password.length >= 8) score += 1;
+      if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 1;
+      if (/\d/.test(password)) score += 1;
+      if (/[^a-zA-Z0-9]/.test(password)) score += 1;
+      
+      const strengths = [
+        { class: 'weak', text: 'Fraca' },
+        { class: 'weak', text: 'Fraca' },
+        { class: 'medium', text: 'Média' },
+        { class: 'strong', text: 'Forte' },
+        { class: 'very-strong', text: 'Muito Forte' }
+      ];
+      
+      return strengths[Math.min(score, 4)];
+    }
+
+    // Função para mostrar o formulário de cadastro de usuário
+    document.getElementById('abrirCadastroUsuario').onclick = function() {
+      document.getElementById('userSystemForm').style.display = 'block';
+      this.style.display = 'none';
+      // Limpar campos do formulário
+      document.getElementById('userSystemForm').reset();
+      document.getElementById('userSystemActive').checked = true;
+    };
+
+    // Cadastro de usuário do sistema
+    document.getElementById('userSystemForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('userSystemName').value.trim();
+      const email = document.getElementById('userSystemEmail').value.trim();
+      const cpf = document.getElementById('userSystemCPF').value.trim();
+      const phone = document.getElementById('userSystemPhone').value.trim();
+      const type = document.getElementById('userSystemType').value;
+      const position = document.getElementById('userSystemPosition').value.trim();
+      const password = document.getElementById('userSystemPassword').value;
+      const passwordConfirm = document.getElementById('userSystemPasswordConfirm').value;
+      const notes = document.getElementById('userSystemNotes').value.trim();
+      const active = document.getElementById('userSystemActive').checked;
+
+      // Validações
+      if (!name || !email || !cpf || !phone || !type || !password || !passwordConfirm) {
+        alert('Preencha todos os campos obrigatórios marcados com *.');
+        return;
+      }
+
+      if (password !== passwordConfirm) {
+        alert('As senhas não coincidem.');
+        return;
+      }
+
+      if (password.length < 6) {
+        alert('A senha deve ter pelo menos 6 caracteres.');
+        return;
+      }
+
+      // Validar CPF básico
+      const cpfNumeros = cpf.replace(/\D/g, '');
+      if (cpfNumeros.length !== 11) {
+        alert('CPF deve ter 11 dígitos.');
+        return;
+      }
+
+      // Verificar se email já existe
+      try {
+        const emailSnapshot = await db.collection('usuariosSistema').where('email', '==', email).get();
+        if (!emailSnapshot.empty) {
+          alert('Este email já está cadastrado no sistema.');
+          return;
+        }
+
+        // Verificar se CPF já existe
+        const cpfSnapshot = await db.collection('usuariosSistema').where('cpf', '==', cpf).get();
+        if (!cpfSnapshot.empty) {
+          alert('Este CPF já está cadastrado no sistema.');
+          return;
+        }
+
+        // Gerar ID único para o usuário
+        const userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+        // Salvar usuário no Firestore
+        await db.collection('usuariosSistema').doc(userId).set({
+          id: userId,
+          nome: name,
+          email: email,
+          cpf: cpf,
+          telefone: phone,
+          tipo: type,
+          cargo: position,
+          senha: btoa(password), // Codificação simples (em produção usar hash seguro)
+          observacoes: notes,
+          ativo: active,
+          dataCadastro: new Date().toISOString(),
+          dataUltimoLogin: null,
+          primeiroAcesso: true,
+          criadoPor: 'Administrador', // Em um sistema real, pegar do usuário logado
+          permissoes: getPermissoesPorTipo(type)
+        });
+
+        alert('Usuário cadastrado com sucesso!\n\nDados de acesso:\nEmail: ' + email + '\nSenha temporária: ' + password + '\n\nO usuário deve alterar a senha no primeiro acesso.');
+        
+        // Resetar formulário e voltar para botões
+        document.getElementById('userSystemForm').reset();
+        document.getElementById('userSystemForm').style.display = 'none';
+        document.getElementById('abrirCadastroUsuario').style.display = 'inline-flex';
+        
+      } catch (error) {
+        console.error('Erro ao cadastrar usuário:', error);
+        alert('Erro ao cadastrar usuário: ' + error.message);
+      }
+    });
+
+    // Função para definir permissões baseadas no tipo de usuário
+    function getPermissoesPorTipo(tipo) {
+      const permissoes = {
+        administrador: {
+          livros: { criar: true, editar: true, excluir: true, visualizar: true },
+          usuarios: { criar: true, editar: true, excluir: true, visualizar: true },
+          emprestimos: { criar: true, editar: true, excluir: true, visualizar: true },
+          relatorios: { gerar: true, visualizar: true, exportar: true },
+          configuracoes: { editar: true, backup: true, restaurar: true },
+          escolas: { criar: true, editar: true, excluir: true, visualizar: true }
+        },
+        bibliotecario: {
+          livros: { criar: true, editar: true, excluir: false, visualizar: true },
+          usuarios: { criar: true, editar: true, excluir: false, visualizar: true },
+          emprestimos: { criar: true, editar: true, excluir: false, visualizar: true },
+          relatorios: { gerar: true, visualizar: true, exportar: false },
+          configuracoes: { editar: false, backup: false, restaurar: false },
+          escolas: { criar: false, editar: false, excluir: false, visualizar: true }
+        },
+        assistente: {
+          livros: { criar: false, editar: false, excluir: false, visualizar: true },
+          usuarios: { criar: false, editar: false, excluir: false, visualizar: true },
+          emprestimos: { criar: true, editar: false, excluir: false, visualizar: true },
+          relatorios: { gerar: false, visualizar: true, exportar: false },
+          configuracoes: { editar: false, backup: false, restaurar: false },
+          escolas: { criar: false, editar: false, excluir: false, visualizar: true }
+        }
+      };
+      
+      return permissoes[tipo] || permissoes.assistente;
+    }
+
+    // Função para listar usuários do sistema
+    async function listarUsuariosSistema() {
+      try {
+        const snapshot = await db.collection('usuariosSistema').get();
+        const usuariosContainer = document.getElementById('usuariosContainerSistema');
+        const usuariosLista = document.getElementById('usuariosListaSistema');
+        
+        if (snapshot.empty) {
+          usuariosContainer.innerHTML = `
+            <div class="alert alert-warning">
+              <i class='bx bx-info-circle'></i>
+              Nenhum usuário cadastrado no sistema.
+            </div>
+          `;
+        } else {
+          let html = '';
+          snapshot.forEach(doc => {
+            const usuario = doc.data();
+            const tipoColor = {
+              'administrador': 'danger',
+              'bibliotecario': 'primary', 
+              'assistente': 'secondary'
+            };
+            const statusColor = usuario.ativo ? 'success' : 'secondary';
+            
+            html += `
+              <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-1">
+                      <i class='bx bx-user'></i> ${usuario.nome || 'Nome não informado'}
+                      <span class="badge bg-${tipoColor[usuario.tipo] || 'secondary'} ms-2">${usuario.tipo || 'N/A'}</span>
+                      <span class="badge bg-${statusColor} ms-1">${usuario.ativo ? 'Ativo' : 'Inativo'}</span>
+                    </h6>
+                    <small class="text-muted">${usuario.cargo || 'Cargo não informado'}</small>
+                  </div>
+                  <button class="btn btn-sm btn-danger" onclick="confirmarExclusaoUsuarioSistema('${doc.id}', '${usuario.nome || 'Usuário'}')">
+                    <i class='bx bx-trash'></i> Excluir
+                  </button>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p class="mb-1"><strong>ID:</strong> ${usuario.id || 'N/A'}</p>
+                      <p class="mb-1"><strong>Email:</strong> ${usuario.email || 'N/A'}</p>
+                      <p class="mb-1"><strong>CPF:</strong> ${usuario.cpf || 'N/A'}</p>
+                      <p class="mb-1"><strong>Telefone:</strong> ${usuario.telefone || 'N/A'}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class="mb-1"><strong>Data Cadastro:</strong> ${usuario.dataCadastro ? new Date(usuario.dataCadastro).toLocaleDateString('pt-BR') : 'N/A'}</p>
+                      <p class="mb-1"><strong>Último Login:</strong> ${usuario.dataUltimoLogin ? new Date(usuario.dataUltimoLogin).toLocaleDateString('pt-BR') : 'Nunca'}</p>
+                      <p class="mb-1"><strong>Primeiro Acesso:</strong> ${usuario.primeiroAcesso ? 'Pendente' : 'Realizado'}</p>
+                      <p class="mb-1"><strong>Criado por:</strong> ${usuario.criadoPor || 'N/A'}</p>
+                    </div>
+                  </div>
+                  ${usuario.observacoes ? `
+                    <hr>
+                    <p class="mb-0"><strong>Observações:</strong> ${usuario.observacoes}</p>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          });
+          usuariosContainer.innerHTML = html;
+        }
+        
+        usuariosLista.style.display = 'block';
+        
+      } catch (error) {
+        console.error('Erro ao listar usuários:', error);
+        alert('Erro ao carregar lista de usuários: ' + error.message);
+      }
+    }
+
+    // Função para confirmar exclusão de usuário do sistema
+    async function confirmarExclusaoUsuarioSistema(usuarioId, nomeUsuario) {
+      if (!confirm(`Tem certeza que deseja excluir o usuário "${nomeUsuario}"?\n\nEsta ação não pode ser desfeita.`)) {
+        return;
+      }
+
+      // Segunda confirmação para segurança
+      if (!confirm(`⚠️ CONFIRMAÇÃO FINAL ⚠️\n\nVocê está prestes a excluir permanentemente:\n"${nomeUsuario}" (ID: ${usuarioId})\n\nEsta ação é IRREVERSÍVEL!\n\nClique OK apenas se tiver absoluta certeza.`)) {
+        return;
+      }
+
+      try {
+        await db.collection('usuariosSistema').doc(usuarioId).delete();
+        alert(`Usuário "${nomeUsuario}" excluído com sucesso!`);
+        
+        // Recarregar a lista
+        listarUsuariosSistema();
+        
+      } catch (error) {
+        console.error('Erro ao excluir usuário:', error);
+        alert('Erro ao excluir usuário: ' + error.message);
+      }
+    }
+
+    // Função para excluir usuário por seleção
+    async function excluirUsuarioSistemaPorSelecao() {
+      try {
+        const snapshot = await db.collection('usuariosSistema').get();
+        
+        if (snapshot.empty) {
+          alert('Não há usuários cadastrados para excluir.');
+          return;
+        }
+
+        // Criar lista de opções
+        let opcoes = 'Selecione o usuário para excluir:\n\n';
+        const usuarios = [];
+        
+        snapshot.forEach((doc, index) => {
+          const usuario = doc.data();
+          usuarios.push({ id: doc.id, nome: usuario.nome || 'Nome não informado' });
+          opcoes += `${index + 1}. ${usuario.nome || 'Nome não informado'} (${usuario.email || 'N/A'}) - ${usuario.tipo || 'N/A'}\n`;
+        });
+
+        const escolha = prompt(opcoes + '\nDigite o número do usuário (ou cancelar):');
+        
+        if (!escolha || isNaN(escolha)) {
+          return;
+        }
+
+        const indice = parseInt(escolha) - 1;
+        
+        if (indice < 0 || indice >= usuarios.length) {
+          alert('Opção inválida.');
+          return;
+        }
+
+        const usuarioSelecionado = usuarios[indice];
+        await confirmarExclusaoUsuarioSistema(usuarioSelecionado.id, usuarioSelecionado.nome);
+        
+      } catch (error) {
+        console.error('Erro ao buscar usuários:', error);
+        alert('Erro ao buscar usuários: ' + error.message);
+      }
+    }
+
+    // Event listeners para os botões de usuários do sistema
+    document.getElementById('listarUsuariosSistema').addEventListener('click', listarUsuariosSistema);
+    document.getElementById('excluirUsuarioSistema').addEventListener('click', excluirUsuarioSistemaPorSelecao);
+
+    // Disponibilizar função globalmente para uso nos botões HTML
+    window.confirmarExclusaoUsuarioSistema = confirmarExclusaoUsuarioSistema;
   </script>
 </body>
 </html>

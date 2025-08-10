@@ -8,148 +8,581 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
   <style>
+    /* Reset e configurações base */
+    * {
+      box-sizing: border-box;
+    }
+    
     body {
       font-family: 'Poppins', sans-serif;
-      background: #f0f2f5;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
       margin: 0;
       padding: 0;
+      min-height: 100vh;
     }
+
+    /* Overlay para melhor contraste */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at top, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.2));
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    /* Sidebar melhorada */
     .sidebar {
       position: fixed;
       top: 0;
       left: 0;
       height: 100%;
-      width: 250px;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      width: 260px;
+      background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
       color: white;
-      padding: 20px;
-      transition: all 0.3s ease;
+      padding: 25px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 1000;
+      box-shadow: 5px 0 25px rgba(0, 0, 0, 0.2);
     }
+    
     .sidebar-header {
-      padding: 20px 0;
+      padding: 25px 0;
       text-align: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      margin-bottom: 25px;
     }
+    
     .sidebar-header h3 {
-      background: linear-gradient(90deg, #00f2fe, #4facfe);
+      background: linear-gradient(135deg, #00f2fe, #4facfe, #00c9ff);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
       margin: 0;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      text-shadow: 0 0 20px rgba(79, 172, 254, 0.3);
     }
+    
     .menu-items {
-      padding: 20px 0;
+      padding: 0;
     }
+    
     .menu-item {
-      padding: 12px 20px;
-      color: white;
+      padding: 15px 20px;
+      color: rgba(255, 255, 255, 0.8);
       text-decoration: none;
       display: flex;
       align-items: center;
-      transition: all 0.3s ease;
-      border-radius: 8px;
-      margin-bottom: 5px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      position: relative;
+      overflow: hidden;
     }
+    
+    .menu-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(79, 172, 254, 0.2), rgba(0, 242, 254, 0.2));
+      transition: width 0.3s ease;
+    }
+    
+    .menu-item:hover::before, .menu-item.active::before {
+      width: 100%;
+    }
+    
     .menu-item:hover, .menu-item.active {
-      background: rgba(255, 255, 255, 0.1);
       color: #4facfe;
+      background: rgba(79, 172, 254, 0.1);
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(79, 172, 254, 0.2);
     }
+    
     .menu-item i {
-      margin-right: 10px;
-      font-size: 1.2rem;
+      margin-right: 15px;
+      font-size: 1.3rem;
+      z-index: 1;
+      position: relative;
     }
-    .main-content {
-      margin-left: 250px;
-      padding: 20px;
-      transition: all 0.3s ease;
-    }
-    .page-header {
-      background: white;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
-    }
-    .settings-card {
-      background: white;
-      border-radius: 15px;
-      padding: 20px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
-    }
-    .settings-card h5 {
-      color: #1a1a2e;
-      margin-bottom: 20px;
-      font-weight: 600;
-    }
-    .form-label {
+    
+    .menu-item span {
+      z-index: 1;
+      position: relative;
       font-weight: 500;
-      color: #1a1a2e;
     }
+    
+    /* Main Content melhorado */
+    .main-content {
+      margin-left: 260px;
+      padding: 30px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      min-height: 100vh;
+    }
+    
+    /* Header da página */
+    .page-header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .page-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, #667eea, #764ba2, #4facfe);
+    }
+    
+    .page-header h2 {
+      margin: 0 0 10px 0;
+      color: #1e293b;
+      font-weight: 700;
+      font-size: 2.2rem;
+    }
+    
+    .page-header p {
+      margin: 0;
+      color: #64748b;
+      font-size: 1.1rem;
+      font-weight: 400;
+    }
+    
+    /* Settings Cards melhorados */
+    .settings-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      margin-bottom: 25px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .settings-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+    
+    .settings-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+    }
+    
+    .settings-card h5 {
+      color: #1e293b;
+      margin-bottom: 25px;
+      font-weight: 700;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .settings-card h5::before {
+      content: '';
+      width: 4px;
+      height: 25px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 2px;
+    }
+    
+    /* Form elements melhorados */
+    .form-label {
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+    
     .form-control {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 10px 15px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px 16px;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      font-size: 0.95rem;
     }
+    
     .form-control:focus {
-      border-color: #4facfe;
-      box-shadow: 0 0 0 0.2rem rgba(79, 172, 254, 0.25);
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      background: rgba(255, 255, 255, 0.95);
+      outline: none;
     }
+    
+    /* Botões melhorados */
     .save-button {
-      background: linear-gradient(90deg, #00f2fe, #4facfe);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
+      padding: 12px 24px;
+      border-radius: 12px;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      transition: all 0.3s ease;
-    }
-    .save-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }    .form-check-input:checked {
-      background-color: #4facfe;
-      border-color: #4facfe;
-    }
-    .backup-info {
-      background: #f8f9fa;
-      border: 1px solid #dee2e6;
-      border-radius: 8px;
-      padding: 15px;
-      margin: 10px 0;
-    }
-    .backup-info h6 {
-      color: #495057;
-      margin-bottom: 10px;
+      gap: 10px;
       font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      position: relative;
+      overflow: hidden;
     }
+    
+    .save-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    .save-button:hover::before {
+      left: 100%;
+    }
+    
+    .save-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+    
+    .save-button:active {
+      transform: translateY(-1px);
+    }    
+    /* Checkboxes customizados */
+    .form-check {
+      margin-bottom: 15px;
+      padding-left: 0;
+    }
+    
+    .form-check-input {
+      width: 20px;
+      height: 20px;
+      margin-top: 0;
+      margin-right: 12px;
+      border: 2px solid #d1d5db;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .form-check-input:checked {
+      background-color: #667eea;
+      border-color: #667eea;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3e%3cpath fill-rule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clip-rule='evenodd'/%3e%3c/svg%3e");
+    }
+    
+    .form-check-input:focus {
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+      border-color: #667eea;
+    }
+    
+    .form-check-label {
+      font-weight: 500;
+      color: #374151;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+    
+    /* Seções de backup melhoradas */
+    .backup-info {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+      margin: 15px 0;
+      backdrop-filter: blur(10px);
+    }
+    
+    .backup-info h6 {
+      color: #1e40af;
+      margin-bottom: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .backup-info h6 i {
+      font-size: 1.2rem;
+    }
+    
     .backup-info ul {
       margin: 0;
-      padding-left: 20px;
+      padding-left: 25px;
     }
+    
+    .backup-info li {
+      margin-bottom: 8px;
+      color: #374151;
+      font-weight: 500;
+    }
+    
     .backup-warning {
-      background: #fff3cd;
-      border: 1px solid #ffeaa7;
-      border-radius: 8px;
-      padding: 15px;
-      margin: 10px 0;
-      color: #856404;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 15px;
+      padding: 20px;
+      margin: 15px 0;
+      backdrop-filter: blur(10px);
     }
+    
+    .backup-warning h6 {
+      color: #d97706;
+      margin-bottom: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .backup-warning p {
+      color: #92400e;
+      margin: 0;
+      font-weight: 500;
+    }
+    
+    /* Escola management melhorado */
+    .escola-management {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.95), rgba(118, 75, 162, 0.95));
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      color: white;
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .escola-management::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(10deg); }
+    }
+    
+    .escola-management h5 {
+      color: white;
+      margin-bottom: 25px;
+      font-weight: 700;
+      font-size: 1.5rem;
+      z-index: 1;
+      position: relative;
+    }
+    
+    .escolasLista {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 25px;
+      margin-top: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .escolasLista .card {
+      border: none;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-bottom: 20px;
+      border-radius: 15px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+    }
+    
+    .escolasLista .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .escolasLista .card-header {
+      background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+      border-bottom: 1px solid #e2e8f0;
+      padding: 20px;
+      border-radius: 15px 15px 0 0;
+    }
+    
+    .escolasLista .card-body {
+      padding: 25px;
+    }
+    
+    /* Botões especiais */
+    .btn-teal {
+      background: linear-gradient(135deg, #14b8a6, #0d9488);
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3);
+    }
+    
+    .btn-teal:hover {
+      background: linear-gradient(135deg, #0f766e, #0a5551);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(20, 184, 166, 0.4);
+      color: white;
+    }
+    
+    .btn-red-gradient {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+    
+    .btn-red-gradient:hover {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+      color: white;
+    }
+    
+    /* Responsividade melhorada */
     @media (max-width: 768px) {
       .sidebar {
         transform: translateX(-100%);
+        width: 280px;
       }
+      
       .main-content {
         margin-left: 0;
+        padding: 20px 15px;
       }
+      
       .sidebar.active {
         transform: translateX(0);
       }
+      
+      .page-header {
+        padding: 20px;
+      }
+      
+      .page-header h2 {
+        font-size: 1.8rem;
+      }
+      
+      .settings-card {
+        padding: 20px;
+      }
+      
+      .save-button {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 10px;
+      }
     }
+    
+    /* Animações sutis */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .settings-card {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+    
+    .settings-card:nth-child(1) { animation-delay: 0.1s; }
+    .settings-card:nth-child(2) { animation-delay: 0.2s; }
+    .settings-card:nth-child(3) { animation-delay: 0.3s; }
+    .settings-card:nth-child(4) { animation-delay: 0.4s; }
+    
+    /* Loading states */
+    .save-button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    
+    .bx-spin {
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Melhorias nos inputs de arquivo */
+    input[type="file"] {
+      padding: 12px;
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      background: rgba(249, 250, 251, 0.8);
+      transition: all 0.3s ease;
+    }
+    
+    input[type="file"]:hover {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.05);
+    }
+    
+    /* Text helpers */
+    .text-muted {
+      color: #6b7280 !important;
+      font-size: 0.875rem;
+    }
+    
+    small.text-muted {
+      display: block;
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+  </style>
   </style>
 </head>
 <body>
@@ -160,93 +593,93 @@
     <div class="menu-items">
       <a href="dashboard.html" class="menu-item">
         <i class='bx bxs-dashboard'></i>
-        Dashboard
+        <span>Dashboard</span>
       </a>
       <a href="livros.html" class="menu-item">
         <i class='bx bxs-book'></i>
-        Livros
+        <span>Livros</span>
       </a>
       <a href="usuarios.html" class="menu-item">
         <i class='bx bxs-user'></i>
-        Usuários
+        <span>Usuários</span>
       </a>
       <a href="emprestimos.html" class="menu-item">
         <i class='bx bxs-bookmark'></i>
-        Empréstimos
+        <span>Empréstimos</span>
       </a>
        <a href="relatorios.html" class="menu-item" title="Relatórios do sistema">
         <i class='bx bxs-report'></i>
-        Relatórios
+        <span>Relatórios</span>
       </a>
       <a href="configuracoes.html" class="menu-item active">
         <i class='bx bxs-cog'></i>
-        Configurações
+        <span>Configurações</span>
       </a>
       <a href="index.html" class="menu-item">
         <i class='bx bxs-log-out'></i>
-        Sair
+        <span>Sair</span>
       </a>
     </div>
   </div>
 
   <div class="main-content">
     <div class="page-header">
-      <h2>Configurações do Sistema</h2>
-      <p>Personalize as configurações da biblioteca</p>
+      <h2><i class='bx bxs-cog'></i> Configurações do Sistema</h2>
+      <p>Personalize as configurações da biblioteca e gerencie o sistema</p>
     </div>
 
     <div class="settings-card">
-      <h5>Configurações Gerais</h5>
+      <h5><i class='bx bxs-edit'></i> Configurações Gerais</h5>
       <form>
         <div class="mb-3">
-          <label class="form-label">Nome da Biblioteca</label>
-          <input type="text" class="form-control" value="Biblioteca Central">
+          <label class="form-label"><i class='bx bx-building'></i> Nome da Biblioteca</label>
+          <input type="text" class="form-control" value="Biblioteca Central" placeholder="Digite o nome da biblioteca">
         </div>
         <div class="mb-3">
-          <label class="form-label">Email de Contato</label>
-          <input type="email" class="form-control" value="biblioteca@email.com">
+          <label class="form-label"><i class='bx bx-envelope'></i> Email de Contato</label>
+          <input type="email" class="form-control" value="biblioteca@email.com" placeholder="Digite o email de contato">
         </div>
         <div class="mb-3">
-          <label class="form-label">Prazo Padrão de Empréstimo (dias)</label>
-          <input type="number" class="form-control" value="14">
+          <label class="form-label"><i class='bx bx-calendar'></i> Prazo Padrão de Empréstimo (dias)</label>
+          <input type="number" class="form-control" value="14" min="1" max="90">
         </div>
         <div class="mb-3">
-          <label class="form-label">Limite de Livros por Usuário</label>
-          <input type="number" class="form-control" value="5">
+          <label class="form-label"><i class='bx bx-book-bookmark'></i> Limite de Livros por Usuário</label>
+          <input type="number" class="form-control" value="5" min="1" max="20">
         </div>
       </form>
     </div>
 
     <div class="settings-card">
-      <h5>Notificações</h5>
+      <h5><i class='bx bxs-bell'></i> Notificações</h5>
       <form>
         <div class="mb-3">
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" checked>
-            <label class="form-check-label">
-              Enviar email de lembrete antes do vencimento
+            <input class="form-check-input" type="checkbox" checked id="emailReminder">
+            <label class="form-check-label" for="emailReminder">
+              <i class='bx bx-mail-send'></i> Enviar email de lembrete antes do vencimento
             </label>
           </div>
         </div>
         <div class="mb-3">
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" checked>
-            <label class="form-check-label">
-              Notificar sobre novos livros cadastrados
+            <input class="form-check-input" type="checkbox" checked id="newBooksNotif">
+            <label class="form-check-label" for="newBooksNotif">
+              <i class='bx bx-book-add'></i> Notificar sobre novos livros cadastrados
             </label>
           </div>
         </div>
         <div class="mb-3">
           <div class="form-check">
-            <input class="form-check-input" type="checkbox" checked>
-            <label class="form-check-label">
-              Alertar sobre atrasos na devolução
+            <input class="form-check-input" type="checkbox" checked id="overdueAlert">
+            <label class="form-check-label" for="overdueAlert">
+              <i class='bx bx-error-circle'></i> Alertar sobre atrasos na devolução
             </label>
           </div>
         </div>
       </form>
     </div>    <div class="settings-card">
-      <h5>Backup e Restauração</h5>
+      <h5><i class='bx bxs-data'></i> Backup e Restauração</h5>
       
       <div class="backup-info">
         <h6><i class='bx bx-info-circle'></i> Informações sobre Backup</h6>
@@ -256,38 +689,40 @@
           <li><strong>Formato:</strong> Arquivos JSON compatíveis com o sistema</li>
           <li><strong>Restauração:</strong> Substitui todos os dados existentes pelos do backup</li>
         </ul>
-      </div>      <div class="mb-3">
-        <button class="save-button" id="btnBackup" style="background: linear-gradient(90deg, #dc3545, #fd7e14);">
+      </div>
+
+      <div class="mb-4">
+        <button class="save-button" id="btnBackup" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
           <i class='bx bx-download'></i>
           Backup Completo + Apagar Dados
         </button>
-        <small class="text-muted d-block mt-2">
+        <small class="text-muted">
           ⚠️ <strong>ATENÇÃO:</strong> Exporta todos os dados e <span style="color: #dc3545; font-weight: bold;">APAGA TUDO</span> do Firestore
         </small>
       </div>
       
       <div class="row">
         <div class="col-md-4 mb-3">
-          <button class="save-button w-100" id="btnBackupLivros" style="background: linear-gradient(90deg, #28a745, #20c997);">
+          <button class="save-button w-100" id="btnBackupLivros" style="background: linear-gradient(135deg, #10b981, #059669);">
             <i class='bx bx-book'></i>
             Backup Livros
           </button>
         </div>
         <div class="col-md-4 mb-3">
-          <button class="save-button w-100" id="btnBackupUsuarios" style="background: linear-gradient(90deg, #fd7e14, #e0a800);">
+          <button class="save-button w-100" id="btnBackupUsuarios" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
             <i class='bx bx-user'></i>
             Backup Usuários
           </button>
         </div>
         <div class="col-md-4 mb-3">
-          <button class="save-button w-100" id="btnBackupEmprestimos" style="background: linear-gradient(90deg, #6f42c1, #d63384);">
+          <button class="save-button w-100" id="btnBackupEmprestimos" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
             <i class='bx bx-bookmark'></i>
             Backup Empréstimos
           </button>
         </div>
       </div>
       
-      <hr class="my-4">
+      <hr class="my-4" style="border: none; height: 1px; background: linear-gradient(90deg, transparent, #e5e7eb, transparent);">
       
       <div class="backup-warning">
         <h6><i class='bx bx-error'></i> Atenção - Restauração de Backup</h6>
@@ -296,12 +731,12 @@
       </div>
       
       <div class="mb-3">
-        <label class="form-label">Restaurar Backup</label>
+        <label class="form-label"><i class='bx bx-upload'></i> Restaurar Backup</label>
         <input type="file" class="form-control" id="inputRestoreBackup" accept=".json">
         <small class="text-muted">Selecione um arquivo de backup em formato JSON</small>
       </div>
       <div class="mb-3">
-        <button class="save-button" id="btnRestoreBackup" style="background: linear-gradient(90deg, #dc3545, #fd7e14);">
+        <button class="save-button" id="btnRestoreBackup" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
           <i class='bx bx-upload'></i>
           Restaurar Backup
         </button>
@@ -309,79 +744,125 @@
     </div>
 
     <div class="settings-card">
-      <h5>Cadastro da Escola</h5>
-      <button type="button" class="save-button mb-3" id="abrirCadastroEscola">
-        <i class='bx bx-plus'></i>
-        Cadastro da Escola
-      </button>
-      <form id="schoolForm" style="display:none;">
-        <div class="mb-3">
-          <label class="form-label">Nome da Escola *</label>
-          <input type="text" class="form-control" id="schoolName" placeholder="Digite o nome da escola" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Código da Escola *</label>
-          <input type="text" class="form-control" id="schoolId" placeholder="Ex: escola001" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">CNPJ *</label>
-          <input type="text" class="form-control" id="schoolCNPJ" placeholder="00.000.000/0000-00" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Diretor(a) *</label>
-          <input type="text" class="form-control" id="schoolDirector" placeholder="Nome do(a) Diretor(a)" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Telefone *</label>
-          <input type="text" class="form-control" id="schoolPhone" placeholder="(99) 99999-9999" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Email Institucional *</label>
-          <input type="email" class="form-control" id="schoolEmail" placeholder="exemplo@escola.com" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Instagram</label>
-          <input type="text" class="form-control" id="schoolInstagram" placeholder="@escola">
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Site</label>
-          <input type="text" class="form-control" id="schoolSite" placeholder="https://www.escola.com">
-        </div>
-        <div class="mb-3">
-          <label class="form-label">CEP *</label>
-          <input type="text" class="form-control" id="schoolCEP" placeholder="00000-000" required maxlength="9">
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Endereço *</label>
-          <input type="text" class="form-control" id="schoolAddress" placeholder="Rua, avenida, etc." required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Número *</label>
-          <input type="text" class="form-control" id="schoolNumber" placeholder="Número" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Bairro *</label>
-          <input type="text" class="form-control" id="schoolNeighborhood" placeholder="Bairro" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Cidade *</label>
-          <input type="text" class="form-control" id="schoolCity" placeholder="Cidade" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">UF *</label>
-          <input type="text" class="form-control" id="schoolUF" placeholder="UF" maxlength="2" required>
-        </div>
-        <button type="submit" class="save-button">
-          <i class='bx bx-save'></i>
-          Salvar Cadastro
+      <h5><i class='bx bxs-school'></i> Gerenciamento de Escolas</h5>
+      <div class="d-flex gap-2 mb-3 flex-wrap">
+        <button type="button" class="save-button" id="abrirCadastroEscola">
+          <i class='bx bx-plus'></i>
+          Cadastrar Escola
         </button>
+        <button type="button" class="save-button btn-teal" id="listarEscolas">
+          <i class='bx bx-list-ul'></i>
+          Ver Escolas
+        </button>
+        <button type="button" class="save-button btn-red-gradient" id="excluirEscola">
+          <i class='bx bx-trash'></i>
+          Excluir Escola
+        </button>
+      </div>
+      
+      <!-- Lista de Escolas Cadastradas -->
+      <div id="escolasLista" style="display:none;">
+        <div class="alert alert-info" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1)); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px;">
+          <h6><i class='bx bx-info-circle'></i> Escolas Cadastradas</h6>
+          <p class="mb-0">Lista de todas as escolas registradas no sistema:</p>
+        </div>
+        <div id="escolasContainer">
+          <!-- Conteúdo carregado dinamicamente -->
+        </div>
+      </div>
+      
+      <form id="schoolForm" style="display:none;">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bx-building'></i> Nome da Escola *</label>
+            <input type="text" class="form-control" id="schoolName" placeholder="Digite o nome da escola" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bx-id-card'></i> Código da Escola *</label>
+            <input type="text" class="form-control" id="schoolId" placeholder="Ex: escola001" required>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bx-receipt'></i> CNPJ *</label>
+            <input type="text" class="form-control" id="schoolCNPJ" placeholder="00.000.000/0000-00" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bx-user-circle'></i> Diretor(a) *</label>
+            <input type="text" class="form-control" id="schoolDirector" placeholder="Nome do(a) Diretor(a)" required>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bx-phone'></i> Telefone *</label>
+            <input type="text" class="form-control" id="schoolPhone" placeholder="(99) 99999-9999" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bx-envelope'></i> Email Institucional *</label>
+            <input type="email" class="form-control" id="schoolEmail" placeholder="exemplo@escola.com" required>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bxl-instagram'></i> Instagram</label>
+            <input type="text" class="form-control" id="schoolInstagram" placeholder="@escola">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bx-globe'></i> Site</label>
+            <input type="text" class="form-control" id="schoolSite" placeholder="https://www.escola.com">
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-3 mb-3">
+            <label class="form-label"><i class='bx bx-map-pin'></i> CEP *</label>
+            <input type="text" class="form-control" id="schoolCEP" placeholder="00000-000" required maxlength="9">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label"><i class='bx bx-home'></i> Endereço *</label>
+            <input type="text" class="form-control" id="schoolAddress" placeholder="Rua, avenida, etc." required>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label"><i class='bx bx-hash'></i> Número *</label>
+            <input type="text" class="form-control" id="schoolNumber" placeholder="Número" required>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label"><i class='bx bx-map'></i> Bairro *</label>
+            <input type="text" class="form-control" id="schoolNeighborhood" placeholder="Bairro" required>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label"><i class='bx bx-buildings'></i> Cidade *</label>
+            <input type="text" class="form-control" id="schoolCity" placeholder="Cidade" required>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label"><i class='bx bx-flag'></i> UF *</label>
+            <input type="text" class="form-control" id="schoolUF" placeholder="UF" maxlength="2" required style="text-transform: uppercase;">
+          </div>
+        </div>
+        
+        <div class="d-flex gap-2 mt-4">
+          <button type="submit" class="save-button">
+            <i class='bx bx-save'></i>
+            Salvar Cadastro
+          </button>
+          <button type="button" class="save-button btn-red-gradient" onclick="document.getElementById('schoolForm').style.display='none'; document.getElementById('abrirCadastroEscola').style.display='inline-flex';">
+            <i class='bx bx-x'></i>
+            Cancelar
+          </button>
+        </div>
       </form>
     </div>
 
     <div class="d-flex justify-content-end mt-4">
-      <button class="save-button">
+      <button class="save-button" style="padding: 15px 30px; font-size: 1.1rem;">
         <i class='bx bx-save'></i>
-        Salvar Alterações
+        Salvar Todas as Alterações
       </button>
     </div>
   </div>
@@ -773,6 +1254,140 @@
     });
     
     document.getElementById('btnRestoreBackup').addEventListener('click', restaurarBackup);
+
+    // Função para listar escolas cadastradas
+    async function listarEscolas() {
+      try {
+        const snapshot = await db.collection('escolas').get();
+        const escolasContainer = document.getElementById('escolasContainer');
+        const escolasLista = document.getElementById('escolasLista');
+        
+        if (snapshot.empty) {
+          escolasContainer.innerHTML = `
+            <div class="alert alert-warning">
+              <i class='bx bx-info-circle'></i>
+              Nenhuma escola cadastrada no sistema.
+            </div>
+          `;
+        } else {
+          let html = '';
+          snapshot.forEach(doc => {
+            const escola = doc.data();
+            html += `
+              <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h6 class="mb-0">
+                    <i class='bx bx-building'></i> ${escola.nome || 'Nome não informado'}
+                  </h6>
+                  <button class="btn btn-sm btn-danger" onclick="confirmarExclusaoEscola('${doc.id}', '${escola.nome || 'Escola'}')">
+                    <i class='bx bx-trash'></i> Excluir
+                  </button>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p class="mb-1"><strong>Código:</strong> ${escola.id || 'N/A'}</p>
+                      <p class="mb-1"><strong>CNPJ:</strong> ${escola.cnpj || 'N/A'}</p>
+                      <p class="mb-1"><strong>Diretor(a):</strong> ${escola.diretor || 'N/A'}</p>
+                      <p class="mb-1"><strong>Telefone:</strong> ${escola.telefone || 'N/A'}</p>
+                      <p class="mb-1"><strong>Email:</strong> ${escola.email || 'N/A'}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class="mb-1"><strong>Endereço:</strong> ${escola.endereco || 'N/A'}, ${escola.numero || 'S/N'}</p>
+                      <p class="mb-1"><strong>Bairro:</strong> ${escola.bairro || 'N/A'}</p>
+                      <p class="mb-1"><strong>Cidade:</strong> ${escola.cidade || 'N/A'} - ${escola.uf || 'N/A'}</p>
+                      <p class="mb-1"><strong>CEP:</strong> ${escola.cep || 'N/A'}</p>
+                      ${escola.instagram ? `<p class="mb-1"><strong>Instagram:</strong> ${escola.instagram}</p>` : ''}
+                      ${escola.site ? `<p class="mb-1"><strong>Site:</strong> ${escola.site}</p>` : ''}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+          escolasContainer.innerHTML = html;
+        }
+        
+        escolasLista.style.display = 'block';
+        
+      } catch (error) {
+        console.error('Erro ao listar escolas:', error);
+        alert('Erro ao carregar lista de escolas: ' + error.message);
+      }
+    }
+
+    // Função para confirmar exclusão de escola
+    async function confirmarExclusaoEscola(escolaId, nomeEscola) {
+      if (!confirm(`Tem certeza que deseja excluir a escola "${nomeEscola}"?\n\nEsta ação não pode ser desfeita.`)) {
+        return;
+      }
+
+      // Segunda confirmação para segurança
+      if (!confirm(`⚠️ CONFIRMAÇÃO FINAL ⚠️\n\nVocê está prestes a excluir permanentemente:\n"${nomeEscola}" (ID: ${escolaId})\n\nEsta ação é IRREVERSÍVEL!\n\nClique OK apenas se tiver absoluta certeza.`)) {
+        return;
+      }
+
+      try {
+        await db.collection('escolas').doc(escolaId).delete();
+        alert(`Escola "${nomeEscola}" excluída com sucesso!`);
+        
+        // Recarregar a lista
+        listarEscolas();
+        
+      } catch (error) {
+        console.error('Erro ao excluir escola:', error);
+        alert('Erro ao excluir escola: ' + error.message);
+      }
+    }
+
+    // Função para excluir escola por seleção
+    async function excluirEscolaPorSelecao() {
+      try {
+        const snapshot = await db.collection('escolas').get();
+        
+        if (snapshot.empty) {
+          alert('Não há escolas cadastradas para excluir.');
+          return;
+        }
+
+        // Criar lista de opções
+        let opcoes = 'Selecione a escola para excluir:\n\n';
+        const escolas = [];
+        
+        snapshot.forEach((doc, index) => {
+          const escola = doc.data();
+          escolas.push({ id: doc.id, nome: escola.nome || 'Nome não informado' });
+          opcoes += `${index + 1}. ${escola.nome || 'Nome não informado'} (${doc.id})\n`;
+        });
+
+        const escolha = prompt(opcoes + '\nDigite o número da escola (ou cancelar):');
+        
+        if (!escolha || isNaN(escolha)) {
+          return;
+        }
+
+        const indice = parseInt(escolha) - 1;
+        
+        if (indice < 0 || indice >= escolas.length) {
+          alert('Opção inválida.');
+          return;
+        }
+
+        const escolaSelecionada = escolas[indice];
+        await confirmarExclusaoEscola(escolaSelecionada.id, escolaSelecionada.nome);
+        
+      } catch (error) {
+        console.error('Erro ao buscar escolas:', error);
+        alert('Erro ao buscar escolas: ' + error.message);
+      }
+    }
+
+    // Event listeners para os novos botões
+    document.getElementById('listarEscolas').addEventListener('click', listarEscolas);
+    document.getElementById('excluirEscola').addEventListener('click', excluirEscolaPorSelecao);
+
+    // Disponibilizar função globalmente para uso nos botões HTML
+    window.confirmarExclusaoEscola = confirmarExclusaoEscola;
   </script>
 </body>
 </html>

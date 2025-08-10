@@ -883,8 +883,13 @@ Defina a nova data de devolução para este empréstimo.
 <div class="modal-body p-4">
 <!-- Cabeçalho da Instituição -->
 <div class="text-center border-bottom pb-3 mb-4">
+<div class="d-flex align-items-center justify-content-center mb-2">
+<img src="logobias.png" alt="Logo da Escola" style="width: 60px; height: 60px; object-fit: contain; margin-right: 15px;">
+<div>
 <h4 class="text-primary mb-1">Escola Estadual Governador Bias Fortes</h4>
 <p class="text-muted mb-0">Sistema de Gerenciamento de Biblioteca - SIGEB</p>
+</div>
+</div>
 <p class="text-muted small">Comprovante de Empréstimo de Material Bibliográfico</p>
 </div>
 
@@ -3333,8 +3338,14 @@ return;
 const clonedContent = printArea.cloneNode(true);
 
 // Remove elementos que não devem aparecer na impressão
-const elementsToRemove = clonedContent.querySelectorAll('.btn-close, .modal-footer, button');
+const elementsToRemove = clonedContent.querySelectorAll('.btn-close, .modal-footer, button, .modal-header');
 elementsToRemove.forEach(el => el.remove());
+
+// Remove o cabeçalho da instituição do modal (será substituído pelo cabeçalho de impressão)
+const institutionHeader = clonedContent.querySelector('.text-center.border-bottom');
+if (institutionHeader) {
+institutionHeader.remove();
+}
 
 // Remove classes de modal para impressão
 clonedContent.classList.remove('modal-content');
@@ -3378,6 +3389,18 @@ text-align: center;
 border-bottom: 3px solid #0066cc;
 padding-bottom: 15px;
 margin-bottom: 25px;
+}
+.header-logo-container {
+display: flex;
+align-items: center;
+justify-content: center;
+margin-bottom: 10px;
+}
+.header-logo {
+width: 70px;
+height: 70px;
+object-fit: contain;
+margin-right: 20px;
 }
 .header-section h1 {
 color: #0066cc;
@@ -3464,6 +3487,16 @@ color: #666;
 </style>
 </head>
 <body>
+<div class="header-section">
+<div class="header-logo-container">
+<img src="logobias.png" alt="Logo da Escola" class="header-logo">
+<div>
+<h1>Escola Estadual Governador Bias Fortes</h1>
+<h2>Sistema de Gerenciamento de Biblioteca - SIGEB</h2>
+</div>
+</div>
+<p>Comprovante de Empréstimo de Material Bibliográfico</p>
+</div>
 ${clonedContent.innerHTML}
 <div class="footer-info">
 <p>Este documento foi gerado automaticamente pelo SIGEB - Sistema de Gerenciamento de Biblioteca</p>

@@ -2500,55 +2500,75 @@
 
     // Função para criar um cartão individual
     function criarCartaoUsuario(doc, usuario, x, y, width, height) {
-      // SIMPLIFICADO: Cartão de leitor minimalista com logos, escola, nome, matrícula e data de emissão
-      // Validação dos dados do usuário
-      if (!usuario || typeof usuario !== 'object') {
-        return;
-      }
+      // Cartão de leitor moderno com função e turma (se aluno)
+      if (!usuario || typeof usuario !== 'object') return;
 
       // Dados seguros
       const nomeSeguro = usuario.nome || 'Nome não informado';
       const matriculaSegura = usuario.matricula || 'N/A';
+      const funcaoSegura = usuario.funcao || 'Leitor';
+      const turmaSegura = usuario.turma || '';
 
-      // Fundo branco com borda azul SIGEB
-      doc.setFillColor(255, 255, 255);
-      doc.rect(x, y, width, height, 'F');
+      // Fundo gradiente moderno
+      const gradY = y + height * 0.45;
+      doc.setFillColor(26, 35, 126); // azul escuro
+      doc.rect(x, y, width, gradY - y, 'F');
+      doc.setFillColor(45, 156, 219); // azul claro
+      doc.rect(x, gradY, width, height - (gradY - y), 'F');
+
+      // Borda arredondada
       doc.setDrawColor(26, 35, 126);
-      doc.setLineWidth(1);
+      doc.setLineWidth(1.2);
       doc.rect(x, y, width, height);
+
+      // Sombra sutil (simulada)
+      doc.setDrawColor(220, 220, 220);
+      doc.setLineWidth(0.5);
+      doc.rect(x + 1, y + 1, width - 2, height - 2);
 
       // Logos SIGEB (esquerda) e Bias (direita) no topo
       const logoSize = 14;
-      const logoY = y + 4;
+      const logoY = y + 5;
       if (typeof logoSigebBase64 !== 'undefined' && logoSigebBase64) {
-        doc.addImage(logoSigebBase64, 'PNG', x + 6, logoY, logoSize, logoSize);
+        doc.addImage(logoSigebBase64, 'PNG', x + 7, logoY, logoSize, logoSize);
       }
       if (typeof logoBiasBase64 !== 'undefined' && logoBiasBase64) {
-        doc.addImage(logoBiasBase64, 'PNG', x + width - logoSize - 6, logoY, logoSize, logoSize);
+        doc.addImage(logoBiasBase64, 'PNG', x + width - logoSize - 7, logoY, logoSize, logoSize);
       }
 
       // Nome da escola centralizado
-      doc.setFontSize(8);
+      doc.setFontSize(8.5);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(26, 35, 126);
+      doc.setTextColor(255, 255, 255);
       const escola = 'Escola Estadual Gov. Bias Fortes';
       const escolaWidth = doc.getTextWidth(escola);
-      doc.text(escola, x + (width - escolaWidth) / 2, y + 12);
+      doc.text(escola, x + (width - escolaWidth) / 2, y + 15);
 
-      // Nome do aluno centralizado
-      doc.setFontSize(10);
+      // Nome do leitor centralizado
+      doc.setFontSize(10.5);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(26, 35, 126);
+      doc.setTextColor(255, 255, 255);
       const nomeWidth = doc.getTextWidth(nomeSeguro.toUpperCase());
-      doc.text(nomeSeguro.toUpperCase(), x + (width - nomeWidth) / 2, y + 25);
+      doc.text(nomeSeguro.toUpperCase(), x + (width - nomeWidth) / 2, y + 29);
+
+      // Função e turma (se aluno)
+      let funcaoLabel = funcaoSegura;
+      if (funcaoSegura.toLowerCase() === 'aluno' && turmaSegura) {
+        funcaoLabel += ` - Turma: ${turmaSegura}`;
+      }
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(220, 245, 255);
+      const funcaoWidth = doc.getTextWidth(funcaoLabel);
+      doc.text(funcaoLabel, x + (width - funcaoWidth) / 2, y + 37);
 
       // Matrícula centralizada
       doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont('helvetica', 'bold');
       doc.setTextColor(45, 156, 219);
       const matriculaLabel = `Matrícula: ${matriculaSegura}`;
       const matriculaWidth = doc.getTextWidth(matriculaLabel);
-      doc.text(matriculaLabel, x + (width - matriculaWidth) / 2, y + 33);
+      doc.text(matriculaLabel, x + (width - matriculaWidth) / 2, y + 45);
 
       // Data de emissão centralizada
       doc.setFontSize(7);
@@ -2558,7 +2578,7 @@
       const dataStr = `Emitido em: ${dataEmissao.toLocaleDateString('pt-BR')}`;
       const dataWidth = doc.getTextWidth(dataStr);
       doc.text(dataStr, x + (width - dataWidth) / 2, y + height - 8);
-      // Fim do cartão minimalista
+      // Fim do cartão moderno
     }
 
     // Event listener para o botão de gerar cartão

@@ -2500,7 +2500,7 @@
 
     // Função para criar um cartão individual
     function criarCartaoUsuario(doc, usuario, x, y, width, height) {
-      // Novo estilo de cartão de leitor: moderno, intuitivo, com cabeçalho e seção inferior
+      // Cartão de leitor moderno com todo conteúdo dentro dos limites
       if (!usuario || typeof usuario !== 'object') return;
 
       // Dados seguros
@@ -2515,9 +2515,9 @@
 
       // Cabeçalho superior com cor escura
       doc.setFillColor(26, 26, 46); // Azul escuro SIGEB
-      doc.roundedRect(x, y, width, 35, 8, 8, 'F');
+      doc.roundedRect(x, y, width, 32, 8, 8, 'F');
       doc.setFillColor(26, 26, 46);
-      doc.rect(x, y + 28, width, 7, 'F'); // Continua reto embaixo
+      doc.rect(x, y + 26, width, 6, 'F'); // Continua reto embaixo
 
       // Borda principal elegante
       doc.setDrawColor(22, 33, 62);
@@ -2526,102 +2526,177 @@
 
       // Área inferior clara para informações do aluno
       doc.setFillColor(248, 250, 255); // Azul muito claro
-      doc.roundedRect(x + 4, y + 40, width - 8, height - 48, 4, 4, 'F');
+      doc.roundedRect(x + 3, y + 36, width - 6, height - 42, 4, 4, 'F');
 
-      // Logos no cabeçalho
-      const logoSize = 18;
-      const logoY = y + 8;
+      // Logos menores no cabeçalho com margem de segurança
+      const logoSize = 12; // Reduzido de 18 para 12
+      const logoY = y + 6;
+      const marginSafety = 8; // Margem de segurança das bordas
       
-      // Logo SIGEB (esquerda)
+      // Logo SIGEB (esquerda) - com posição ajustada
       if (typeof logoSigebBase64 !== 'undefined' && logoSigebBase64) {
         try {
-          doc.addImage(logoSigebBase64, 'PNG', x + 15, logoY, logoSize, logoSize);
+          doc.addImage(logoSigebBase64, 'PNG', x + marginSafety, logoY, logoSize, logoSize);
         } catch (e) {
           // Desenho alternativo caso a imagem falhe
           doc.setFillColor(255, 255, 255);
-          doc.circle(x + 24, logoY + 9, 9, 'F');
+          doc.circle(x + marginSafety + 6, logoY + 6, 5, 'F');
           doc.setTextColor(26, 26, 46);
-          doc.setFontSize(8);
+          doc.setFontSize(6);
           doc.setFont('helvetica', 'bold');
-          doc.text('SIGEB', x + 17, logoY + 12);
+          doc.text('SIGEB', x + marginSafety + 2, logoY + 8);
         }
       }
 
-      // Logo Bias Fortes (direita)
+      // Logo Bias Fortes (direita) - com posição ajustada
       if (typeof logoBiasBase64 !== 'undefined' && logoBiasBase64) {
         try {
-          doc.addImage(logoBiasBase64, 'PNG', x + width - logoSize - 15, logoY, logoSize, logoSize);
+          doc.addImage(logoBiasBase64, 'PNG', x + width - logoSize - marginSafety, logoY, logoSize, logoSize);
         } catch (e) {
           // Desenho alternativo caso a imagem falhe
           doc.setFillColor(255, 255, 255);
-          doc.circle(x + width - 24, logoY + 9, 9, 'F');
+          doc.circle(x + width - marginSafety - 6, logoY + 6, 5, 'F');
           doc.setTextColor(26, 26, 46);
-          doc.setFontSize(7);
+          doc.setFontSize(5);
           doc.setFont('helvetica', 'bold');
-          doc.text('BIAS', x + width - 30, logoY + 12);
+          doc.text('BIAS', x + width - marginSafety - 8, logoY + 8);
         }
       }
 
-      // Nome da escola no cabeçalho (centralizado)
-      doc.setFontSize(10);
+      // Nome da escola no cabeçalho (centralizado) - com verificação de largura
+      doc.setFontSize(8); // Reduzido de 10 para 8
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(255, 255, 255);
-      const escolaWidth = doc.getTextWidth(escola);
-      doc.text(escola, x + (width - escolaWidth) / 2, y + 32);
+      
+      // Verificar se o texto cabe na largura disponível
+      const escolaTexto = escola.length > 30 ? 'E.E. Gov. Bias Fortes' : escola;
+      const escolaWidth = doc.getTextWidth(escolaTexto);
+      const maxEscolaWidth = width - (2 * marginSafety);
+      
+      if (escolaWidth <= maxEscolaWidth) {
+        doc.text(escolaTexto, x + (width - escolaWidth) / 2, y + 26);
+      } else {
+        // Se ainda não cabe, usar versão ainda mais curta
+        const escolaCurta = 'Escola Gov. Bias Fortes';
+        const escolaCurtaWidth = doc.getTextWidth(escolaCurta);
+        doc.text(escolaCurta, x + (width - escolaCurtaWidth) / 2, y + 26);
+      }
 
-      // Título "CARTÃO DE LEITOR"
-      doc.setFontSize(8);
+      // Título "CARTÃO DE LEITOR" - com verificação de posição
+      doc.setFontSize(7); // Reduzido de 8 para 7
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(79, 172, 254);
-      const tituloWidth = doc.getTextWidth('CARTÃO DE LEITOR');
-      doc.text('CARTÃO DE LEITOR', x + (width - tituloWidth) / 2, y + 52);
+      const tituloTexto = 'CARTÃO DE LEITOR';
+      const tituloWidth = doc.getTextWidth(tituloTexto);
+      doc.text(tituloTexto, x + (width - tituloWidth) / 2, y + 46);
 
-      // Nome do aluno (destaque principal)
-      doc.setFontSize(14);
+      // Nome do aluno (destaque principal) - com quebra se necessário
+      doc.setFontSize(12); // Reduzido de 14 para 12
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(26, 26, 46);
-      const nomeWidth = doc.getTextWidth(nomeSeguro.toUpperCase());
-      const nomeX = x + (width - nomeWidth) / 2;
-      doc.text(nomeSeguro.toUpperCase(), nomeX, y + 68);
+      
+      const nomeTexto = nomeSeguro.toUpperCase();
+      let nomeWidth = doc.getTextWidth(nomeTexto);
+      const maxNomeWidth = width - (2 * marginSafety);
+      let nomeX, nomeY = y + 62;
+      
+      if (nomeWidth <= maxNomeWidth) {
+        // Nome cabe em uma linha
+        nomeX = x + (width - nomeWidth) / 2;
+        doc.text(nomeTexto, nomeX, nomeY);
+        
+        // Linha decorativa sob o nome
+        doc.setDrawColor(79, 172, 254);
+        doc.setLineWidth(1);
+        doc.line(nomeX, nomeY + 3, nomeX + nomeWidth, nomeY + 3);
+      } else {
+        // Nome precisa ser quebrado ou reduzido
+        doc.setFontSize(10);
+        nomeWidth = doc.getTextWidth(nomeTexto);
+        
+        if (nomeWidth <= maxNomeWidth) {
+          nomeX = x + (width - nomeWidth) / 2;
+          doc.text(nomeTexto, nomeX, nomeY);
+          doc.setDrawColor(79, 172, 254);
+          doc.setLineWidth(1);
+          doc.line(nomeX, nomeY + 3, nomeX + nomeWidth, nomeY + 3);
+        } else {
+          // Quebrar em duas linhas
+          const palavras = nomeTexto.split(' ');
+          const meio = Math.ceil(palavras.length / 2);
+          const linha1 = palavras.slice(0, meio).join(' ');
+          const linha2 = palavras.slice(meio).join(' ');
+          
+          const linha1Width = doc.getTextWidth(linha1);
+          const linha2Width = doc.getTextWidth(linha2);
+          
+          doc.text(linha1, x + (width - linha1Width) / 2, nomeY - 3);
+          doc.text(linha2, x + (width - linha2Width) / 2, nomeY + 6);
+          
+          // Linha decorativa sob a segunda linha
+          doc.setDrawColor(79, 172, 254);
+          doc.setLineWidth(1);
+          doc.line(x + (width - linha2Width) / 2, nomeY + 9, x + (width - linha2Width) / 2 + linha2Width, nomeY + 9);
+        }
+      }
 
-      // Linha decorativa sob o nome
-      doc.setDrawColor(79, 172, 254);
-      doc.setLineWidth(1.5);
-      doc.line(nomeX, y + 72, nomeX + nomeWidth, y + 72);
-
-      // Matrícula
-      doc.setFontSize(11);
+      // Matrícula - com verificação de largura
+      doc.setFontSize(9); // Reduzido de 11 para 9
       doc.setFont('courier', 'bold');
       doc.setTextColor(22, 33, 62);
       const matriculaLabel = `Matrícula: ${matriculaSegura}`;
       const matriculaWidth = doc.getTextWidth(matriculaLabel);
-      doc.text(matriculaLabel, x + (width - matriculaWidth) / 2, y + 84);
+      const maxMatriculaWidth = width - (2 * marginSafety);
+      
+      if (matriculaWidth <= maxMatriculaWidth) {
+        doc.text(matriculaLabel, x + (width - matriculaWidth) / 2, y + 78);
+      } else {
+        // Versão mais curta
+        const matriculaCurta = `Mat: ${matriculaSegura}`;
+        const matriculaCurtaWidth = doc.getTextWidth(matriculaCurta);
+        doc.text(matriculaCurta, x + (width - matriculaCurtaWidth) / 2, y + 78);
+      }
 
-      // Função
-      doc.setFontSize(9);
+      // Função - com verificação de largura
+      doc.setFontSize(8); // Reduzido de 9 para 8
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(79, 172, 254);
       const funcaoLabel = `Função: ${funcaoSegura}`;
       const funcaoWidth = doc.getTextWidth(funcaoLabel);
-      doc.text(funcaoLabel, x + (width - funcaoWidth) / 2, y + 96);
+      const maxFuncaoWidth = width - (2 * marginSafety);
+      
+      if (funcaoWidth <= maxFuncaoWidth) {
+        doc.text(funcaoLabel, x + (width - funcaoWidth) / 2, y + 88);
+      } else {
+        // Só a função sem label
+        const funcaoSo = funcaoSegura;
+        const funcaoSoWidth = doc.getTextWidth(funcaoSo);
+        doc.text(funcaoSo, x + (width - funcaoSoWidth) / 2, y + 88);
+      }
 
-      // Data de emissão (rodapé)
-      doc.setFontSize(7);
+      // Data de emissão (rodapé) - com posição segura
+      doc.setFontSize(6); // Reduzido de 7 para 6
       doc.setFont('helvetica', 'italic');
       doc.setTextColor(120, 120, 120);
       const dataEmissao = new Date();
-      const dataStr = `Emitido em: ${dataEmissao.toLocaleDateString('pt-BR')}`;
+      const dataStr = `Emitido: ${dataEmissao.toLocaleDateString('pt-BR')}`;
       const dataWidth = doc.getTextWidth(dataStr);
-      doc.text(dataStr, x + width - dataWidth - 8, y + height - 6);
+      
+      // Garantir que a data fique dentro das margens
+      const dataX = Math.min(x + width - dataWidth - marginSafety, x + width - marginSafety - dataWidth);
+      doc.text(dataStr, dataX, y + height - marginSafety);
 
-      // Elemento decorativo - padrão sutil no canto
+      // Elemento decorativo pequeno - padrão sutil no canto esquerdo
       doc.setDrawColor(200, 220, 255);
-      doc.setLineWidth(0.5);
-      for (let i = 0; i < 3; i++) {
-        doc.line(x + 8 + i*2, y + height - 8, x + 8 + i*2, y + height - 16);
+      doc.setLineWidth(0.3);
+      for (let i = 0; i < 2; i++) {
+        const lineX = x + marginSafety + i*2;
+        const lineY1 = y + height - marginSafety - 6;
+        const lineY2 = y + height - marginSafety - 12;
+        doc.line(lineX, lineY1, lineX, lineY2);
       }
 
-      // Fim do novo estilo de cartão de leitor moderno
+      // Fim do cartão de leitor com conteúdo garantidamente dentro dos limites
     }
 
     // Event listener para o botão de gerar cartão

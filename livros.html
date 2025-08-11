@@ -505,94 +505,84 @@
     </div>
   </div>
 
-  <div class="main-content">
-    <div class="page-header">
-      <div>
-        <h2>Gerenciamento de Livros</h2>
-        <p>Gerencie o acervo da biblioteca</p>
-      </div>      <div class="d-flex gap-2">
-        <button class="btn btn-info" onclick="diagnosticarEstoque()" title="Diagnosticar problemas de estoque">
-          <i class='bx bx-search-alt'></i>
-          Diagnosticar
-        </button>
-        <button class="btn btn-success" onclick="updateAllStock()" title="Atualizar estoque de todos os livros">
-          <i class='bx bx-refresh'></i>
-          Atualizar Estoque
-        </button>
-        <button class="add-button" data-bs-toggle="modal" data-bs-target="#addBookModal">
-          <i class='bx bx-plus'></i>
-          Adicionar Livro
-        </button>
-        <button class="add-button" data-bs-toggle="modal" data-bs-target="#importBooksModal">
-          <i class='bx bx-import'></i>
-          Importar Livros
-        </button>
+  <div class="main-content container py-4">
+    <div class="card shadow-sm border-0 mb-4" style="border-radius: var(--radius-lg);">
+      <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+          <h2 class="h4 fw-bold text-primary mb-1"><i class='bx bxs-book me-2'></i> Gerenciamento de Livros</h2>
+          <p class="mb-0 text-secondary">Gerencie o acervo da biblioteca</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-info" onclick="diagnosticarEstoque()" title="Diagnosticar problemas de estoque">
+            <i class='bx bx-search-alt'></i> Diagnosticar
+          </button>
+          <button class="btn btn-success" onclick="updateAllStock()" title="Atualizar estoque de todos os livros">
+            <i class='bx bx-refresh'></i> Atualizar Estoque
+          </button>
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBookModal">
+            <i class='bx bx-plus'></i> Adicionar Livro
+          </button>
+          <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#importBooksModal">
+            <i class='bx bx-import'></i> Importar Livros
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="search-box">
-      <input type="text" class="form-control" id="filterTitulo" placeholder="Filtrar por Título...">
-      <input type="text" class="form-control" id="filterAutor" placeholder="Filtrar por Autor...">
-      <input type="text" class="form-control" id="filterEditora" placeholder="Filtrar por Editora...">      <!-- Filtro de gêneros como select -->      <select class="form-select genre-filter" id="genreFilter">
-        <option value="">Todos os Gêneros</option>
-        <option value="ACADEMICO">Acadêmico</option>
-        <option value="AUTOAJUDA">Autoajuda</option>
-        <option value="AVENTURA">Aventura</option>
-        <option value="BIOGRAFIA">Biografia</option>
-        <option value="CIENCIAS">Ciências</option>
-        <option value="DIDATICO">Didático</option>
-        <option value="DRAMA">Drama</option>
-        <option value="EDUCACAO">Educação</option>
-        <option value="FANTASIA">Fantasia</option>
-        <option value="FICCAO">Ficção</option>
-        <option value="FICCAO_CIENTIFICA">Ficção Científica</option>
-        <option value="HISTORIA">História</option>
-        <option value="INFANTIL">Infantil</option>
-        <option value="JUVENIL">Juvenil</option>
-        <option value="LITERATURA">Literatura</option>
-        <option value="MISTERIO">Mistério</option>
-        <option value="NAO_FICCAO">Não Ficção</option>
-        <option value="OUTROS">Outros</option>
-        <option value="POESIA">Poesia</option>
-        <option value="ROMANCE">Romance</option>
-        <option value="TECNOLOGIA">Tecnologia</option>
-        <option value="TECNICO">Técnico</option>
-        <option value="TERROR">Terror</option>
-      </select>
-      <button class="add-button" id="searchButton">
-        <i class='bx bx-search'></i>
-      </button>
-      <button class="add-button" id="showAllBooksButton">
-        <i class='bx bx-list-ul'></i>
-        Mostrar Todos
-      </button>
+    <div class="card shadow-sm border-0 mb-4" style="border-radius: var(--radius-lg);">
+      <div class="card-body">
+        <form class="row g-2 align-items-center" id="searchForm" onsubmit="return false;">
+          <div class="col-md-3">
+            <input type="text" class="form-control" id="filterTitulo" placeholder="Filtrar por Título...">
+          </div>
+          <div class="col-md-3">
+            <input type="text" class="form-control" id="filterAutor" placeholder="Filtrar por Autor...">
+          </div>
+          <div class="col-md-3">
+            <input type="text" class="form-control" id="filterEditora" placeholder="Filtrar por Editora...">
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" id="genreFilter">
+              <option value="">Todos os Gêneros</option>
+              <option value="ACADEMICO">Acadêmico</option>
+              <option value="AUTOAJUDA">Autoajuda</option>
+              <option value="AVENTURA">Aventura</option>
+              <option value="BIOGRAFIA">Biografia</option>
+              <option value="CIENCIAS">Ciências</option>
+              <option value="DIDATICO">Didático</option>
+              <option value="DRAMA">Drama</option>
+              <option value="EDUCACAO">Educação</option>
+              <option value="FANTASIA">Fantasia</option>
+              <option value="FICCAO">Ficção</option>
+              <option value="FICCAO_CIENTIFICA">Ficção Científica</option>
+              <option value="HISTORIA">História</option>
+              <option value="INFANTIL">Infantil</option>
+              <option value="JUVENIL">Juvenil</option>
+              <option value="LITERATURA">Literatura</option>
+              <option value="MISTERIO">Mistério</option>
+              <option value="NAO_FICCAO">Não Ficção</option>
+              <option value="OUTROS">Outros</option>
+              <option value="POESIA">Poesia</option>
+              <option value="ROMANCE">Romance</option>
+              <option value="TECNOLOGIA">Tecnologia</option>
+              <option value="TECNICO">Técnico</option>
+              <option value="TERROR">Terror</option>
+            </select>
+          </div>
+          <div class="col-md-1 d-flex gap-1">
+            <button class="btn btn-outline-primary w-100" id="searchButton">
+              <i class='bx bx-search'></i>
+            </button>
+            <button class="btn btn-outline-secondary w-100" id="showAllBooksButton">
+              <i class='bx bx-list-ul'></i>
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
-    <div class="book-grid">
-      <div class="book-card">
-        <h4>Dom Casmurro</h4>
-        <p>Machado de Assis</p>
-        <p><small>ISBN: 9788535910682</small></p>
-        <span class="book-status status-disponivel">Disponível</span>
-      </div>
-      <div class="book-card">
-        <h4>O Pequeno Príncipe</h4>
-        <p>Antoine de Saint-Exupéry</p>
-        <p><small>ISBN: 9788574123745</small></p>
-        <span class="book-status status-emprestado">Emprestado</span>
-      </div>
-      <div class="book-card">
-        <h4>1984</h4>
-        <p>George Orwell</p>
-        <p><small>ISBN: 9788535914849</small></p>
-        <span class="book-status status-disponivel">Disponível</span>
-      </div>
-      <div class="book-card">
-        <h4>Memórias Póstumas de Brás Cubas</h4>
-        <p>Machado de Assis</p>
-        <p><small>ISBN: 9788535911121</small></p>
-        <span class="book-status status-disponivel">Disponível</span>
-      </div>
+    <div class="row g-3" id="bookGrid">
+      <!-- Cards de livros serão renderizados aqui pelo JS -->
     </div>
 
     <!-- Modal Adicionar Livro -->

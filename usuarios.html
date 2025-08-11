@@ -1866,19 +1866,99 @@
                     </tr>
                   </thead>
                   <tbody>
-                    ${usuarios.map(u => `
-                      <tr>
-                        <td>${u.nome || ''}</td>
-                        <td>${u.email || ''}</td>
-                        <td>${u.matricula || ''}</td>
-                        <td>${u.status || ''}</td>
-                        <td>${u.funcao || ''}</td>
-                        <td>${u.telefone || ''}</td>
-                        <td>${u.endereco ? [
-                          u.endereco.logradouro, u.endereco.numero, u.endereco.bairro, u.endereco.cidade, u.endereco.uf, u.endereco.cep
-                        ].filter(Boolean).join(', ') : ''}</td>
-                      </tr>
-                    `).join('')}
+                    <!-- Conteúdo existente -->
+
+                    <h2>Cartões de Leitor</h2>
+                    <div class="card-container">
+                      <div class="reader-card">
+                        <div class="magnetic-strip"></div>
+                        <div class="card-content">
+                          <div class="library-logo">
+                            <img src="logoaba.png" alt="Logo Biblioteca" />
+                          </div>
+                          <div class="reader-info">
+                            <h3>Nome do Leitor</h3>
+                            <p>ID: 123456789</p>
+                            <p>Validade: 12/2026</p>
+                          </div>
+                          <div class="barcode">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?data=123456789&size=80x80" alt="Código de barras" />
+                          </div>
+                        </div>
+                      </div>
+                      <!-- Duplicar .reader-card para outros usuários -->
+                    </div>
+
+                    <style>
+                      .card-container {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 2rem;
+                        margin-top: 2rem;
+                      }
+                      .reader-card {
+                        width: 340px;
+                        height: 200px;
+                        background: linear-gradient(135deg, #232526 0%, #414345 100%);
+                        border-radius: 18px;
+                        box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+                        position: relative;
+                        overflow: hidden;
+                        color: #fff;
+                        font-family: 'Segoe UI', Arial, sans-serif;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: flex-end;
+                      }
+                      .magnetic-strip {
+                        position: absolute;
+                        top: 28px;
+                        left: 0;
+                        width: 100%;
+                        height: 36px;
+                        background: linear-gradient(90deg, #222 60%, #444 100%);
+                        opacity: 0.85;
+                      }
+                      .card-content {
+                        position: relative;
+                        z-index: 2;
+                        padding: 24px 24px 16px 24px;
+                        display: flex;
+                        flex-direction: row;
+                        align-items: flex-end;
+                        height: 100%;
+                      }
+                      .library-logo img {
+                        width: 48px;
+                        height: 48px;
+                        border-radius: 8px;
+                        margin-right: 18px;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+                      }
+                      .reader-info {
+                        flex: 1;
+                      }
+                      .reader-info h3 {
+                        margin: 0 0 6px 0;
+                        font-size: 1.2rem;
+                        font-weight: 600;
+                      }
+                      .reader-info p {
+                        margin: 0;
+                        font-size: 0.98rem;
+                        letter-spacing: 0.5px;
+                      }
+                      .barcode img {
+                        width: 60px;
+                        height: 60px;
+                        background: #fff;
+                        border-radius: 6px;
+                        padding: 4px;
+                        box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+                      }
+                    </style>
+                  <!-- ERRO: Bloco removido pois estava usando template string JS fora de contexto -->
+                  <!-- Adicione aqui a renderização dos usuários via JS, ou utilize um loop server-side, se necessário. -->
                   </tbody>
                 </table>
               </div>

@@ -666,20 +666,15 @@
       </div>
     </div>
     <script>
-    // Exibe o modal de cadastro de livro
+    // Exibe o modal de cadastro de livro e garante event listener único
     function showAddBookModal() {
-      const modal = new bootstrap.Modal(document.getElementById('addBookModal'));
-      modal.show();
-    }
-
-    // Adiciona livro ao inventário local
-    document.addEventListener('DOMContentLoaded', function() {
-      function setupAddBookFormListener() {
-        const form = document.getElementById('addBookForm');
-        if (!form) return;
-        // Remove event listeners duplicados
-        form.onsubmit = null;
-        form.addEventListener('submit', function(e) {
+      const modalEl = document.getElementById('addBookModal');
+      const form = document.getElementById('addBookForm');
+      if (form) {
+        // Remove todos os event listeners anteriores
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+        newForm.addEventListener('submit', function(e) {
           e.preventDefault();
           const livro = {
             isbn: document.getElementById('isbnLivro').value,
@@ -693,19 +688,21 @@
           };
           if (!window.inventoryData) window.inventoryData = [];
           window.inventoryData.push(livro);
-          // Atualiza lista visual
           displayManualInventoryItems();
           // Fecha modal de forma segura
-          const modalEl = document.getElementById('addBookModal');
           if (modalEl) {
             const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
             modalInstance.hide();
           }
-          form.reset();
+          newForm.reset();
         });
       }
-      setupAddBookFormListener();
-    });
+      const modal = new bootstrap.Modal(modalEl);
+      modal.show();
+    }
+
+    // Adiciona livro ao inventário local
+  // Remove o listener global antigo do DOMContentLoaded para o formulário
 
     // Exibe os itens lançados manualmente
     function displayManualInventoryItems() {

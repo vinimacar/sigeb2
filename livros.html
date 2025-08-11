@@ -38,26 +38,32 @@
     }
     body {
       font-family: 'Poppins', sans-serif;
-      background: #f0f2f5;
+      background: linear-gradient(120deg, #23243a 0%, #2b5876 100%);
+      min-height: 100vh;
       margin: 0;
       padding: 0;
+      color: #eaf1fb;
     }
     .sidebar {
       position: fixed;
       top: 0;
       left: 0;
       height: 100%;
-      width: 250px;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-      color: white;
-      padding: 20px;
-      transition: all 0.3s ease;
+      width: 240px;
+      background: linear-gradient(135deg, #23243a 0%, #2b5876 100%);
+      color: #eaf1fb;
+      padding: 0 0 20px 0;
+      box-shadow: 2px 0 16px 0 rgba(44,62,80,0.13);
       z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     .sidebar-header {
-      padding: 20px 0;
+      padding: 32px 0 18px 0;
       text-align: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      letter-spacing: 0.04em;
     }
     .sidebar-header h3 {
       background: linear-gradient(90deg, #00f2fe, #4facfe);
@@ -89,40 +95,47 @@
       font-size: 1.2rem;
     }
     .main-content {
-      margin-left: 250px;
-      padding: 20px;
+      margin-left: 240px;
+      padding: 36px 32px 32px 32px;
+      min-height: 100vh;
+      background: transparent;
       transition: all 0.3s ease;
     }
     .page-header {
-      background: white;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
+      background: linear-gradient(90deg, #23243a 60%, #2b5876 100%);
+      padding: 28px 32px 24px 32px;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px rgba(44,62,80,0.13);
+      margin-bottom: 32px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      color: #eaf1fb;
+      border: 1px solid #2b5876;
     }
     .book-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 1.2rem;
-  margin-top: 2.2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.1rem;
+      margin-top: 1.5rem;
     }
     .book-card {
-  background: #f9fafc;
-  border-radius: 14px;
-  box-shadow: 0 2px 10px rgba(26,33,62,0.08);
-  padding: 1.1rem 0.7rem 1rem 0.7rem;
-  transition: box-shadow 0.2s, transform 0.2s;
-  border: 1px solid #e3e6f0;
-  min-width: 0;
-  max-width: 240px;
-  margin: 0 auto;
+      background: rgba(34, 40, 49, 0.85);
+      border-radius: 18px;
+      box-shadow: 0 4px 24px rgba(44,62,80,0.13);
+      padding: 1.1rem 0.7rem 1rem 0.7rem;
+      transition: box-shadow 0.2s, transform 0.2s, background 0.2s;
+      border: 1px solid #2b5876;
+      min-width: 0;
+      max-width: 220px;
+      margin: 0 auto;
+      color: #eaf1fb;
+      backdrop-filter: blur(2.5px);
     }
     .book-card:hover {
-  box-shadow: 0 8px 24px rgba(26,33,62,0.13);
-  transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 8px 32px rgba(44,62,80,0.18);
+      transform: translateY(-2px) scale(1.03);
+      background: rgba(34, 40, 49, 0.97);
     }
     .book-status {
       display: inline-block;
@@ -200,24 +213,27 @@
       font-size: 0.8rem;
     }
     @media (max-width: 900px) {
+      .main-content {
+        padding: 18px 6px 18px 6px;
+      }
       .book-grid {
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 0.7rem;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.5rem;
       }
       .book-card {
-        padding: 0.7rem 0.4rem;
-        max-width: 170px;
+        padding: 0.5rem 0.2rem;
+        max-width: 120px;
       }
-    }
+      .add-book-fixed {
+        right: 12px;
+        top: 12px;
+        padding: 10px 18px;
+        font-size: 1rem;
       }
-      .book-grid {
-        grid-template-columns: 1fr;
-      }
-      .search-box {
-        grid-template-columns: 1fr;
-      }
-      .genre-filter {
-        max-width: 100%;
+      .sidebar {
+        width: 100vw;
+        position: static;
+        box-shadow: none;
       }
     }
     .modal-content {

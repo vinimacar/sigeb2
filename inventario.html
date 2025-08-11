@@ -602,14 +602,122 @@
         <div class="row justify-content-center">
           <div class="col-md-8">
             <div class="d-flex flex-wrap gap-3 justify-content-center">
-              <!-- Botão para lançar materiais -->
-              <button class="btn btn-primary btn-lg px-4 py-3" onclick="loadInventoryData()" style="min-width: 220px;">
+              <!-- Botão para lançar materiais manualmente -->
+              <button class="btn btn-primary btn-lg px-4 py-3" onclick="showAddBookModal()" style="min-width: 220px;">
                 <i class='bx bx-upload' style="font-size: 1.5rem;"></i>
                 <span class="d-block mt-1">
                   <strong>Lançar Materiais da Biblioteca</strong>
                 </span>
-                <small class="d-block text-white-50">Adicionar ou recarregar todos os materiais cadastrados</small>
+                <small class="d-block text-white-50">Incluir novos itens manualmente</small>
               </button>
+              <button class="btn btn-outline-secondary btn-lg px-4 py-3" onclick="exportInventoryFile()" style="min-width: 220px;">
+                <i class='bx bx-file' style="font-size: 1.5rem;"></i>
+                <span class="d-block mt-1">
+                  <strong>Finalizar Inventário</strong>
+                </span>
+                <small class="d-block">Exportar arquivo para carregar no sistema</small>
+              </button>
+    <!-- Modal de Cadastro de Livro -->
+    <div class="modal fade" id="addBookModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Cadastrar Novo Livro</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="addBookForm">
+              <div class="mb-3">
+                <label for="tituloLivro" class="form-label">Título</label>
+                <input type="text" class="form-control" id="tituloLivro" required>
+              </div>
+              <div class="mb-3">
+                <label for="autorLivro" class="form-label">Autor</label>
+                <input type="text" class="form-control" id="autorLivro" required>
+              </div>
+              <div class="mb-3">
+                <label for="isbnLivro" class="form-label">ISBN</label>
+                <input type="text" class="form-control" id="isbnLivro">
+              </div>
+              <div class="mb-3">
+                <label for="codigoLivro" class="form-label">Código</label>
+                <input type="text" class="form-control" id="codigoLivro">
+              </div>
+              <div class="mb-3">
+                <label for="categoriaLivro" class="form-label">Categoria</label>
+                <input type="text" class="form-control" id="categoriaLivro">
+              </div>
+              <button type="submit" class="btn btn-success">Adicionar Livro</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+    // Exibe o modal de cadastro de livro
+    function showAddBookModal() {
+      const modal = new bootstrap.Modal(document.getElementById('addBookModal'));
+      modal.show();
+    }
+
+    // Adiciona livro ao inventário local
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('addBookForm');
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const livro = {
+            titulo: document.getElementById('tituloLivro').value,
+            autor: document.getElementById('autorLivro').value,
+            isbn: document.getElementById('isbnLivro').value,
+            codigo: document.getElementById('codigoLivro').value,
+            categoria: document.getElementById('categoriaLivro').value
+          };
+          if (!window.inventoryData) window.inventoryData = [];
+          window.inventoryData.push(livro);
+          // Atualiza lista visual
+          displayManualInventoryItems();
+          // Fecha modal
+          bootstrap.Modal.getInstance(document.getElementById('addBookModal')).hide();
+          form.reset();
+        });
+      }
+    });
+
+    // Exibe os itens lançados manualmente
+    function displayManualInventoryItems() {
+      const list = document.getElementById('inventoryList');
+      if (!window.inventoryData || window.inventoryData.length === 0) {
+        list.innerHTML = `<div class='text-center text-muted' style='padding: 60px 0;'><i class='bx bx-package' style='font-size: 3rem;'></i><h4>O inventário está em branco</h4><p>Clique em <b>Lançar Materiais da Biblioteca</b> para incluir itens.</p></div>`;
+        return;
+      }
+      let html = '<div class="row">';
+      window.inventoryData.forEach((livro, idx) => {
+        html += `<div class='col-md-6'><div class='inventory-card mb-3'><strong>${livro.titulo}</strong><br><small>${livro.autor}</small><br><span class='badge bg-secondary'>${livro.categoria || ''}</span><br><span class='text-muted'>ISBN: ${livro.isbn || '-'}</span><br><span class='text-muted'>Código: ${livro.codigo || '-'}</span></div></div>`;
+      });
+      html += '</div>';
+      list.innerHTML = html;
+    }
+
+    // Exporta arquivo CSV dos itens lançados
+    function exportInventoryFile() {
+      if (!window.inventoryData || window.inventoryData.length === 0) {
+        alert('Nenhum item lançado no inventário!');
+        return;
+      }
+      let csv = 'Título;Autor;ISBN;Código;Categoria\n';
+      window.inventoryData.forEach(livro => {
+        csv += `${livro.titulo || ''};${livro.autor || ''};${livro.isbn || ''};${livro.codigo || ''};${livro.categoria || ''}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `inventario_lancado_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+    </script>
               
               <!-- Botões Secundários -->
               <button class="btn btn-outline-success btn-lg px-4 py-3" onclick="exportInventory()" style="min-width: 180px;">

@@ -3521,7 +3521,7 @@ printWindow.close();
 }, 500);
 }
 
-// Função para baixar como PDF - uma página única
+// Função para baixar como PDF - uma página única com ícones
 function downloadLoanReceipt() {
     try {
         const { jsPDF } = window.jspdf;
@@ -3535,11 +3535,86 @@ function downloadLoanReceipt() {
         const contentWidth = pageWidth - marginLeft - marginRight;
         let currentY = 15;
         
-        // CABEÇALHO COMPACTO
+        // Função para desenhar ícones simples
+        function drawIcon(iconType, x, y, size = 3) {
+            doc.setDrawColor(79, 172, 254);
+            doc.setFillColor(79, 172, 254);
+            doc.setLineWidth(0.5);
+            
+            switch(iconType) {
+                case 'id-card':
+                    // Cartão de identificação
+                    doc.roundedRect(x, y, size*2, size*1.2, 0.5, 0.5);
+                    doc.setFillColor(255, 255, 255);
+                    doc.roundedRect(x + 0.2, y + 0.2, size*1.6, size*0.8, 0.2, 0.2, 'F');
+                    break;
+                case 'user':
+                    // Usuário (círculo + corpo)
+                    doc.circle(x + size/2, y + size/3, size/3, 'F');
+                    doc.ellipse(x + size/2, y + size*0.8, size/2, size/4, 'F');
+                    break;
+                case 'book':
+                    // Livro
+                    doc.rect(x, y, size*0.8, size, 'F');
+                    doc.setDrawColor(255, 255, 255);
+                    doc.setLineWidth(0.3);
+                    doc.line(x + size*0.2, y + size*0.3, x + size*0.6, y + size*0.3);
+                    doc.line(x + size*0.2, y + size*0.5, x + size*0.6, y + size*0.5);
+                    doc.line(x + size*0.2, y + size*0.7, x + size*0.6, y + size*0.7);
+                    break;
+                case 'calendar':
+                    // Calendário
+                    doc.rect(x, y + size*0.2, size, size*0.8, 'F');
+                    doc.setFillColor(255, 255, 255);
+                    doc.rect(x + size*0.1, y + size*0.3, size*0.8, size*0.6, 'F');
+                    doc.setDrawColor(79, 172, 254);
+                    doc.line(x + size*0.25, y, x + size*0.25, y + size*0.4);
+                    doc.line(x + size*0.75, y, x + size*0.75, y + size*0.4);
+                    break;
+                case 'info':
+                    // Informação (círculo com i)
+                    doc.circle(x + size/2, y + size/2, size/2);
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(size*2);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('i', x + size/2 - 0.5, y + size/2 + 1);
+                    break;
+                case 'clock':
+                    // Relógio
+                    doc.circle(x + size/2, y + size/2, size/2);
+                    doc.setDrawColor(255, 255, 255);
+                    doc.setLineWidth(0.3);
+                    doc.line(x + size/2, y + size/2, x + size/2, y + size/4);
+                    doc.line(x + size/2, y + size/2, x + size*0.7, y + size/2);
+                    break;
+                case 'warning':
+                    // Aviso (triângulo com !)
+                    doc.setFillColor(255, 165, 0);
+                    const points = [
+                        [x + size/2, y],
+                        [x, y + size],
+                        [x + size, y + size]
+                    ];
+                    doc.triangle(x + size/2, y, x, y + size, x + size, y + size, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(size*2);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('!', x + size/2 - 0.5, y + size*0.8);
+                    break;
+            }
+            
+            // Resetar cores
+            doc.setDrawColor(0, 0, 0);
+            doc.setFillColor(0, 0, 0);
+            doc.setTextColor(0, 0, 0);
+        }
+        
+        // CABEÇALHO COMPACTO COM ÍCONE
+        drawIcon('id-card', marginLeft - 1, currentY - 2, 3);
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(26, 35, 46);
-        doc.text('Escola Estadual Governador Bias Fortes', marginLeft, currentY);
+        doc.text('Escola Estadual Governador Bias Fortes', marginLeft + 8, currentY);
         
         currentY += 6;
         doc.setFontSize(10);
@@ -3573,11 +3648,12 @@ function downloadLoanReceipt() {
         if (loanContent) {
             // DADOS EM DUAS COLUNAS PARA ECONOMIZAR ESPAÇO
             
-            // COLUNA ESQUERDA - DADOS DO EMPRÉSTIMO
+            // COLUNA ESQUERDA - DADOS DO EMPRÉSTIMO COM ÍCONE
+            drawIcon('id-card', leftColumnX - 1, currentY - 2, 2.5);
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(26, 35, 46);
-            doc.text('📋 DADOS DO EMPRÉSTIMO', leftColumnX, currentY);
+            doc.text('DADOS DO EMPRÉSTIMO', leftColumnX + 6, currentY);
             
             let leftY = currentY + 8;
             const emprestimoCard = loanContent.querySelector('.card:first-child');
@@ -3589,10 +3665,19 @@ function downloadLoanReceipt() {
                         const strongText = p.querySelector('strong').textContent;
                         const valueText = text.replace(strongText, '').trim();
                         
+                        // Adicionar ícones específicos para cada campo
+                        if (strongText.includes('Registro')) {
+                            drawIcon('id-card', leftColumnX - 1, leftY - 2, 1.5);
+                        } else if (strongText.includes('Data')) {
+                            drawIcon('calendar', leftColumnX - 1, leftY - 2, 1.5);
+                        } else if (strongText.includes('Status')) {
+                            drawIcon('info', leftColumnX - 1, leftY - 2, 1.5);
+                        }
+                        
                         doc.setFontSize(8);
                         doc.setFont('helvetica', 'bold');
                         doc.setTextColor(50, 50, 50);
-                        doc.text(strongText, leftColumnX, leftY);
+                        doc.text(strongText, leftColumnX + 4, leftY);
                         
                         doc.setFont('helvetica', 'normal');
                         doc.setTextColor(80, 80, 80);
@@ -3611,11 +3696,12 @@ function downloadLoanReceipt() {
                 });
             }
             
-            // COLUNA DIREITA - DADOS DO USUÁRIO
+            // COLUNA DIREITA - DADOS DO USUÁRIO COM ÍCONE
+            drawIcon('user', rightColumnX - 1, currentY - 2, 2.5);
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(26, 35, 46);
-            doc.text('👤 DADOS DO USUÁRIO', rightColumnX, currentY);
+            doc.text('DADOS DO USUÁRIO', rightColumnX + 6, currentY);
             
             let rightY = currentY + 8;
             const usuarioCards = loanContent.querySelectorAll('.card');
@@ -3628,10 +3714,19 @@ function downloadLoanReceipt() {
                         const strongText = p.querySelector('strong').textContent;
                         const valueText = text.replace(strongText, '').trim();
                         
+                        // Adicionar ícones específicos para cada campo do usuário
+                        if (strongText.includes('Nome')) {
+                            drawIcon('user', rightColumnX - 1, rightY - 2, 1.5);
+                        } else if (strongText.includes('Matrícula')) {
+                            drawIcon('id-card', rightColumnX - 1, rightY - 2, 1.5);
+                        } else {
+                            drawIcon('info', rightColumnX - 1, rightY - 2, 1.5);
+                        }
+                        
                         doc.setFontSize(8);
                         doc.setFont('helvetica', 'bold');
                         doc.setTextColor(50, 50, 50);
-                        doc.text(strongText, rightColumnX, rightY);
+                        doc.text(strongText, rightColumnX + 4, rightY);
                         
                         doc.setFont('helvetica', 'normal');
                         doc.setTextColor(80, 80, 80);
@@ -3653,11 +3748,12 @@ function downloadLoanReceipt() {
             // Ajustar currentY para após as colunas
             currentY = Math.max(leftY, rightY) + 8;
             
-            // TABELA DE LIVROS COMPACTA
+            // TABELA DE LIVROS COMPACTA COM ÍCONE
+            drawIcon('book', marginLeft - 1, currentY - 2, 2.5);
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(26, 35, 46);
-            doc.text('📚 MATERIAL(IS) EMPRESTADO(S)', marginLeft, currentY);
+            doc.text('MATERIAL(IS) EMPRESTADO(S)', marginLeft + 6, currentY);
             
             currentY += 8;
             
@@ -3670,8 +3766,11 @@ function downloadLoanReceipt() {
                 doc.setFillColor(79, 172, 254);
                 doc.rect(marginLeft, currentY, contentWidth, 6, 'F');
                 
-                doc.text('Título', marginLeft + 2, currentY + 4);
-                doc.text('Autor', marginLeft + 60, currentY + 4);
+                // Ícones nos cabeçalhos da tabela
+                drawIcon('book', marginLeft + 1, currentY + 1, 1);
+                doc.text('Título', marginLeft + 8, currentY + 4);
+                drawIcon('user', marginLeft + 61, currentY + 1, 1);
+                doc.text('Autor', marginLeft + 68, currentY + 4);
                 doc.text('ISBN', marginLeft + 110, currentY + 4);
                 doc.text('Qtd', marginLeft + 145, currentY + 4);
                 
@@ -3695,13 +3794,16 @@ function downloadLoanReceipt() {
                         doc.setFont('helvetica', 'normal');
                         doc.setTextColor(50, 50, 50);
                         
+                        // Ícone de livro para cada linha
+                        drawIcon('book', marginLeft + 1, currentY + 1, 1);
+                        
                         // Título (limitado)
                         const titulo = cells[0].textContent.trim();
-                        doc.text(titulo.length > 30 ? titulo.substring(0, 27) + '...' : titulo, marginLeft + 2, currentY + 4);
+                        doc.text(titulo.length > 30 ? titulo.substring(0, 27) + '...' : titulo, marginLeft + 8, currentY + 4);
                         
                         // Autor (limitado)
                         const autor = cells[1].textContent.trim();
-                        doc.text(autor.length > 25 ? autor.substring(0, 22) + '...' : autor, marginLeft + 60, currentY + 4);
+                        doc.text(autor.length > 25 ? autor.substring(0, 22) + '...' : autor, marginLeft + 68, currentY + 4);
                         
                         // ISBN
                         doc.text(cells[2].textContent.trim(), marginLeft + 110, currentY + 4);
@@ -3733,7 +3835,8 @@ function downloadLoanReceipt() {
         // SEÇÃO INFERIOR COMPACTA
         currentY += 10;
         
-        // Data de impressão
+        // Data de impressão com ícone
+        drawIcon('clock', marginLeft - 1, currentY - 2, 2);
         doc.setFontSize(8);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(100, 100, 100);
@@ -3741,14 +3844,15 @@ function downloadLoanReceipt() {
         const now = new Date();
         const printDate = now.toLocaleDateString('pt-BR');
         const printTime = now.toLocaleTimeString('pt-BR');
-        doc.text(`📅 Impressão: ${printDate} às ${printTime}`, marginLeft, currentY);
+        doc.text(`Impressão: ${printDate} às ${printTime}`, marginLeft + 5, currentY);
         
-        // Observações importantes (compactas)
+        // Observações importantes (compactas) com ícone
         currentY += 8;
+        drawIcon('warning', marginLeft - 1, currentY - 2, 2.5);
         doc.setFontSize(9);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(255, 165, 0);
-        doc.text('⚠️ OBSERVAÇÕES IMPORTANTES:', marginLeft, currentY);
+        doc.text('OBSERVAÇÕES IMPORTANTES:', marginLeft + 6, currentY);
         
         currentY += 6;
         doc.setFontSize(7);
@@ -3761,26 +3865,30 @@ function downloadLoanReceipt() {
             '• Em caso de perda ou dano, comunique imediatamente à biblioteca'
         ];
         
-        observacoes.forEach(obs => {
-            doc.text(obs, marginLeft, currentY);
+        observacoes.forEach((obs, index) => {
+            drawIcon('info', marginLeft + 2, currentY - 1, 1);
+            doc.text(obs, marginLeft + 6, currentY);
             currentY += 4;
         });
         
-        // RODAPÉ - Assinatura
+        // RODAPÉ - Assinatura com ícones
         const footerY = pageHeight - 25; // Fixo no final da página
         
         doc.setDrawColor(150, 150, 150);
         doc.setLineWidth(0.5);
         
-        // Duas colunas de assinatura
-        doc.line(marginLeft, footerY, marginLeft + 60, footerY);
-        doc.line(rightColumnX, footerY, rightColumnX + 60, footerY);
+        // Duas colunas de assinatura com ícones
+        drawIcon('user', marginLeft - 1, footerY - 6, 2);
+        doc.line(marginLeft + 5, footerY, marginLeft + 65, footerY);
+        
+        drawIcon('id-card', rightColumnX - 1, footerY - 6, 2);
+        doc.line(rightColumnX + 5, footerY, rightColumnX + 65, footerY);
         
         doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(120, 120, 120);
-        doc.text('Assinatura do Usuário', marginLeft, footerY + 4);
-        doc.text('Responsável da Biblioteca', rightColumnX, footerY + 4);
+        doc.text('Assinatura do Usuário', marginLeft + 5, footerY + 4);
+        doc.text('Responsável da Biblioteca', rightColumnX + 5, footerY + 4);
         
         // Salvar o PDF
         const now2 = new Date();
@@ -3788,10 +3896,10 @@ function downloadLoanReceipt() {
         const fileName = `Comprovante_Emprestimo_SIGEB_${dateStr}.pdf`;
         doc.save(fileName);
         
-        showAlert('success', 'Comprovante em página única baixado com sucesso!', 3000);
+        showAlert('success', 'Comprovante com ícones baixado com sucesso!', 3000);
         
     } catch (error) {
-        console.error('Erro ao gerar PDF em página única:', error);
+        console.error('Erro ao gerar PDF com ícones:', error);
         showAlert('danger', 'Erro ao gerar PDF. Verifique se o navegador suporta a funcionalidade.', 5000);
     }
 }

@@ -989,7 +989,7 @@
 
   // Função para carregar livros
   async function loadBooks(filterTitulo = '', filterAutor = '', filterEditora = '', selectedGenre = '') {
-    const bookGrid = document.querySelector('.book-grid');
+  const bookGrid = document.getElementById('bookGrid');
     try {
       bookGrid.innerHTML = '<p class="text-center p-4">Carregando livros...</p>';
 

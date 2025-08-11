@@ -608,7 +608,7 @@
                 <span class="d-block mt-1">
                   <strong>Lançar Materiais da Biblioteca</strong>
                 </span>
-                <small class="d-block text-white-50">Adicionar todos os materiais cadastrados</small>
+                <small class="d-block text-white-50">Adicionar ou recarregar todos os materiais cadastrados</small>
               </button>
               
               <!-- Botões Secundários -->
@@ -759,7 +759,6 @@
         const db = firebase.firestore();
         const booksSnapshot = await db.collection('livros').get();
         const loansSnapshot = await db.collection('emprestimos').get();
-        
         // Criar mapa de empréstimos ativos
         const activeLoans = {};
         loansSnapshot.docs.forEach(doc => {
@@ -768,15 +767,12 @@
             activeLoans[loan.bookId] = loan;
           }
         });
-
         inventoryData = [];
         booksSnapshot.docs.forEach(doc => {
           const book = doc.data();
           const loan = activeLoans[doc.id];
-          
           let status = 'disponivel';
           let statusInfo = {};
-          
           if (loan) {
             status = 'emprestado';
             statusInfo = {
@@ -788,7 +784,6 @@
             status = book.status;
             statusInfo = book.statusInfo || {};
           }
-
           inventoryData.push({
             id: doc.id,
             ...book,
@@ -797,10 +792,11 @@
             lastUpdate: book.lastUpdate || new Date().toISOString()
           });
         });
-
         updateStatistics();
         displayInventoryItems();
-        
+        // Habilita o botão novamente após carregar
+        const btn = document.querySelector('button[onclick="loadInventoryData()"]');
+        if (btn) btn.disabled = false;
       } catch (error) {
         console.error('Erro ao carregar inventário:', error);
         document.getElementById('inventoryList').innerHTML = `
@@ -810,6 +806,9 @@
             <p>Tente recarregar a página</p>
           </div>
         `;
+        // Habilita o botão em caso de erro
+        const btn = document.querySelector('button[onclick="loadInventoryData()"]');
+        if (btn) btn.disabled = false;
       }
     }
 

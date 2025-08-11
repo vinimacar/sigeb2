@@ -1,3 +1,23 @@
+  <!-- Tratamento global de erros para proteger a aplicação de scripts externos/ extensões -->
+  <script>
+    window.addEventListener('error', function(event) {
+      // Ignora erros de scripts de extensões conhecidos
+      if (event.filename && (event.filename.includes('contentscript.js') || event.filename.includes('content-all.js'))) {
+        console.warn('Erro de extensão ignorado:', event.message);
+        event.preventDefault();
+        return false;
+      }
+      // Para outros erros, permite o comportamento padrão
+    });
+    window.addEventListener('unhandledrejection', function(event) {
+      // Ignora promessas rejeitadas de extensões
+      if (event.reason && event.reason.stack && (event.reason.stack.includes('contentscript.js') || event.reason.stack.includes('content-all.js'))) {
+        console.warn('Promise rejeitada de extensão ignorada:', event.reason);
+        event.preventDefault();
+        return false;
+      }
+    });
+  </script>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -666,15 +686,16 @@
       </div>
     </div>
     <script>
-    // Exibe o modal de cadastro de livro e garante event listener único
+    // Exibe o modal de cadastro de livro e garante funcionamento correto do formulário
     function showAddBookModal() {
+      // Exibe a lista do inventário imediatamente ao abrir o modal
+      displayManualInventoryItems();
       const modalEl = document.getElementById('addBookModal');
       const form = document.getElementById('addBookForm');
       if (form) {
-        // Remove todos os event listeners anteriores
-        const newForm = form.cloneNode(true);
-        form.parentNode.replaceChild(newForm, form);
-        newForm.addEventListener('submit', function(e) {
+        // Remove event listeners duplicados
+        form.onsubmit = null;
+        form.addEventListener('submit', function handler(e) {
           e.preventDefault();
           const livro = {
             isbn: document.getElementById('isbnLivro').value,
@@ -691,11 +712,18 @@
           displayManualInventoryItems();
           // Fecha modal de forma segura
           if (modalEl) {
-            const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            let modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (!modalInstance) modalInstance = new bootstrap.Modal(modalEl);
             modalInstance.hide();
           }
-          newForm.reset();
-        });
+          // Remove manualmente o backdrop se necessário
+          setTimeout(() => {
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+          }, 300);
+          form.reset();
+        }, { once: true });
       }
       const modal = new bootstrap.Modal(modalEl);
       modal.show();

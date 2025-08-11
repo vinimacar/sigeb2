@@ -2500,81 +2500,83 @@
 
     // Função para criar um cartão individual
     function criarCartaoUsuario(doc, usuario, x, y, width, height) {
-      // Cartão de leitor - modelo totalmente novo, minimalista e moderno
+      // Cartão de leitor inspirado em cartão de crédito moderno
       if (!usuario || typeof usuario !== 'object') return;
 
       // Dados seguros
       const nomeSeguro = usuario.nome || 'Nome não informado';
-      const matriculaSegura = usuario.matricula || 'N/A';
-      const funcaoSegura = usuario.funcao || 'Leitor';
+      const matriculaSegura = usuario.matricula || '0000000000000000';
+      const escola = 'Escola Estadual Gov. Bias Fortes';
 
-      // Fundo branco
-      doc.setFillColor(255, 255, 255);
+      // Fundo azul escuro
+      doc.setFillColor(26, 35, 60);
       doc.roundedRect(x, y, width, height, 12, 12, 'F');
 
-      // Faixa colorida inferior (azul-ciano)
-      doc.setFillColor(79, 202, 255);
-      doc.roundedRect(x, y + height - 28, width, 28, 0, 0, 'F');
+      // Faixa branca inferior
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(x, y + height - 32, width, 32, 0, 0, 'F');
 
-      // Marca d'água SIGEB translúcida ao centro
-      if (typeof logoSigebBase64 !== 'undefined' && logoSigebBase64) {
-        doc.addImage(logoSigebBase64, 'PNG', x + width/2 - 36, y + height/2 - 24, 72, 48, undefined, 'FAST', 0.08);
+      // Chip dourado (esquerda)
+      doc.setFillColor(212, 175, 55);
+      doc.roundedRect(x + 22, y + 28, 22, 16, 3, 3, 'F');
+      doc.setDrawColor(180, 140, 40);
+      doc.setLineWidth(1);
+      doc.roundedRect(x + 22, y + 28, 22, 16, 3, 3);
+      // Linhas do chip
+      doc.setDrawColor(180, 140, 40);
+      doc.setLineWidth(0.7);
+      for (let i = 1; i < 4; i++) {
+        doc.line(x + 22 + i*5, y + 30, x + 22 + i*5, y + 42);
       }
+      doc.line(x + 24, y + 36, x + 42, y + 36);
 
-      // Borda cinza clara
-      doc.setDrawColor(220, 220, 220);
-      doc.setLineWidth(1.2);
-      doc.roundedRect(x, y, width, height, 12, 12);
+      // Logo da biblioteca (ícone de livro aberto) no topo direito
+      // Desenho vetorial simples de livro aberto estilizado
+      const iconX = x + width - 38, iconY = y + 18;
+      doc.setDrawColor(45, 156, 219);
+      doc.setLineWidth(2);
+      // Capa esquerda
+      doc.line(iconX, iconY, iconX, iconY + 18);
+      doc.line(iconX, iconY, iconX + 8, iconY + 6);
+      doc.line(iconX, iconY + 18, iconX + 8, iconY + 12);
+      // Capa direita
+      doc.line(iconX + 16, iconY, iconX + 16, iconY + 18);
+      doc.line(iconX + 16, iconY, iconX + 8, iconY + 6);
+      doc.line(iconX + 16, iconY + 18, iconX + 8, iconY + 12);
+      // Lombada
+      doc.setLineWidth(1);
+      doc.line(iconX + 8, iconY + 6, iconX + 8, iconY + 12);
 
-      // Logos SIGEB e Bias centralizados no topo
-      const logoSize = 16;
-      const logoY = y + 10;
-      if (typeof logoSigebBase64 !== 'undefined' && logoSigebBase64) {
-        doc.addImage(logoSigebBase64, 'PNG', x + width/2 - logoSize - 6, logoY, logoSize, logoSize);
-      }
-      if (typeof logoBiasBase64 !== 'undefined' && logoBiasBase64) {
-        doc.addImage(logoBiasBase64, 'PNG', x + width/2 + 6, logoY, logoSize, logoSize);
-      }
-
-      // Nome da escola centralizado, azul escuro
-      doc.setFontSize(9);
+      // Nome da escola (superior, branco)
+      doc.setFontSize(9.5);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(26, 35, 126);
-      const escola = 'Escola Estadual Gov. Bias Fortes';
+      doc.setTextColor(255, 255, 255);
       const escolaWidth = doc.getTextWidth(escola);
-      doc.text(escola, x + (width - escolaWidth) / 2, y + 32);
+      doc.text(escola, x + 32, y + 22);
 
-      // Nome do leitor (destaque, centralizado, grande, azul escuro)
-      doc.setFontSize(13);
+      // Nome do aluno (meio, branco)
+      doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(26, 35, 126);
+      doc.setTextColor(255, 255, 255);
       const nomeWidth = doc.getTextWidth(nomeSeguro.toUpperCase());
-      doc.text(nomeSeguro.toUpperCase(), x + (width - nomeWidth) / 2, y + height - 38);
+      doc.text(nomeSeguro.toUpperCase(), x + 32, y + 54);
 
-      // Função (centralizado, azul claro)
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(45, 156, 219);
-      const funcaoWidth = doc.getTextWidth(funcaoSegura);
-      doc.text(funcaoSegura, x + (width - funcaoWidth) / 2, y + height - 28);
-
-      // Matrícula (centralizado, branco, na faixa colorida)
-      doc.setFontSize(10);
+      // Número do cartão (matrícula, estilo cartão de crédito, branco)
+      doc.setFontSize(13);
       doc.setFont('courier', 'bold');
       doc.setTextColor(255, 255, 255);
-      const matriculaLabel = `Matrícula: ${matriculaSegura}`;
-      const matriculaWidth = doc.getTextWidth(matriculaLabel);
-      doc.text(matriculaLabel, x + (width - matriculaWidth) / 2, y + height - 14);
+      // Formatar matrícula em blocos de 4
+      let mat = matriculaSegura.replace(/\D/g, '').padEnd(16, '0').slice(0,16);
+      let matFormatada = mat.match(/.{1,4}/g).join(' ');
+      doc.text(matFormatada, x + 32, y + height - 38);
 
-      // Data de emissão (canto inferior direito, menor, branco)
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'italic');
+      // Validade (branco, canto inferior esquerdo)
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
       doc.setTextColor(255, 255, 255);
-      const dataEmissao = new Date();
-      const dataStr = `Emitido em: ${dataEmissao.toLocaleDateString('pt-BR')}`;
-      const dataWidth = doc.getTextWidth(dataStr);
-      doc.text(dataStr, x + width - dataWidth - 18, y + height - 7);
-      // Fim do cartão novo/minimalista
+      doc.text('Válido até: 12/28', x + 32, y + height - 18);
+
+      // Fim do cartão de crédito moderno
     }
 
     // Event listener para o botão de gerar cartão

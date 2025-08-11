@@ -334,22 +334,26 @@
             <input type="text" class="form-control" id="autorLivro" required>
           </div>
           <div class="mb-3">
+            <label for="editoraLivro" class="form-label">Editora</label>
+            <input type="text" class="form-control" id="editoraLivro">
+          </div>
+          <div class="mb-3">
+            <label for="anoLivro" class="form-label">Ano</label>
+            <input type="number" class="form-control" id="anoLivro" min="1000" max="9999">
+          </div>
+          <div class="mb-3">
+            <label for="quantidadeLivro" class="form-label">Quantidade</label>
+            <input type="number" class="form-control" id="quantidadeLivro" min="1" required>
+          </div>
+          <div class="mb-3">
+            <label for="responsavelLivro" class="form-label">Nome do Responsável pelo Lançamento</label>
+            <input type="text" class="form-control" id="responsavelLivro" required>
+          </div>
+          <div class="mb-3">
             <label for="isbnLivro" class="form-label">ISBN</label>
             <input type="text" class="form-control" id="isbnLivro">
           </div>
-          <div class="mb-3">
-            <label for="codigoLivro" class="form-label">Código</label>
-            <input type="text" class="form-control" id="codigoLivro">
-          </div>
-          <div class="mb-3">
-            <label for="statusLivro" class="form-label">Status</label>
-            <select class="form-select" id="statusLivro" required>
-              <option value="disponivel">Disponível</option>
-              <option value="emprestado">Emprestado</option>
-              <option value="manutencao">Manutenção</option>
-              <option value="perdido">Perdido</option>
-            </select>
-          </div>
+          
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Salvar Livro</button>

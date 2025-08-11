@@ -2500,85 +2500,79 @@
 
     // Função para criar um cartão individual
     function criarCartaoUsuario(doc, usuario, x, y, width, height) {
-      // Cartão de leitor moderno com função e turma (se aluno)
+      // Cartão de leitor estilo cartão de acesso, moderno e com cores vivas
       if (!usuario || typeof usuario !== 'object') return;
 
       // Dados seguros
       const nomeSeguro = usuario.nome || 'Nome não informado';
       const matriculaSegura = usuario.matricula || 'N/A';
       const funcaoSegura = usuario.funcao || 'Leitor';
-      const turmaSegura = usuario.turma || '';
 
-      // Fundo gradiente moderno
-      const gradY = y + height * 0.45;
-      doc.setFillColor(26, 35, 126); // azul escuro
-      doc.rect(x, y, width, gradY - y, 'F');
-      doc.setFillColor(45, 156, 219); // azul claro
-      doc.rect(x, gradY, width, height - (gradY - y), 'F');
+      // Fundo gradiente vibrante (azul para ciano para verde)
+      const gradSteps = 40;
+      for (let i = 0; i < gradSteps; i++) {
+        const ratio = i / gradSteps;
+        // Azul escuro para ciano para verde
+        let r, g, b;
+        if (ratio < 0.5) {
+          r = Math.round(26 + (79 - 26) * (ratio * 2));
+          g = Math.round(35 + (202 - 35) * (ratio * 2));
+          b = Math.round(126 + (255 - 126) * (ratio * 2));
+        } else {
+          r = Math.round(79 + (0 - 79) * ((ratio - 0.5) * 2));
+          g = Math.round(202 + (242 - 202) * ((ratio - 0.5) * 2));
+          b = Math.round(255 + (126 - 255) * ((ratio - 0.5) * 2));
+        }
+        doc.setFillColor(r, g, b);
+        doc.roundedRect(x + (width * ratio * 0.7), y + (height * ratio * 0.3), width / gradSteps + 2, height, 8, 8, 'F');
+      }
 
-      // Borda arredondada
-      doc.setDrawColor(26, 35, 126);
-      doc.setLineWidth(1.2);
-      doc.rect(x, y, width, height);
-
-      // Sombra sutil (simulada)
-      doc.setDrawColor(220, 220, 220);
-      doc.setLineWidth(0.5);
-      doc.rect(x + 1, y + 1, width - 2, height - 2);
-
-      // Logos SIGEB (esquerda) e Bias (direita) no topo
-      const logoSize = 14;
-      const logoY = y + 5;
+      // Marca d'água: logo SIGEB grande e translúcido ao fundo
       if (typeof logoSigebBase64 !== 'undefined' && logoSigebBase64) {
-        doc.addImage(logoSigebBase64, 'PNG', x + 7, logoY, logoSize, logoSize);
-      }
-      if (typeof logoBiasBase64 !== 'undefined' && logoBiasBase64) {
-        doc.addImage(logoBiasBase64, 'PNG', x + width - logoSize - 7, logoY, logoSize, logoSize);
+        doc.addImage(logoSigebBase64, 'PNG', x + width/2 - 32, y + height/2 - 24, 64, 48, undefined, 'FAST', 0.10);
       }
 
-      // Nome da escola centralizado
+      // Borda branca
+      doc.setDrawColor(255, 255, 255);
+      doc.setLineWidth(2);
+      doc.roundedRect(x, y, width, height, 8, 8);
+
+      // Nome da escola (canto superior esquerdo, branco)
       doc.setFontSize(8.5);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(255, 255, 255);
       const escola = 'Escola Estadual Gov. Bias Fortes';
-      const escolaWidth = doc.getTextWidth(escola);
-      doc.text(escola, x + (width - escolaWidth) / 2, y + 15);
+      doc.text(escola, x + 18, y + 22);
 
-      // Nome do leitor centralizado
-      doc.setFontSize(10.5);
+      // Nome do leitor (destaque, parte inferior esquerda, branco)
+      doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(255, 255, 255);
-      const nomeWidth = doc.getTextWidth(nomeSeguro.toUpperCase());
-      doc.text(nomeSeguro.toUpperCase(), x + (width - nomeWidth) / 2, y + 29);
+      doc.text(nomeSeguro.toUpperCase(), x + 18, y + height - 22);
 
-      // Função e turma (se aluno)
-      let funcaoLabel = funcaoSegura;
-      if (funcaoSegura.toLowerCase() === 'aluno' && turmaSegura) {
-        funcaoLabel += ` - Turma: ${turmaSegura}`;
-      }
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(220, 245, 255);
-      const funcaoWidth = doc.getTextWidth(funcaoLabel);
-      doc.text(funcaoLabel, x + (width - funcaoWidth) / 2, y + 37);
-
-      // Matrícula centralizada
-      doc.setFontSize(8);
+      // Função (linha acima do nome, verde vivo)
+      doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(45, 156, 219);
+      doc.setTextColor(0, 242, 126);
+      doc.text(funcaoSegura, x + 18, y + height - 14);
+
+      // Matrícula (canto inferior direito, estilo número do cartão, branco)
+      doc.setFontSize(10);
+      doc.setFont('courier', 'bold');
+      doc.setTextColor(255, 255, 255);
       const matriculaLabel = `Matrícula: ${matriculaSegura}`;
       const matriculaWidth = doc.getTextWidth(matriculaLabel);
-      doc.text(matriculaLabel, x + (width - matriculaWidth) / 2, y + 45);
+      doc.text(matriculaLabel, x + width - matriculaWidth - 18, y + height - 14);
 
-      // Data de emissão centralizada
+      // Data de emissão (canto inferior direito, menor, ciano)
       doc.setFontSize(7);
       doc.setFont('helvetica', 'italic');
-      doc.setTextColor(80, 80, 80);
+      doc.setTextColor(0, 242, 255);
       const dataEmissao = new Date();
       const dataStr = `Emitido em: ${dataEmissao.toLocaleDateString('pt-BR')}`;
       const dataWidth = doc.getTextWidth(dataStr);
-      doc.text(dataStr, x + (width - dataWidth) / 2, y + height - 8);
-      // Fim do cartão moderno
+      doc.text(dataStr, x + width - dataWidth - 18, y + height - 7);
+      // Fim do cartão de acesso moderno
     }
 
     // Event listener para o botão de gerar cartão

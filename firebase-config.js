@@ -19,3 +19,5 @@ const db = firebase.firestore();
 const auth = firebase.auth();
 const storage = firebase.storage();
 const analytics = firebase.analytics();
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>

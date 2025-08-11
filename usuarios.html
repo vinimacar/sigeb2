@@ -333,159 +333,7 @@
   </style>
 </head>
 <body>
-  <!-- Container para exibir cartões gerados -->
-  <div id="cartoesGeradosContainer" style="display:none; margin-bottom:2rem;"></div>
-  <script>
-  // Função para gerar o HTML do cartão estruturado
-  function gerarCartaoHTML(usuario) {
-    const nome = usuario.nome || '';
-    const matricula = usuario.matricula || '';
-    const validade = usuario.validade || '12/2026';
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(matricula)}&size=70x70`;
-    return `
-    <div class="card-reader-structured">
-      <div class="card-header">
-        <img src="logoaba.png" alt="Logo Biblioteca" class="card-logo">
-        <div class="card-title">CARTÃO DE LEITOR</div>
-      </div>
-      <div class="card-magnetic"></div>
-      <div class="card-body">
-        <div class="card-info">
-          <div><span class="label">Nome:</span> <span class="value">${nome}</span></div>
-          <div><span class="label">Matrícula:</span> <span class="value">${matricula}</span></div>
-          <div><span class="label">Validade:</span> <span class="value">${validade}</span></div>
-        </div>
-        <div class="card-qr">
-          <img src="${qrUrl}" alt="QR Code">
-        </div>
-      </div>
-      <div class="card-footer">
-        <span>Biblioteca Municipal</span>
-      </div>
-    </div>
-    `;
-  }
 
-  // Evento do botão de gerar cartões
-  document.addEventListener('DOMContentLoaded', function() {
-    const btn = document.getElementById('gerarCartaoBtn');
-    if (!btn) return;
-    btn.addEventListener('click', function() {
-      const checkboxes = document.querySelectorAll('.user-checkbox:checked');
-      if (checkboxes.length === 0) return;
-      const cartoesContainer = document.getElementById('cartoesGeradosContainer');
-      cartoesContainer.innerHTML = '';
-      // Buscar dados dos usuários selecionados
-      checkboxes.forEach(cb => {
-        const tr = cb.closest('tr');
-        if (!tr) return;
-        const tds = tr.querySelectorAll('td');
-        // Ajuste os índices conforme sua tabela
-        const nome = tds[1]?.textContent.trim() || '';
-        const matricula = tds[3]?.textContent.trim() || '';
-        // Opcional: buscar validade de outro campo, se existir
-        cartoesContainer.innerHTML += gerarCartaoHTML({ nome, matricula });
-      });
-      cartoesContainer.style.display = 'flex';
-      cartoesContainer.style.flexWrap = 'wrap';
-      cartoesContainer.style.gap = '2rem';
-      window.scrollTo({ top: cartoesContainer.offsetTop - 40, behavior: 'smooth' });
-    });
-  });
-  </script>
-
-  <style>
-    .card-reader-structured {
-      width: 350px;
-      height: 210px;
-      background: #f7f7fa;
-      border-radius: 16px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.13);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      margin-bottom: 2.5rem;
-      position: relative;
-      overflow: hidden;
-    }
-    .card-header {
-      display: flex;
-      align-items: center;
-      padding: 16px 20px 8px 20px;
-      background: linear-gradient(90deg, #2b5876 0%, #4e4376 100%);
-      border-top-left-radius: 16px;
-      border-top-right-radius: 16px;
-    }
-    .card-logo {
-      width: 44px;
-      height: 44px;
-      border-radius: 8px;
-      margin-right: 18px;
-      background: #fff;
-      box-shadow: 0 1px 6px rgba(0,0,0,0.10);
-    }
-    .card-title {
-      color: #fff;
-      font-size: 1.25rem;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-    }
-    .card-magnetic {
-      width: 100%;
-      height: 28px;
-      background: linear-gradient(90deg, #232526 60%, #414345 100%);
-      margin: 0;
-      opacity: 0.85;
-    }
-    .card-body {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding: 18px 20px 0 20px;
-      flex: 1;
-    }
-    .card-info {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      font-size: 1.05rem;
-      color: #222;
-    }
-    .card-info .label {
-      font-weight: 600;
-      color: #4e4376;
-      margin-right: 4px;
-    }
-    .card-info .value {
-      font-weight: 400;
-      color: #222;
-    }
-    .card-qr {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.10);
-      padding: 6px;
-    }
-    .card-qr img {
-      width: 70px;
-      height: 70px;
-    }
-    .card-footer {
-      background: #eaeaf3;
-      color: #4e4376;
-      text-align: right;
-      font-size: 0.98rem;
-      padding: 8px 20px 10px 0;
-      border-bottom-left-radius: 16px;
-      border-bottom-right-radius: 16px;
-      font-weight: 500;
-    }
-  </style>
   <div class="sidebar">
     <div class="sidebar-header">
       <h3>SIGEB</h3>
@@ -2731,225 +2579,85 @@
       }
     }
 
-    // Função para criar um cartão individual
+    // Função para criar um cartão individual estruturado (PDF)
     function criarCartaoUsuario(doc, usuario, x, y, width, height) {
-      // Cartão de leitor com cabeçalho reduzido e conteúdo compacto
+      // Cartão estruturado: cabeçalho, faixa magnética, área de dados, QR code
       if (!usuario || typeof usuario !== 'object') return;
 
       // Dados seguros
       const nomeSeguro = usuario.nome || 'Nome não informado';
       const matriculaSegura = usuario.matricula || 'N/A';
-      const funcaoSegura = usuario.funcao || 'Leitor';
-      const escola = 'E.E. Gov. Bias Fortes'; // Nome mais curto
+      const validade = usuario.validade || '12/2026';
+      const escola = 'Biblioteca Municipal';
 
-      // Margem de segurança interna para garantir que tudo fique dentro
-      const marginSafety = 6;
-      const safeX = x + marginSafety;
-      const safeY = y + marginSafety;
-      const safeWidth = width - (2 * marginSafety);
-      const safeHeight = height - (2 * marginSafety);
+      // Margens e dimensões
+      const margin = 6;
+      const safeX = x + margin;
+      const safeY = y + margin;
+      const safeWidth = width - 2 * margin;
+      const safeHeight = height - 2 * margin;
 
-      // Fundo principal - gradiente azul moderno
-      doc.setFillColor(79, 172, 254); // Azul claro SIGEB
-      doc.roundedRect(x, y, width, height, 6, 6, 'F');
+      // Fundo principal
+      doc.setFillColor(247, 247, 250);
+      doc.roundedRect(x, y, width, height, 8, 8, 'F');
 
-      // Cabeçalho reduzido (de 32 para 24)
-      const headerHeight = 24;
-      doc.setFillColor(26, 26, 46); // Azul escuro SIGEB
-      doc.roundedRect(x, y, width, headerHeight, 6, 6, 'F');
-      doc.setFillColor(26, 26, 46);
-      doc.rect(x, y + 18, width, 6, 'F'); // Continua reto embaixo
-
-      // Borda principal elegante
-      doc.setDrawColor(22, 33, 62);
-      doc.setLineWidth(1.5);
-      doc.roundedRect(x, y, width, height, 6, 6);
-
-      // Área inferior clara para informações do aluno
-      doc.setFillColor(248, 250, 255); // Azul muito claro
-      doc.roundedRect(safeX, safeY + headerHeight + 2, safeWidth, safeHeight - headerHeight - 4, 3, 3, 'F');
-
-      // Logos ainda menores no cabeçalho compacto
-      const logoSize = 10; // Reduzido de 12 para 10
-      const logoY = safeY + 2;
-      
-      // Logo SIGEB (esquerda) - posição segura
+      // Cabeçalho
+      doc.setFillColor(43, 88, 118);
+      doc.roundedRect(x, y, width, 32, 8, 8, 'F');
+      // Logo
       if (typeof logoSigebBase64 !== 'undefined' && logoSigebBase64) {
         try {
-          doc.addImage(logoSigebBase64, 'PNG', safeX, logoY, logoSize, logoSize);
-        } catch (e) {
-          // Desenho alternativo compacto
-          doc.setFillColor(255, 255, 255);
-          doc.circle(safeX + 5, logoY + 5, 4, 'F');
-          doc.setTextColor(26, 26, 46);
-          doc.setFontSize(5);
-          doc.setFont('helvetica', 'bold');
-          doc.text('SIGEB', safeX + 2, logoY + 7);
-        }
+          doc.addImage(logoSigebBase64, 'PNG', safeX, safeY + 4, 14, 14);
+        } catch {}
       }
-
-      // Logo Bias Fortes (direita) - posição segura
-      if (typeof logoBiasBase64 !== 'undefined' && logoBiasBase64) {
-        try {
-          doc.addImage(logoBiasBase64, 'PNG', safeX + safeWidth - logoSize, logoY, logoSize, logoSize);
-        } catch (e) {
-          // Desenho alternativo compacto
-          doc.setFillColor(255, 255, 255);
-          doc.circle(safeX + safeWidth - 5, logoY + 5, 4, 'F');
-          doc.setTextColor(26, 26, 46);
-          doc.setFontSize(4);
-          doc.setFont('helvetica', 'bold');
-          doc.text('BIAS', safeX + safeWidth - 8, logoY + 7);
-        }
-      }
-
-      // Nome da escola no cabeçalho compacto - garantindo que cabe
-      doc.setFontSize(7); // Reduzido de 8 para 7
+      // Título
+      doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(255, 255, 255);
-      
-      // Calcular espaço disponível entre as logos
-      const espacoEscola = safeWidth - (2 * logoSize) - 4; // 4px de margem das logos
-      let escolaTexto = escola;
-      let escolaWidth = doc.getTextWidth(escolaTexto);
-      
-      // Se não cabe, usar versão ainda mais curta
-      if (escolaWidth > espacoEscola) {
-        escolaTexto = 'Gov. Bias Fortes';
-        escolaWidth = doc.getTextWidth(escolaTexto);
-        if (escolaWidth > espacoEscola) {
-          escolaTexto = 'Bias Fortes';
-          escolaWidth = doc.getTextWidth(escolaTexto);
-        }
-      }
-      
-      doc.text(escolaTexto, safeX + (safeWidth - escolaWidth) / 2, safeY + 18);
+      doc.setTextColor(255,255,255);
+      doc.text('CARTÃO DE LEITOR', safeX + 22, safeY + 14);
 
-      // Área de conteúdo principal - começando após o cabeçalho
-      let contentY = safeY + headerHeight + 6;
+      // Faixa magnética
+      doc.setFillColor(35, 37, 38);
+      doc.rect(x, y + 32, width, 12, 'F');
 
-      // Título "CARTÃO DE LEITOR" - compacto
-      doc.setFontSize(6); // Reduzido de 7 para 6
+      // Área de dados
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(43, 88, 118);
+      doc.text('Nome:', safeX, safeY + 38);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(79, 172, 254);
-      const tituloTexto = 'CARTÃO DE LEITOR';
-      const tituloWidth = doc.getTextWidth(tituloTexto);
-      doc.text(tituloTexto, safeX + (safeWidth - tituloWidth) / 2, contentY);
+      doc.setTextColor(34,34,34);
+      doc.text(nomeSeguro, safeX + 24, safeY + 38);
 
-      contentY += 8;
-
-      // Nome do aluno - com quebra automática e posição segura
-      doc.setFontSize(10); // Reduzido de 12 para 10
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(26, 26, 46);
-      
-      const nomeTexto = nomeSeguro.toUpperCase();
-      let nomeWidth = doc.getTextWidth(nomeTexto);
-      
-      if (nomeWidth <= safeWidth) {
-        // Nome cabe em uma linha
-        const nomeX = safeX + (safeWidth - nomeWidth) / 2;
-        doc.text(nomeTexto, nomeX, contentY);
-        
-        // Linha decorativa compacta
-        doc.setDrawColor(79, 172, 254);
-        doc.setLineWidth(0.8);
-        doc.line(nomeX, contentY + 2, nomeX + nomeWidth, contentY + 2);
-      } else {
-        // Nome precisa ser reduzido ou quebrado
-        doc.setFontSize(8);
-        nomeWidth = doc.getTextWidth(nomeTexto);
-        
-        if (nomeWidth <= safeWidth) {
-          const nomeX = safeX + (safeWidth - nomeWidth) / 2;
-          doc.text(nomeTexto, nomeX, contentY);
-          doc.setDrawColor(79, 172, 254);
-          doc.setLineWidth(0.8);
-          doc.line(nomeX, contentY + 2, nomeX + nomeWidth, contentY + 2);
-        } else {
-          // Quebrar em duas linhas
-          const palavras = nomeTexto.split(' ');
-          const meio = Math.ceil(palavras.length / 2);
-          const linha1 = palavras.slice(0, meio).join(' ');
-          const linha2 = palavras.slice(meio).join(' ');
-          
-          const linha1Width = doc.getTextWidth(linha1);
-          const linha2Width = doc.getTextWidth(linha2);
-          
-          doc.text(linha1, safeX + (safeWidth - linha1Width) / 2, contentY - 2);
-          doc.text(linha2, safeX + (safeWidth - linha2Width) / 2, contentY + 4);
-          
-          // Linha decorativa sob a segunda linha
-          doc.setDrawColor(79, 172, 254);
-          doc.setLineWidth(0.8);
-          const linha2X = safeX + (safeWidth - linha2Width) / 2;
-          doc.line(linha2X, contentY + 6, linha2X + linha2Width, contentY + 6);
-        }
-      }
+      doc.setTextColor(43, 88, 118);
+      doc.text('Matrícula:', safeX, safeY + 48);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(34,34,34);
+      doc.text(matriculaSegura, safeX + 24, safeY + 48);
 
-      contentY += 12;
-
-      // Matrícula - compacta e segura
-      doc.setFontSize(8); // Reduzido de 9 para 8
-      doc.setFont('courier', 'bold');
-      doc.setTextColor(22, 33, 62);
-      
-      let matriculaLabel = `Matrícula: ${matriculaSegura}`;
-      let matriculaWidth = doc.getTextWidth(matriculaLabel);
-      
-      if (matriculaWidth > safeWidth) {
-        matriculaLabel = `Mat: ${matriculaSegura}`;
-        matriculaWidth = doc.getTextWidth(matriculaLabel);
-        if (matriculaWidth > safeWidth) {
-          matriculaLabel = matriculaSegura;
-          matriculaWidth = doc.getTextWidth(matriculaLabel);
-        }
-      }
-      
-      doc.text(matriculaLabel, safeX + (safeWidth - matriculaWidth) / 2, contentY);
-
-      contentY += 10;
-
-      // Função - compacta e segura
-      doc.setFontSize(7); // Reduzido de 8 para 7
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(79, 172, 254);
-      
-      let funcaoLabel = `Função: ${funcaoSegura}`;
-      let funcaoWidth = doc.getTextWidth(funcaoLabel);
-      
-      if (funcaoWidth > safeWidth) {
-        funcaoLabel = funcaoSegura;
-        funcaoWidth = doc.getTextWidth(funcaoLabel);
-      }
-      
-      doc.text(funcaoLabel, safeX + (safeWidth - funcaoWidth) / 2, contentY);
+      doc.setTextColor(43, 88, 118);
+      doc.text('Validade:', safeX, safeY + 58);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(34,34,34);
+      doc.text(validade, safeX + 24, safeY + 58);
 
-      // Data de emissão no rodapé - posição segura
-      const footerY = safeY + safeHeight - 4;
-      doc.setFontSize(5); // Reduzido de 6 para 5
-      doc.setFont('helvetica', 'italic');
-      doc.setTextColor(120, 120, 120);
-      
-      const dataEmissao = new Date();
-      const dataStr = `Emitido: ${dataEmissao.toLocaleDateString('pt-BR')}`;
-      const dataWidth = doc.getTextWidth(dataStr);
-      
-      // Garantir que a data fique dentro das margens
-      const dataX = Math.min(safeX + safeWidth - dataWidth, safeX + safeWidth - dataWidth);
-      doc.text(dataStr, dataX, footerY);
+      // QR code (imagem externa)
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(matriculaSegura)}&size=70x70`;
+      // Para evitar CORS, pode ser necessário baixar a imagem antes e converter para base64
+      // Aqui, apenas um placeholder
+      doc.setDrawColor(200,200,200);
+      doc.rect(safeX + safeWidth - 32, safeY + 34, 28, 28);
+      doc.setFontSize(6);
+      doc.setTextColor(180,180,180);
+      doc.text('QR', safeX + safeWidth - 18, safeY + 50);
 
-      // Elemento decorativo mínimo - apenas se houver espaço
-      if (safeWidth > 40) { // Só adiciona se o cartão for largo o suficiente
-        doc.setDrawColor(200, 220, 255);
-        doc.setLineWidth(0.2);
-        const decorX = safeX + 2;
-        const decorY = footerY - 8;
-        doc.line(decorX, decorY, decorX, decorY - 4);
-        doc.line(decorX + 2, decorY, decorX + 2, decorY - 4);
-      }
-
-      // Fim do cartão com cabeçalho reduzido e conteúdo garantidamente dentro
+      // Rodapé
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(43, 88, 118);
+      doc.text(escola, safeX, y + height - 6);
     }
 
     // Event listener para o botão de gerar cartão

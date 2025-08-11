@@ -721,6 +721,27 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="firebase-config.js"></script>
 
+  <!-- Tratamento global de erros para proteger a aplicação de scripts externos -->
+  <script>
+    window.addEventListener('error', function(event) {
+      // Se o erro for de um script externo, apenas loga e impede propagação
+      if (event.filename && event.filename.includes('contentscript.js')) {
+        console.warn('Erro de script externo ignorado:', event.message);
+        event.preventDefault();
+        return false;
+      }
+      // Para outros erros, permite o comportamento padrão
+    });
+    window.addEventListener('unhandledrejection', function(event) {
+      // Se a promise rejeitada for de um script externo, ignora
+      if (event.reason && event.reason.stack && event.reason.stack.includes('contentscript.js')) {
+        console.warn('Promise rejeitada de script externo ignorada:', event.reason);
+        event.preventDefault();
+        return false;
+      }
+    });
+  </script>
+
   <script>
     // Inicializar AOS
     AOS.init({

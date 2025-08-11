@@ -277,7 +277,7 @@
     <section class="inventory-main-action">
       <h4 class="mb-2 text-primary"><i class='bx bx-clipboard-x'></i> Gestão de Inventário</h4>
       <p class="text-muted mb-3">Lance novos materiais ou exporte relatórios do acervo.</p>
-      <button class="btn btn-primary btn-lg" onclick="showAddBookModal()">
+      <button id="btnLancarMateriais" class="btn btn-primary btn-lg" onclick="showAddBookModal()" type="button">
         <i class='bx bx-upload'></i> Lançar Materiais
       </button>
       <button class="btn btn-outline-secondary btn-lg" onclick="exportInventoryFile()">
@@ -316,6 +316,82 @@
   </main>
 
   <!-- Modais (mantidos, mas podem ser simplificados conforme necessidade) -->
-  <!-- ...modais e scripts existentes... -->
-  <!-- Mantenha os scripts JS do inventário, modais e funcionalidades abaixo -->
-  <!-- ...existing code... -->
+  <!-- Modal para Lançar Novo Livro -->
+  <div class="modal fade" id="modalAddBook" tabindex="-1" aria-labelledby="modalAddBookLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form class="modal-content" id="formAddBook">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalAddBookLabel"><i class='bx bxs-book'></i> Lançar Novo Livro</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="tituloLivro" class="form-label">Título</label>
+            <input type="text" class="form-control" id="tituloLivro" required>
+          </div>
+          <div class="mb-3">
+            <label for="autorLivro" class="form-label">Autor</label>
+            <input type="text" class="form-control" id="autorLivro" required>
+          </div>
+          <div class="mb-3">
+            <label for="isbnLivro" class="form-label">ISBN</label>
+            <input type="text" class="form-control" id="isbnLivro">
+          </div>
+          <div class="mb-3">
+            <label for="codigoLivro" class="form-label">Código</label>
+            <input type="text" class="form-control" id="codigoLivro">
+          </div>
+          <div class="mb-3">
+            <label for="statusLivro" class="form-label">Status</label>
+            <select class="form-select" id="statusLivro" required>
+              <option value="disponivel">Disponível</option>
+              <option value="emprestado">Emprestado</option>
+              <option value="manutencao">Manutenção</option>
+              <option value="perdido">Perdido</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Salvar Livro</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Garante que o botão está habilitado ao carregar a página
+    document.addEventListener('DOMContentLoaded', function() {
+      var btn = document.getElementById('btnLancarMateriais');
+      if (btn) btn.disabled = false;
+    });
+
+    // Função para abrir o modal de lançamento de livro
+    function showAddBookModal() {
+      var modal = document.getElementById('modalAddBook');
+      if (modal) {
+        var modalInstance = new bootstrap.Modal(modal);
+        modalInstance.show();
+      } else {
+        alert('Modal de lançamento não encontrado!');
+      }
+    }
+
+    // Exemplo de manipulação do formulário (você pode adaptar para salvar no backend/localStorage)
+    document.addEventListener('DOMContentLoaded', function() {
+      var form = document.getElementById('formAddBook');
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          // Aqui você pode adicionar o código para salvar o livro no inventário
+          // Exemplo: alert('Livro lançado com sucesso!');
+          // Fecha o modal após salvar
+          var modal = bootstrap.Modal.getInstance(document.getElementById('modalAddBook'));
+          if (modal) modal.hide();
+          form.reset();
+        });
+      }
+    });
+  </script>
+</body>
+</html>

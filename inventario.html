@@ -736,13 +736,16 @@
     // Inicializar página
     document.addEventListener('DOMContentLoaded', function() {
       // Não carrega os dados automaticamente
-      document.getElementById('inventoryList').innerHTML = `
-        <div class="text-center text-muted" style="padding: 60px 0;">
-          <i class='bx bx-package' style="font-size: 3rem;"></i>
-          <h4>O inventário está em branco</h4>
-          <p>Clique em <b>Lançar Materiais da Biblioteca</b> para iniciar o inventário.</p>
-        </div>
-      `;
+      const inventoryList = document.getElementById('inventoryList');
+      if (inventoryList) {
+        inventoryList.innerHTML = `
+          <div class="text-center text-muted" style="padding: 60px 0;">
+            <i class='bx bx-package' style="font-size: 3rem;"></i>
+            <h4>O inventário está em branco</h4>
+            <p>Clique em <b>Lançar Materiais da Biblioteca</b> para iniciar o inventário.</p>
+          </div>
+        `;
+      }
       setupEventListeners();
     });
 
@@ -755,7 +758,14 @@
     }
 
     async function loadInventoryData() {
+      const inventoryList = document.getElementById('inventoryList');
+      if (inventoryList) {
+        inventoryList.innerHTML = `<div class='text-center text-muted' style='padding: 40px 0;'><i class='bx bx-loader-alt bx-spin' style='font-size:2rem;'></i><br>Carregando materiais...</div>`;
+      }
       try {
+        if (!window.firebase || !firebase.firestore) {
+          throw new Error('Firebase não inicializado.');
+        }
         const db = firebase.firestore();
         const booksSnapshot = await db.collection('livros').get();
         const loansSnapshot = await db.collection('emprestimos').get();
@@ -799,13 +809,15 @@
         if (btn) btn.disabled = false;
       } catch (error) {
         console.error('Erro ao carregar inventário:', error);
-        document.getElementById('inventoryList').innerHTML = `
-          <div class="no-results">
-            <i class='bx bx-error'></i>
-            <h4>Erro ao carregar inventário</h4>
-            <p>Tente recarregar a página</p>
-          </div>
-        `;
+        if (inventoryList) {
+          inventoryList.innerHTML = `
+            <div class="no-results">
+              <i class='bx bx-error'></i>
+              <h4>Erro ao carregar inventário</h4>
+              <p>Tente recarregar a página</p>
+            </div>
+          `;
+        }
         // Habilita o botão em caso de erro
         const btn = document.querySelector('button[onclick="loadInventoryData()"]');
         if (btn) btn.disabled = false;

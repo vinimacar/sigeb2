@@ -333,27 +333,66 @@
   </style>
 </head>
 <body>
-  <h2>Novo Cartão de Leitor (Modelo Estruturado)</h2>
-  <div class="card-reader-structured">
-    <div class="card-header">
-      <img src="logoaba.png" alt="Logo Biblioteca" class="card-logo">
-      <div class="card-title">CARTÃO DE LEITOR</div>
-    </div>
-    <div class="card-magnetic"></div>
-    <div class="card-body">
-      <div class="card-info">
-        <div><span class="label">Nome:</span> <span class="value">Maria da Silva</span></div>
-        <div><span class="label">Matrícula:</span> <span class="value">20251234</span></div>
-        <div><span class="label">Validade:</span> <span class="value">12/2026</span></div>
+  <!-- Container para exibir cartões gerados -->
+  <div id="cartoesGeradosContainer" style="display:none; margin-bottom:2rem;"></div>
+  <script>
+  // Função para gerar o HTML do cartão estruturado
+  function gerarCartaoHTML(usuario) {
+    const nome = usuario.nome || '';
+    const matricula = usuario.matricula || '';
+    const validade = usuario.validade || '12/2026';
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(matricula)}&size=70x70`;
+    return `
+    <div class="card-reader-structured">
+      <div class="card-header">
+        <img src="logoaba.png" alt="Logo Biblioteca" class="card-logo">
+        <div class="card-title">CARTÃO DE LEITOR</div>
       </div>
-      <div class="card-qr">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?data=20251234&size=70x70" alt="QR Code">
+      <div class="card-magnetic"></div>
+      <div class="card-body">
+        <div class="card-info">
+          <div><span class="label">Nome:</span> <span class="value">${nome}</span></div>
+          <div><span class="label">Matrícula:</span> <span class="value">${matricula}</span></div>
+          <div><span class="label">Validade:</span> <span class="value">${validade}</span></div>
+        </div>
+        <div class="card-qr">
+          <img src="${qrUrl}" alt="QR Code">
+        </div>
+      </div>
+      <div class="card-footer">
+        <span>Biblioteca Municipal</span>
       </div>
     </div>
-    <div class="card-footer">
-      <span>Biblioteca Municipal</span>
-    </div>
-  </div>
+    `;
+  }
+
+  // Evento do botão de gerar cartões
+  document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('gerarCartaoBtn');
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+      const checkboxes = document.querySelectorAll('.user-checkbox:checked');
+      if (checkboxes.length === 0) return;
+      const cartoesContainer = document.getElementById('cartoesGeradosContainer');
+      cartoesContainer.innerHTML = '';
+      // Buscar dados dos usuários selecionados
+      checkboxes.forEach(cb => {
+        const tr = cb.closest('tr');
+        if (!tr) return;
+        const tds = tr.querySelectorAll('td');
+        // Ajuste os índices conforme sua tabela
+        const nome = tds[1]?.textContent.trim() || '';
+        const matricula = tds[3]?.textContent.trim() || '';
+        // Opcional: buscar validade de outro campo, se existir
+        cartoesContainer.innerHTML += gerarCartaoHTML({ nome, matricula });
+      });
+      cartoesContainer.style.display = 'flex';
+      cartoesContainer.style.flexWrap = 'wrap';
+      cartoesContainer.style.gap = '2rem';
+      window.scrollTo({ top: cartoesContainer.offsetTop - 40, behavior: 'smooth' });
+    });
+  });
+  </script>
 
   <style>
     .card-reader-structured {

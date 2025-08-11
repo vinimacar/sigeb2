@@ -686,15 +686,14 @@
       </div>
     </div>
     <script>
-    // Exibe o modal de cadastro de livro e garante event listener único
+    // Exibe o modal de cadastro de livro e garante funcionamento correto do formulário
     function showAddBookModal() {
       const modalEl = document.getElementById('addBookModal');
       const form = document.getElementById('addBookForm');
       if (form) {
-        // Remove todos os event listeners anteriores
-        const newForm = form.cloneNode(true);
-        form.parentNode.replaceChild(newForm, form);
-        newForm.addEventListener('submit', function(e) {
+        // Remove event listeners duplicados
+        form.onsubmit = null;
+        form.addEventListener('submit', function handler(e) {
           e.preventDefault();
           const livro = {
             isbn: document.getElementById('isbnLivro').value,
@@ -721,8 +720,8 @@
             document.body.classList.remove('modal-open');
             document.body.style.overflow = '';
           }, 300);
-          newForm.reset();
-        });
+          form.reset();
+        }, { once: true });
       }
       const modal = new bootstrap.Modal(modalEl);
       modal.show();

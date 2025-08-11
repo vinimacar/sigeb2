@@ -2500,126 +2500,139 @@
 
     // Função para criar um cartão individual
     function criarCartaoUsuario(doc, usuario, x, y, width, height) {
-      // Cartão de leitor moderno com todo conteúdo dentro dos limites
+      // Cartão de leitor com cabeçalho reduzido e conteúdo compacto
       if (!usuario || typeof usuario !== 'object') return;
 
       // Dados seguros
       const nomeSeguro = usuario.nome || 'Nome não informado';
       const matriculaSegura = usuario.matricula || 'N/A';
       const funcaoSegura = usuario.funcao || 'Leitor';
-      const escola = 'Escola Estadual Gov. Bias Fortes';
+      const escola = 'E.E. Gov. Bias Fortes'; // Nome mais curto
+
+      // Margem de segurança interna para garantir que tudo fique dentro
+      const marginSafety = 6;
+      const safeX = x + marginSafety;
+      const safeY = y + marginSafety;
+      const safeWidth = width - (2 * marginSafety);
+      const safeHeight = height - (2 * marginSafety);
 
       // Fundo principal - gradiente azul moderno
       doc.setFillColor(79, 172, 254); // Azul claro SIGEB
-      doc.roundedRect(x, y, width, height, 8, 8, 'F');
+      doc.roundedRect(x, y, width, height, 6, 6, 'F');
 
-      // Cabeçalho superior com cor escura
+      // Cabeçalho reduzido (de 32 para 24)
+      const headerHeight = 24;
       doc.setFillColor(26, 26, 46); // Azul escuro SIGEB
-      doc.roundedRect(x, y, width, 32, 8, 8, 'F');
+      doc.roundedRect(x, y, width, headerHeight, 6, 6, 'F');
       doc.setFillColor(26, 26, 46);
-      doc.rect(x, y + 26, width, 6, 'F'); // Continua reto embaixo
+      doc.rect(x, y + 18, width, 6, 'F'); // Continua reto embaixo
 
       // Borda principal elegante
       doc.setDrawColor(22, 33, 62);
-      doc.setLineWidth(2);
-      doc.roundedRect(x, y, width, height, 8, 8);
+      doc.setLineWidth(1.5);
+      doc.roundedRect(x, y, width, height, 6, 6);
 
       // Área inferior clara para informações do aluno
       doc.setFillColor(248, 250, 255); // Azul muito claro
-      doc.roundedRect(x + 3, y + 36, width - 6, height - 42, 4, 4, 'F');
+      doc.roundedRect(safeX, safeY + headerHeight + 2, safeWidth, safeHeight - headerHeight - 4, 3, 3, 'F');
 
-      // Logos menores no cabeçalho com margem de segurança
-      const logoSize = 12; // Reduzido de 18 para 12
-      const logoY = y + 6;
-      const marginSafety = 8; // Margem de segurança das bordas
+      // Logos ainda menores no cabeçalho compacto
+      const logoSize = 10; // Reduzido de 12 para 10
+      const logoY = safeY + 2;
       
-      // Logo SIGEB (esquerda) - com posição ajustada
+      // Logo SIGEB (esquerda) - posição segura
       if (typeof logoSigebBase64 !== 'undefined' && logoSigebBase64) {
         try {
-          doc.addImage(logoSigebBase64, 'PNG', x + marginSafety, logoY, logoSize, logoSize);
+          doc.addImage(logoSigebBase64, 'PNG', safeX, logoY, logoSize, logoSize);
         } catch (e) {
-          // Desenho alternativo caso a imagem falhe
+          // Desenho alternativo compacto
           doc.setFillColor(255, 255, 255);
-          doc.circle(x + marginSafety + 6, logoY + 6, 5, 'F');
-          doc.setTextColor(26, 26, 46);
-          doc.setFontSize(6);
-          doc.setFont('helvetica', 'bold');
-          doc.text('SIGEB', x + marginSafety + 2, logoY + 8);
-        }
-      }
-
-      // Logo Bias Fortes (direita) - com posição ajustada
-      if (typeof logoBiasBase64 !== 'undefined' && logoBiasBase64) {
-        try {
-          doc.addImage(logoBiasBase64, 'PNG', x + width - logoSize - marginSafety, logoY, logoSize, logoSize);
-        } catch (e) {
-          // Desenho alternativo caso a imagem falhe
-          doc.setFillColor(255, 255, 255);
-          doc.circle(x + width - marginSafety - 6, logoY + 6, 5, 'F');
+          doc.circle(safeX + 5, logoY + 5, 4, 'F');
           doc.setTextColor(26, 26, 46);
           doc.setFontSize(5);
           doc.setFont('helvetica', 'bold');
-          doc.text('BIAS', x + width - marginSafety - 8, logoY + 8);
+          doc.text('SIGEB', safeX + 2, logoY + 7);
         }
       }
 
-      // Nome da escola no cabeçalho (centralizado) - com verificação de largura
-      doc.setFontSize(8); // Reduzido de 10 para 8
+      // Logo Bias Fortes (direita) - posição segura
+      if (typeof logoBiasBase64 !== 'undefined' && logoBiasBase64) {
+        try {
+          doc.addImage(logoBiasBase64, 'PNG', safeX + safeWidth - logoSize, logoY, logoSize, logoSize);
+        } catch (e) {
+          // Desenho alternativo compacto
+          doc.setFillColor(255, 255, 255);
+          doc.circle(safeX + safeWidth - 5, logoY + 5, 4, 'F');
+          doc.setTextColor(26, 26, 46);
+          doc.setFontSize(4);
+          doc.setFont('helvetica', 'bold');
+          doc.text('BIAS', safeX + safeWidth - 8, logoY + 7);
+        }
+      }
+
+      // Nome da escola no cabeçalho compacto - garantindo que cabe
+      doc.setFontSize(7); // Reduzido de 8 para 7
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(255, 255, 255);
       
-      // Verificar se o texto cabe na largura disponível
-      const escolaTexto = escola.length > 30 ? 'E.E. Gov. Bias Fortes' : escola;
-      const escolaWidth = doc.getTextWidth(escolaTexto);
-      const maxEscolaWidth = width - (2 * marginSafety);
+      // Calcular espaço disponível entre as logos
+      const espacoEscola = safeWidth - (2 * logoSize) - 4; // 4px de margem das logos
+      let escolaTexto = escola;
+      let escolaWidth = doc.getTextWidth(escolaTexto);
       
-      if (escolaWidth <= maxEscolaWidth) {
-        doc.text(escolaTexto, x + (width - escolaWidth) / 2, y + 26);
-      } else {
-        // Se ainda não cabe, usar versão ainda mais curta
-        const escolaCurta = 'Escola Gov. Bias Fortes';
-        const escolaCurtaWidth = doc.getTextWidth(escolaCurta);
-        doc.text(escolaCurta, x + (width - escolaCurtaWidth) / 2, y + 26);
+      // Se não cabe, usar versão ainda mais curta
+      if (escolaWidth > espacoEscola) {
+        escolaTexto = 'Gov. Bias Fortes';
+        escolaWidth = doc.getTextWidth(escolaTexto);
+        if (escolaWidth > espacoEscola) {
+          escolaTexto = 'Bias Fortes';
+          escolaWidth = doc.getTextWidth(escolaTexto);
+        }
       }
+      
+      doc.text(escolaTexto, safeX + (safeWidth - escolaWidth) / 2, safeY + 18);
 
-      // Título "CARTÃO DE LEITOR" - com verificação de posição
-      doc.setFontSize(7); // Reduzido de 8 para 7
+      // Área de conteúdo principal - começando após o cabeçalho
+      let contentY = safeY + headerHeight + 6;
+
+      // Título "CARTÃO DE LEITOR" - compacto
+      doc.setFontSize(6); // Reduzido de 7 para 6
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(79, 172, 254);
       const tituloTexto = 'CARTÃO DE LEITOR';
       const tituloWidth = doc.getTextWidth(tituloTexto);
-      doc.text(tituloTexto, x + (width - tituloWidth) / 2, y + 46);
+      doc.text(tituloTexto, safeX + (safeWidth - tituloWidth) / 2, contentY);
 
-      // Nome do aluno (destaque principal) - com quebra se necessário
-      doc.setFontSize(12); // Reduzido de 14 para 12
+      contentY += 8;
+
+      // Nome do aluno - com quebra automática e posição segura
+      doc.setFontSize(10); // Reduzido de 12 para 10
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(26, 26, 46);
       
       const nomeTexto = nomeSeguro.toUpperCase();
       let nomeWidth = doc.getTextWidth(nomeTexto);
-      const maxNomeWidth = width - (2 * marginSafety);
-      let nomeX, nomeY = y + 62;
       
-      if (nomeWidth <= maxNomeWidth) {
+      if (nomeWidth <= safeWidth) {
         // Nome cabe em uma linha
-        nomeX = x + (width - nomeWidth) / 2;
-        doc.text(nomeTexto, nomeX, nomeY);
+        const nomeX = safeX + (safeWidth - nomeWidth) / 2;
+        doc.text(nomeTexto, nomeX, contentY);
         
-        // Linha decorativa sob o nome
+        // Linha decorativa compacta
         doc.setDrawColor(79, 172, 254);
-        doc.setLineWidth(1);
-        doc.line(nomeX, nomeY + 3, nomeX + nomeWidth, nomeY + 3);
+        doc.setLineWidth(0.8);
+        doc.line(nomeX, contentY + 2, nomeX + nomeWidth, contentY + 2);
       } else {
-        // Nome precisa ser quebrado ou reduzido
-        doc.setFontSize(10);
+        // Nome precisa ser reduzido ou quebrado
+        doc.setFontSize(8);
         nomeWidth = doc.getTextWidth(nomeTexto);
         
-        if (nomeWidth <= maxNomeWidth) {
-          nomeX = x + (width - nomeWidth) / 2;
-          doc.text(nomeTexto, nomeX, nomeY);
+        if (nomeWidth <= safeWidth) {
+          const nomeX = safeX + (safeWidth - nomeWidth) / 2;
+          doc.text(nomeTexto, nomeX, contentY);
           doc.setDrawColor(79, 172, 254);
-          doc.setLineWidth(1);
-          doc.line(nomeX, nomeY + 3, nomeX + nomeWidth, nomeY + 3);
+          doc.setLineWidth(0.8);
+          doc.line(nomeX, contentY + 2, nomeX + nomeWidth, contentY + 2);
         } else {
           // Quebrar em duas linhas
           const palavras = nomeTexto.split(' ');
@@ -2630,73 +2643,80 @@
           const linha1Width = doc.getTextWidth(linha1);
           const linha2Width = doc.getTextWidth(linha2);
           
-          doc.text(linha1, x + (width - linha1Width) / 2, nomeY - 3);
-          doc.text(linha2, x + (width - linha2Width) / 2, nomeY + 6);
+          doc.text(linha1, safeX + (safeWidth - linha1Width) / 2, contentY - 2);
+          doc.text(linha2, safeX + (safeWidth - linha2Width) / 2, contentY + 4);
           
           // Linha decorativa sob a segunda linha
           doc.setDrawColor(79, 172, 254);
-          doc.setLineWidth(1);
-          doc.line(x + (width - linha2Width) / 2, nomeY + 9, x + (width - linha2Width) / 2 + linha2Width, nomeY + 9);
+          doc.setLineWidth(0.8);
+          const linha2X = safeX + (safeWidth - linha2Width) / 2;
+          doc.line(linha2X, contentY + 6, linha2X + linha2Width, contentY + 6);
         }
       }
 
-      // Matrícula - com verificação de largura
-      doc.setFontSize(9); // Reduzido de 11 para 9
+      contentY += 12;
+
+      // Matrícula - compacta e segura
+      doc.setFontSize(8); // Reduzido de 9 para 8
       doc.setFont('courier', 'bold');
       doc.setTextColor(22, 33, 62);
-      const matriculaLabel = `Matrícula: ${matriculaSegura}`;
-      const matriculaWidth = doc.getTextWidth(matriculaLabel);
-      const maxMatriculaWidth = width - (2 * marginSafety);
       
-      if (matriculaWidth <= maxMatriculaWidth) {
-        doc.text(matriculaLabel, x + (width - matriculaWidth) / 2, y + 78);
-      } else {
-        // Versão mais curta
-        const matriculaCurta = `Mat: ${matriculaSegura}`;
-        const matriculaCurtaWidth = doc.getTextWidth(matriculaCurta);
-        doc.text(matriculaCurta, x + (width - matriculaCurtaWidth) / 2, y + 78);
+      let matriculaLabel = `Matrícula: ${matriculaSegura}`;
+      let matriculaWidth = doc.getTextWidth(matriculaLabel);
+      
+      if (matriculaWidth > safeWidth) {
+        matriculaLabel = `Mat: ${matriculaSegura}`;
+        matriculaWidth = doc.getTextWidth(matriculaLabel);
+        if (matriculaWidth > safeWidth) {
+          matriculaLabel = matriculaSegura;
+          matriculaWidth = doc.getTextWidth(matriculaLabel);
+        }
       }
+      
+      doc.text(matriculaLabel, safeX + (safeWidth - matriculaWidth) / 2, contentY);
 
-      // Função - com verificação de largura
-      doc.setFontSize(8); // Reduzido de 9 para 8
+      contentY += 10;
+
+      // Função - compacta e segura
+      doc.setFontSize(7); // Reduzido de 8 para 7
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(79, 172, 254);
-      const funcaoLabel = `Função: ${funcaoSegura}`;
-      const funcaoWidth = doc.getTextWidth(funcaoLabel);
-      const maxFuncaoWidth = width - (2 * marginSafety);
       
-      if (funcaoWidth <= maxFuncaoWidth) {
-        doc.text(funcaoLabel, x + (width - funcaoWidth) / 2, y + 88);
-      } else {
-        // Só a função sem label
-        const funcaoSo = funcaoSegura;
-        const funcaoSoWidth = doc.getTextWidth(funcaoSo);
-        doc.text(funcaoSo, x + (width - funcaoSoWidth) / 2, y + 88);
+      let funcaoLabel = `Função: ${funcaoSegura}`;
+      let funcaoWidth = doc.getTextWidth(funcaoLabel);
+      
+      if (funcaoWidth > safeWidth) {
+        funcaoLabel = funcaoSegura;
+        funcaoWidth = doc.getTextWidth(funcaoLabel);
       }
+      
+      doc.text(funcaoLabel, safeX + (safeWidth - funcaoWidth) / 2, contentY);
 
-      // Data de emissão (rodapé) - com posição segura
-      doc.setFontSize(6); // Reduzido de 7 para 6
+      // Data de emissão no rodapé - posição segura
+      const footerY = safeY + safeHeight - 4;
+      doc.setFontSize(5); // Reduzido de 6 para 5
       doc.setFont('helvetica', 'italic');
       doc.setTextColor(120, 120, 120);
+      
       const dataEmissao = new Date();
       const dataStr = `Emitido: ${dataEmissao.toLocaleDateString('pt-BR')}`;
       const dataWidth = doc.getTextWidth(dataStr);
       
       // Garantir que a data fique dentro das margens
-      const dataX = Math.min(x + width - dataWidth - marginSafety, x + width - marginSafety - dataWidth);
-      doc.text(dataStr, dataX, y + height - marginSafety);
+      const dataX = Math.min(safeX + safeWidth - dataWidth, safeX + safeWidth - dataWidth);
+      doc.text(dataStr, dataX, footerY);
 
-      // Elemento decorativo pequeno - padrão sutil no canto esquerdo
-      doc.setDrawColor(200, 220, 255);
-      doc.setLineWidth(0.3);
-      for (let i = 0; i < 2; i++) {
-        const lineX = x + marginSafety + i*2;
-        const lineY1 = y + height - marginSafety - 6;
-        const lineY2 = y + height - marginSafety - 12;
-        doc.line(lineX, lineY1, lineX, lineY2);
+      // Elemento decorativo mínimo - apenas se houver espaço
+      if (safeWidth > 40) { // Só adiciona se o cartão for largo o suficiente
+        doc.setDrawColor(200, 220, 255);
+        doc.setLineWidth(0.2);
+        const decorX = safeX + 2;
+        const decorY = footerY - 8;
+        doc.line(decorX, decorY, decorX, decorY - 4);
+        doc.line(decorX + 2, decorY, decorX + 2, decorY - 4);
       }
 
-      // Fim do cartão de leitor com conteúdo garantidamente dentro dos limites
+      // Fim do cartão com cabeçalho reduzido e conteúdo garantidamente dentro
     }
 
     // Event listener para o botão de gerar cartão

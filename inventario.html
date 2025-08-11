@@ -923,17 +923,8 @@
 
     // Inicializar página
     document.addEventListener('DOMContentLoaded', function() {
-      // Não carrega os dados automaticamente
-      const inventoryList = document.getElementById('inventoryList');
-      if (inventoryList) {
-        inventoryList.innerHTML = `
-          <div class="text-center text-muted" style="padding: 60px 0;">
-            <i class='bx bx-package' style="font-size: 3rem;"></i>
-            <h4>O inventário está em branco</h4>
-            <p>Clique em <b>Lançar Materiais da Biblioteca</b> para iniciar o inventário.</p>
-          </div>
-        `;
-      }
+      // Carrega os dados automaticamente ao abrir a página
+      loadInventoryData();
       setupEventListeners();
     });
 

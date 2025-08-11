@@ -1,3 +1,23 @@
+  <!-- Tratamento global de erros para proteger a aplicação de scripts externos/ extensões -->
+  <script>
+    window.addEventListener('error', function(event) {
+      // Ignora erros de scripts de extensões conhecidos
+      if (event.filename && (event.filename.includes('contentscript.js') || event.filename.includes('content-all.js'))) {
+        console.warn('Erro de extensão ignorado:', event.message);
+        event.preventDefault();
+        return false;
+      }
+      // Para outros erros, permite o comportamento padrão
+    });
+    window.addEventListener('unhandledrejection', function(event) {
+      // Ignora promessas rejeitadas de extensões
+      if (event.reason && event.reason.stack && (event.reason.stack.includes('contentscript.js') || event.reason.stack.includes('content-all.js'))) {
+        console.warn('Promise rejeitada de extensão ignorada:', event.reason);
+        event.preventDefault();
+        return false;
+      }
+    });
+  </script>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>

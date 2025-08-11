@@ -628,6 +628,10 @@
           <div class="modal-body">
             <form id="addBookForm">
               <div class="mb-3">
+                <label for="isbnLivro" class="form-label">ISBN</label>
+                <input type="text" class="form-control" id="isbnLivro" required>
+              </div>
+              <div class="mb-3">
                 <label for="tituloLivro" class="form-label">Título</label>
                 <input type="text" class="form-control" id="tituloLivro" required>
               </div>
@@ -636,16 +640,24 @@
                 <input type="text" class="form-control" id="autorLivro" required>
               </div>
               <div class="mb-3">
-                <label for="isbnLivro" class="form-label">ISBN</label>
-                <input type="text" class="form-control" id="isbnLivro">
+                <label for="editoraLivro" class="form-label">Editora</label>
+                <input type="text" class="form-control" id="editoraLivro" required>
               </div>
               <div class="mb-3">
-                <label for="codigoLivro" class="form-label">Código</label>
-                <input type="text" class="form-control" id="codigoLivro">
+                <label for="generoLivro" class="form-label">Gênero</label>
+                <input type="text" class="form-control" id="generoLivro" required>
               </div>
               <div class="mb-3">
-                <label for="categoriaLivro" class="form-label">Categoria</label>
-                <input type="text" class="form-control" id="categoriaLivro">
+                <label for="quantidadeLivro" class="form-label">Quantidade</label>
+                <input type="number" min="1" class="form-control" id="quantidadeLivro" required>
+              </div>
+              <div class="mb-3">
+                <label for="anoLivro" class="form-label">Ano de Publicação</label>
+                <input type="number" min="1000" max="9999" class="form-control" id="anoLivro" required>
+              </div>
+              <div class="mb-3">
+                <label for="lancadorLivro" class="form-label">Nome do Lançador</label>
+                <input type="text" class="form-control" id="lancadorLivro" required>
               </div>
               <button type="submit" class="btn btn-success">Adicionar Livro</button>
             </form>
@@ -667,11 +679,14 @@
         form.addEventListener('submit', function(e) {
           e.preventDefault();
           const livro = {
+            isbn: document.getElementById('isbnLivro').value,
             titulo: document.getElementById('tituloLivro').value,
             autor: document.getElementById('autorLivro').value,
-            isbn: document.getElementById('isbnLivro').value,
-            codigo: document.getElementById('codigoLivro').value,
-            categoria: document.getElementById('categoriaLivro').value
+            editora: document.getElementById('editoraLivro').value,
+            genero: document.getElementById('generoLivro').value,
+            quantidade: document.getElementById('quantidadeLivro').value,
+            ano: document.getElementById('anoLivro').value,
+            lancador: document.getElementById('lancadorLivro').value
           };
           if (!window.inventoryData) window.inventoryData = [];
           window.inventoryData.push(livro);
@@ -693,7 +708,16 @@
       }
       let html = '<div class="row">';
       window.inventoryData.forEach((livro, idx) => {
-        html += `<div class='col-md-6'><div class='inventory-card mb-3'><strong>${livro.titulo}</strong><br><small>${livro.autor}</small><br><span class='badge bg-secondary'>${livro.categoria || ''}</span><br><span class='text-muted'>ISBN: ${livro.isbn || '-'}</span><br><span class='text-muted'>Código: ${livro.codigo || '-'}</span></div></div>`;
+        html += `<div class='col-md-6'><div class='inventory-card mb-3'>
+          <strong>${livro.titulo}</strong><br>
+          <small>Autor: ${livro.autor}</small><br>
+          <span class='badge bg-secondary'>${livro.genero || ''}</span><br>
+          <span class='text-muted'>ISBN: ${livro.isbn || '-'}</span><br>
+          <span class='text-muted'>Editora: ${livro.editora || '-'}</span><br>
+          <span class='text-muted'>Ano: ${livro.ano || '-'}</span><br>
+          <span class='text-muted'>Quantidade: ${livro.quantidade || '-'}</span><br>
+          <span class='text-muted'>Lançador: ${livro.lancador || '-'}</span>
+        </div></div>`;
       });
       html += '</div>';
       list.innerHTML = html;
@@ -705,9 +729,9 @@
         alert('Nenhum item lançado no inventário!');
         return;
       }
-      let csv = 'Título;Autor;ISBN;Código;Categoria\n';
+      let csv = 'ISBN;Título;Autor;Editora;Gênero;Quantidade;Ano de Publicação;Nome do Lançador\n';
       window.inventoryData.forEach(livro => {
-        csv += `${livro.titulo || ''};${livro.autor || ''};${livro.isbn || ''};${livro.codigo || ''};${livro.categoria || ''}\n`;
+        csv += `${livro.isbn || ''};${livro.titulo || ''};${livro.autor || ''};${livro.editora || ''};${livro.genero || ''};${livro.quantidade || ''};${livro.ano || ''};${livro.lancador || ''}\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const a = document.createElement('a');
@@ -827,6 +851,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
   <script src="firebase-config.js"></script>
 
   <!-- Tratamento global de erros para proteger a aplicação de scripts externos -->

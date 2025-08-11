@@ -674,8 +674,11 @@
 
     // Adiciona livro ao inventário local
     document.addEventListener('DOMContentLoaded', function() {
-      const form = document.getElementById('addBookForm');
-      if (form) {
+      function setupAddBookFormListener() {
+        const form = document.getElementById('addBookForm');
+        if (!form) return;
+        // Remove event listeners duplicados
+        form.onsubmit = null;
         form.addEventListener('submit', function(e) {
           e.preventDefault();
           const livro = {
@@ -692,11 +695,16 @@
           window.inventoryData.push(livro);
           // Atualiza lista visual
           displayManualInventoryItems();
-          // Fecha modal
-          bootstrap.Modal.getInstance(document.getElementById('addBookModal')).hide();
+          // Fecha modal de forma segura
+          const modalEl = document.getElementById('addBookModal');
+          if (modalEl) {
+            const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+            modalInstance.hide();
+          }
           form.reset();
         });
       }
+      setupAddBookFormListener();
     });
 
     // Exibe os itens lançados manualmente

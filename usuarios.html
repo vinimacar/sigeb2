@@ -2500,7 +2500,7 @@
 
     // Função para criar um cartão individual
     function criarCartaoUsuario(doc, usuario, x, y, width, height) {
-      // Cartão de leitor inspirado em cartão de crédito moderno
+      // Cartão de leitor: formato retangular, escritas visíveis, estilo cartão de crédito moderno
       if (!usuario || typeof usuario !== 'object') return;
 
       // Dados seguros
@@ -2508,9 +2508,9 @@
       const matriculaSegura = usuario.matricula || '0000000000000000';
       const escola = 'Escola Estadual Gov. Bias Fortes';
 
-      // Fundo azul escuro
+      // Fundo azul escuro (retangular, cantos pouco arredondados)
       doc.setFillColor(26, 35, 60);
-      doc.roundedRect(x, y, width, height, 12, 12, 'F');
+      doc.roundedRect(x, y, width, height, 4, 4, 'F');
 
       // Faixa branca inferior
       doc.setFillColor(255, 255, 255);
@@ -2518,10 +2518,10 @@
 
       // Chip dourado (esquerda)
       doc.setFillColor(212, 175, 55);
-      doc.roundedRect(x + 22, y + 28, 22, 16, 3, 3, 'F');
+      doc.roundedRect(x + 22, y + 28, 22, 16, 2, 2, 'F');
       doc.setDrawColor(180, 140, 40);
       doc.setLineWidth(1);
-      doc.roundedRect(x + 22, y + 28, 22, 16, 3, 3);
+      doc.roundedRect(x + 22, y + 28, 22, 16, 2, 2);
       // Linhas do chip
       doc.setDrawColor(180, 140, 40);
       doc.setLineWidth(0.7);
@@ -2547,36 +2547,36 @@
       doc.setLineWidth(1);
       doc.line(iconX + 8, iconY + 6, iconX + 8, iconY + 12);
 
-      // Nome da escola (superior, branco)
-      doc.setFontSize(9.5);
+      // Nome da escola (superior, branco, fonte grande e negrito)
+      doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(255, 255, 255);
       const escolaWidth = doc.getTextWidth(escola);
-      doc.text(escola, x + 32, y + 22);
+      doc.text(escola, x + 32, y + 26);
 
-      // Nome do aluno (meio, branco)
-      doc.setFontSize(12);
+      // Nome do aluno (meio, branco, fonte grande e negrito)
+      doc.setFontSize(13);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(255, 255, 255);
       const nomeWidth = doc.getTextWidth(nomeSeguro.toUpperCase());
       doc.text(nomeSeguro.toUpperCase(), x + 32, y + 54);
 
-      // Número do cartão (matrícula, estilo cartão de crédito, branco)
-      doc.setFontSize(13);
-      doc.setFont('courier', 'bold');
-      doc.setTextColor(255, 255, 255);
-      // Formatar matrícula em blocos de 4
-      let mat = matriculaSegura.replace(/\D/g, '').padEnd(16, '0').slice(0,16);
-      let matFormatada = mat.match(/.{1,4}/g).join(' ');
-      doc.text(matFormatada, x + 32, y + height - 38);
+  // Número do cartão (matrícula, estilo cartão de crédito, preto sobre branco, sem zeros extras)
+  doc.setFontSize(15);
+  doc.setFont('courier', 'bold');
+  doc.setTextColor(30, 30, 30);
+  // Formatar matrícula em blocos de 4, sem completar com zeros
+  let mat = matriculaSegura.replace(/\D/g, '');
+  let matFormatada = mat.length > 4 ? mat.match(/.{1,4}/g).join(' ') : mat;
+  doc.text(matFormatada, x + 32, y + height - 38);
 
-      // Validade (branco, canto inferior esquerdo)
-      doc.setFontSize(8);
+      // Validade (preto, canto inferior esquerdo, fonte grande)
+      doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(255, 255, 255);
+      doc.setTextColor(30, 30, 30);
       doc.text('Válido até: 12/28', x + 32, y + height - 18);
 
-      // Fim do cartão de crédito moderno
+      // Fim do cartão de crédito moderno, retangular e com alta visibilidade
     }
 
     // Event listener para o botão de gerar cartão

@@ -250,6 +250,47 @@
       margin-bottom: 30px;
     }
 
+    /* Estilos para a seção principal de inventário */
+    .inventory-main-action {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 15px;
+      padding: 30px;
+      margin-bottom: 30px;
+      border: 1px solid #dee2e6;
+    }
+
+    .inventory-main-action .btn-lg {
+      transition: all 0.3s ease;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .inventory-main-action .btn-lg:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .inventory-main-action .btn-primary {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      border: none;
+    }
+
+    .inventory-main-action .btn-primary:hover {
+      background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+    }
+
+    .inventory-main-action .btn-outline-success:hover {
+      background: #28a745;
+      border-color: #28a745;
+      color: white;
+    }
+
+    .inventory-main-action .btn-outline-info:hover {
+      background: #17a2b8;
+      border-color: #17a2b8;
+      color: white;
+    }
+
     .stat-card {
       background: white;
       padding: 25px;
@@ -445,6 +486,19 @@
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 15px;
       }
+
+      .inventory-main-action {
+        padding: 20px 15px;
+      }
+
+      .inventory-main-action .btn-lg {
+        min-width: 100% !important;
+        margin-bottom: 15px;
+      }
+
+      .inventory-main-action .d-flex {
+        flex-direction: column;
+      }
       
       .inventory-actions {
         flex-direction: column;
@@ -536,25 +590,56 @@
       </div>
     </div>
 
+    <!-- Botão Principal de Inventário -->
+    <div class="inventory-main-action" data-aos="fade-up" data-aos-delay="50">
+      <div class="text-center mb-4">
+        <h4 class="text-primary mb-3">
+          <i class='bx bx-clipboard-x'></i>
+          Gestão de Inventário
+        </h4>
+        <p class="text-muted mb-4">Inicie uma nova conferência de inventário ou gerencie os itens existentes</p>
+        
+        <div class="row justify-content-center">
+          <div class="col-md-8">
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+              <!-- Botão Principal -->
+              <button class="btn btn-primary btn-lg px-4 py-3" onclick="initInventoryCheck()" style="min-width: 200px;">
+                <i class='bx bx-play-circle' style="font-size: 1.5rem;"></i>
+                <span class="d-block mt-1">
+                  <strong>Iniciar Inventário</strong>
+                </span>
+                <small class="d-block text-white-50">Nova conferência</small>
+              </button>
+              
+              <!-- Botões Secundários -->
+              <button class="btn btn-outline-success btn-lg px-4 py-3" onclick="exportInventory()" style="min-width: 180px;">
+                <i class='bx bx-download' style="font-size: 1.5rem;"></i>
+                <span class="d-block mt-1">
+                  <strong>Exportar Dados</strong>
+                </span>
+                <small class="d-block">Relatório completo</small>
+              </button>
+              
+              <button class="btn btn-outline-info btn-lg px-4 py-3" onclick="showInventoryStatistics()" style="min-width: 180px;">
+                <i class='bx bx-bar-chart-alt-2' style="font-size: 1.5rem;"></i>
+                <span class="d-block mt-1">
+                  <strong>Estatísticas</strong>
+                </span>
+                <small class="d-block">Análise detalhada</small>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Controles do Inventário -->
     <div class="inventory-controls" data-aos="fade-up" data-aos-delay="100">
       <div class="row">
-        <div class="col-lg-8">
-          <div class="search-container">
+        <div class="col-12">
+          <div class="search-container mb-3">
             <i class='bx bx-search'></i>
             <input type="text" id="searchInput" class="form-control" placeholder="Buscar por título, autor, código ou ISBN...">
-          </div>
-        </div>
-        <div class="col-lg-4">
-          <div class="d-flex gap-2">
-            <button class="btn btn-primary flex-fill" onclick="initInventoryCheck()">
-              <i class='bx bx-search'></i>
-              Iniciar Conferência
-            </button>
-            <button class="btn btn-success" onclick="exportInventory()">
-              <i class='bx bx-download'></i>
-              Exportar
-            </button>
           </div>
         </div>
       </div>
@@ -1735,6 +1820,231 @@ Relatório gerado pelo SIGEB - Sistema de Gestão de Biblioteca
       
       const modal = new bootstrap.Modal(document.getElementById('printLabelModal'));
       modal.show();
+    }
+
+    function showInventoryStatistics() {
+      const stats = {
+        total: inventoryData.length,
+        disponivel: inventoryData.filter(item => item.status === 'disponivel').length,
+        emprestado: inventoryData.filter(item => item.status === 'emprestado').length,
+        manutencao: inventoryData.filter(item => item.status === 'manutencao').length,
+        perdido: inventoryData.filter(item => item.status === 'perdido').length
+      };
+
+      // Calcular percentuais
+      const percentuais = {
+        disponivel: ((stats.disponivel / stats.total) * 100).toFixed(1),
+        emprestado: ((stats.emprestado / stats.total) * 100).toFixed(1),
+        manutencao: ((stats.manutencao / stats.total) * 100).toFixed(1),
+        perdido: ((stats.perdido / stats.total) * 100).toFixed(1)
+      };
+
+      // Categorias mais representativas
+      const categorias = [...new Set(inventoryData.map(item => item.category).filter(Boolean))];
+      const categoriaStats = categorias.map(cat => ({
+        nome: cat,
+        quantidade: inventoryData.filter(item => item.category === cat).length
+      })).sort((a, b) => b.quantidade - a.quantidade);
+
+      const statsModal = `
+        <div class="modal fade" id="inventoryStatsModal" tabindex="-1">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">
+                  <i class='bx bx-bar-chart-alt-2'></i>
+                  Estatísticas Detalhadas do Inventário
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                
+                <!-- Resumo Geral -->
+                <div class="row mb-4">
+                  <div class="col-12">
+                    <h6 class="text-primary">
+                      <i class='bx bx-info-circle'></i>
+                      Resumo Geral
+                    </h6>
+                    <div class="row">
+                      <div class="col-md-3">
+                        <div class="text-center p-3 bg-light rounded">
+                          <h4 class="text-success">${stats.total}</h4>
+                          <small>Total de Itens</small>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="text-center p-3 bg-light rounded">
+                          <h4 class="text-primary">${stats.disponivel}</h4>
+                          <small>Disponíveis (${percentuais.disponivel}%)</small>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="text-center p-3 bg-light rounded">
+                          <h4 class="text-warning">${stats.emprestado}</h4>
+                          <small>Emprestados (${percentuais.emprestado}%)</small>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="text-center p-3 bg-light rounded">
+                          <h4 class="text-danger">${stats.manutencao + stats.perdido}</h4>
+                          <small>Problemas (${(parseFloat(percentuais.manutencao) + parseFloat(percentuais.perdido)).toFixed(1)}%)</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Distribuição por Status -->
+                <div class="row mb-4">
+                  <div class="col-12">
+                    <h6 class="text-primary">
+                      <i class='bx bx-pie-chart-alt-2'></i>
+                      Distribuição por Status
+                    </h6>
+                    <div class="progress mb-2" style="height: 30px;">
+                      <div class="progress-bar bg-success" style="width: ${percentuais.disponivel}%" title="Disponíveis: ${percentuais.disponivel}%">
+                        ${percentuais.disponivel}%
+                      </div>
+                      <div class="progress-bar bg-warning" style="width: ${percentuais.emprestado}%" title="Emprestados: ${percentuais.emprestado}%">
+                        ${percentuais.emprestado}%
+                      </div>
+                      <div class="progress-bar bg-danger" style="width: ${percentuais.manutencao}%" title="Manutenção: ${percentuais.manutencao}%">
+                        ${percentuais.manutencao}%
+                      </div>
+                      <div class="progress-bar bg-dark" style="width: ${percentuais.perdido}%" title="Perdidos: ${percentuais.perdido}%">
+                        ${percentuais.perdido}%
+                      </div>
+                    </div>
+                    <div class="row text-center">
+                      <div class="col-3"><small><i class="bg-success rounded-circle d-inline-block" style="width:12px;height:12px;"></i> Disponíveis</small></div>
+                      <div class="col-3"><small><i class="bg-warning rounded-circle d-inline-block" style="width:12px;height:12px;"></i> Emprestados</small></div>
+                      <div class="col-3"><small><i class="bg-danger rounded-circle d-inline-block" style="width:12px;height:12px;"></i> Manutenção</small></div>
+                      <div class="col-3"><small><i class="bg-dark rounded-circle d-inline-block" style="width:12px;height:12px;"></i> Perdidos</small></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Top Categorias -->
+                <div class="row">
+                  <div class="col-12">
+                    <h6 class="text-primary">
+                      <i class='bx bx-category'></i>
+                      Top 5 Categorias
+                    </h6>
+                    <div class="table-responsive">
+                      <table class="table table-sm">
+                        <thead>
+                          <tr>
+                            <th>Categoria</th>
+                            <th>Quantidade</th>
+                            <th>Percentual</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          ${categoriaStats.slice(0, 5).map(cat => {
+                            const catItems = inventoryData.filter(item => item.category === cat.nome);
+                            const disponiveisNaCat = catItems.filter(item => item.status === 'disponivel').length;
+                            const percentual = ((cat.quantidade / stats.total) * 100).toFixed(1);
+                            return `
+                              <tr>
+                                <td><strong>${cat.nome}</strong></td>
+                                <td>${cat.quantidade}</td>
+                                <td>${percentual}%</td>
+                                <td>
+                                  <small class="text-success">${disponiveisNaCat} disponíveis</small>
+                                </td>
+                              </tr>
+                            `;
+                          }).join('')}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Insights -->
+                <div class="alert alert-info mt-3">
+                  <h6><i class='bx bx-lightbulb'></i> Insights:</h6>
+                  <ul class="mb-0">
+                    <li><strong>Taxa de Disponibilidade:</strong> ${percentuais.disponivel}% dos itens estão disponíveis</li>
+                    <li><strong>Taxa de Utilização:</strong> ${percentuais.emprestado}% dos itens estão em uso</li>
+                    <li><strong>Categoria Principal:</strong> ${categoriaStats[0]?.nome} com ${categoriaStats[0]?.quantidade} itens</li>
+                    ${stats.perdido > 0 ? `<li><strong>Atenção:</strong> ${stats.perdido} itens marcados como perdidos</li>` : ''}
+                    ${stats.manutencao > 0 ? `<li><strong>Manutenção:</strong> ${stats.manutencao} itens precisam de atenção</li>` : ''}
+                  </ul>
+                </div>
+
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-primary" onclick="exportDetailedStats()">
+                  <i class='bx bx-download'></i> Exportar Estatísticas
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Remove modal anterior se existir
+      const existingModal = document.getElementById('inventoryStatsModal');
+      if (existingModal) {
+        existingModal.remove();
+      }
+
+      // Adiciona novo modal
+      document.body.insertAdjacentHTML('beforeend', statsModal);
+
+      const modal = new bootstrap.Modal(document.getElementById('inventoryStatsModal'));
+      modal.show();
+    }
+
+    function exportDetailedStats() {
+      const stats = {
+        total: inventoryData.length,
+        disponivel: inventoryData.filter(item => item.status === 'disponivel').length,
+        emprestado: inventoryData.filter(item => item.status === 'emprestado').length,
+        manutencao: inventoryData.filter(item => item.status === 'manutencao').length,
+        perdido: inventoryData.filter(item => item.status === 'perdido').length
+      };
+
+      const categorias = [...new Set(inventoryData.map(item => item.category).filter(Boolean))];
+      const categoriaStats = categorias.map(cat => ({
+        categoria: cat,
+        quantidade: inventoryData.filter(item => item.category === cat).length,
+        disponivel: inventoryData.filter(item => item.category === cat && item.status === 'disponivel').length,
+        emprestado: inventoryData.filter(item => item.category === cat && item.status === 'emprestado').length,
+        problemas: inventoryData.filter(item => item.category === cat && (item.status === 'manutencao' || item.status === 'perdido')).length
+      }));
+
+      const csvContent = [
+        'ESTATÍSTICAS GERAIS DO INVENTÁRIO',
+        `Data de Geração,${new Date().toLocaleDateString('pt-BR')}`,
+        '',
+        'RESUMO GERAL',
+        'Métrica,Quantidade,Percentual',
+        `Total de Itens,${stats.total},100%`,
+        `Disponíveis,${stats.disponivel},${((stats.disponivel/stats.total)*100).toFixed(1)}%`,
+        `Emprestados,${stats.emprestado},${((stats.emprestado/stats.total)*100).toFixed(1)}%`,
+        `Em Manutenção,${stats.manutencao},${((stats.manutencao/stats.total)*100).toFixed(1)}%`,
+        `Perdidos,${stats.perdido},${((stats.perdido/stats.total)*100).toFixed(1)}%`,
+        '',
+        'ESTATÍSTICAS POR CATEGORIA',
+        'Categoria,Total,Disponível,Emprestado,Problemas',
+        ...categoriaStats.map(cat => 
+          `"${cat.categoria}",${cat.quantidade},${cat.disponivel},${cat.emprestado},${cat.problemas}`
+        )
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `estatisticas_inventario_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
     }
 
     function printLabel() {

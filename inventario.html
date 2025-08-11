@@ -20,34 +20,49 @@
   </script>
   <div class="main-content">
     <div class="page-header" data-aos="fade-down">
-      <h1>
-        <i class='bx bxs-package'></i>
+      <h1 style="font-weight:700; color:#1a1a2e;">
+        <i class='bx bxs-package' style="color:#4facfe;"></i>
         Inventário Manual da Biblioteca
       </h1>
-      <p class="lead">Siga o passo a passo para lançar os livros do inventário e gerar o arquivo de importação para o sistema.</p>
+      <p class="lead" style="color:#3b4252;">Siga o passo a passo para lançar os livros do inventário e gerar o arquivo de importação para o sistema.</p>
     </div>
 
     <div class="inventory-main-action bg-white p-4 mb-4" style="border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.07);">
-      <ol class="mb-4" style="font-size:1.1rem;">
-        <li><strong>Lance cada livro manualmente</strong> clicando no botão abaixo.</li>
-        <li><strong>Confira a lista de livros lançados</strong> logo abaixo.</li>
-        <li><strong>Exporte o arquivo</strong> para importar no sistema.</li>
-      </ol>
+      <div class="row text-center mb-4" style="font-size:1.08rem;">
+        <div class="col-md-4 mb-2 mb-md-0">
+          <div class="p-3 h-100" style="border-radius:12px; background:#f0f7ff;">
+            <i class='bx bx-edit-alt' style="font-size:2rem; color:#4facfe;"></i><br>
+            <strong>1. Lance cada livro manualmente</strong>
+          </div>
+        </div>
+        <div class="col-md-4 mb-2 mb-md-0">
+          <div class="p-3 h-100" style="border-radius:12px; background:#f0f7ff;">
+            <i class='bx bx-list-ul' style="font-size:2rem; color:#4facfe;"></i><br>
+            <strong>2. Confira a lista de livros lançados</strong>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 h-100" style="border-radius:12px; background:#f0f7ff;">
+            <i class='bx bx-download' style="font-size:2rem; color:#4facfe;"></i><br>
+            <strong>3. Exporte o arquivo para o sistema</strong>
+          </div>
+        </div>
+      </div>
       <div class="d-flex flex-wrap gap-3 justify-content-center mb-3">
-        <button class="btn btn-primary btn-lg px-4 py-3" onclick="showAddBookModal()" style="min-width: 220px;">
+        <button class="btn btn-primary btn-lg px-4 py-3 shadow" onclick="showAddBookModal()" style="min-width: 220px; border-radius:12px; font-weight:600;">
           <i class='bx bx-upload' style="font-size: 1.5rem;"></i>
           <span class="d-block mt-1">
             <strong>Lançar Novo Livro</strong>
           </span>
         </button>
-        <button class="btn btn-success btn-lg px-4 py-3" onclick="exportInventoryFile()" style="min-width: 220px;">
+        <button class="btn btn-success btn-lg px-4 py-3 shadow" onclick="exportInventoryFile()" style="min-width: 220px; border-radius:12px; font-weight:600;">
           <i class='bx bx-file' style="font-size: 1.5rem;"></i>
           <span class="d-block mt-1">
             <strong>Exportar Arquivo</strong>
           </span>
         </button>
       </div>
-      <div class="alert alert-info text-center mt-3" style="max-width:600px;margin:auto;">
+      <div class="alert alert-info text-center mt-3" style="max-width:600px;margin:auto; border-radius:10px; background:#eaf6ff; color:#1a1a2e;">
         <i class='bx bx-info-circle'></i> O arquivo gerado pode ser importado diretamente no sistema SIGEB.
       </div>
       display: flex;
@@ -702,21 +717,32 @@
     function displayManualInventoryItems() {
       const list = document.getElementById('inventoryList');
       if (!window.inventoryData || window.inventoryData.length === 0) {
-        list.innerHTML = `<div class='text-center text-muted' style='padding: 60px 0;'><i class='bx bx-package' style='font-size: 3rem;'></i><h4>O inventário está em branco</h4><p>Clique em <b>Lançar Materiais da Biblioteca</b> para incluir itens.</p></div>`;
+        list.innerHTML = `<div class='text-center text-muted' style='padding: 60px 0;'><i class='bx bx-package' style='font-size: 3rem; color:#4facfe;'></i><h4 style='color:#1a1a2e;'>Nenhum livro lançado ainda</h4><p>Clique em <b>Lançar Novo Livro</b> para começar o inventário.</p></div>`;
         return;
       }
-      let html = '<div class="row">';
+      let html = '<div class="row g-3">';
       window.inventoryData.forEach((livro, idx) => {
-        html += `<div class='col-md-6'><div class='inventory-card mb-3'>
-          <strong>${livro.titulo}</strong><br>
-          <small>Autor: ${livro.autor}</small><br>
-          <span class='badge bg-secondary'>${livro.genero || ''}</span><br>
-          <span class='text-muted'>ISBN: ${livro.isbn || '-'}</span><br>
-          <span class='text-muted'>Editora: ${livro.editora || '-'}</span><br>
-          <span class='text-muted'>Ano: ${livro.ano || '-'}</span><br>
-          <span class='text-muted'>Quantidade: ${livro.quantidade || '-'}</span><br>
-          <span class='text-muted'>Lançador: ${livro.lancador || '-'}</span>
-        </div></div>`;
+        html += `<div class='col-md-6 col-lg-4'>
+          <div class='inventory-card mb-2 p-3 shadow-sm' style="border-radius:14px; border-left: 5px solid #4facfe; background:#f8fbff;">
+            <div class="d-flex align-items-start gap-3">
+              <div style="background:#4facfe; color:#fff; border-radius:8px; width:48px; height:68px; display:flex; align-items:center; justify-content:center; font-size:1.7rem;">
+                <i class='bx bx-book'></i>
+              </div>
+              <div class="flex-grow-1">
+                <div style="font-weight:600; color:#1a1a2e; font-size:1.1rem;">${livro.titulo}</div>
+                <div style="color:#3b4252; font-size:0.97rem;">Autor: <b>${livro.autor}</b></div>
+                <div style="color:#4facfe; font-size:0.95rem;">${livro.genero || ''}</div>
+                <div class="row mt-1">
+                  <div class="col-6"><span class='text-muted'>ISBN:</span> <span style='color:#222'>${livro.isbn || '-'}</span></div>
+                  <div class="col-6"><span class='text-muted'>Editora:</span> <span style='color:#222'>${livro.editora || '-'}</span></div>
+                  <div class="col-6"><span class='text-muted'>Ano:</span> <span style='color:#222'>${livro.ano || '-'}</span></div>
+                  <div class="col-6"><span class='text-muted'>Qtd:</span> <span style='color:#222'>${livro.quantidade || '-'}</span></div>
+                </div>
+                <div class="mt-1" style="font-size:0.93rem; color:#888;">Lançador: ${livro.lancador || '-'}</div>
+              </div>
+            </div>
+          </div>
+        </div>`;
       });
       html += '</div>';
       list.innerHTML = html;

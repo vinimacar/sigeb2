@@ -1,3 +1,25 @@
+    // Função utilitária para converter imagem de URL para base64
+    function urlToBase64(url) {
+      return new Promise((resolve, reject) => {
+        const img = new window.Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          try {
+            const dataURL = canvas.toDataURL('image/png');
+            resolve(dataURL);
+          } catch (e) {
+            reject(e);
+          }
+        };
+        img.onerror = function(e) { reject(e); };
+        img.src = url;
+      });
+    }
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -2530,48 +2552,57 @@
       try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
+
         // Configurações do cartão
         const cartaoWidth = 85.6; // Tamanho padrão de cartão de crédito em mm
         const cartaoHeight = 53.98;
         const margem = 10;
         const cartoesPerRow = 2;
         const cartoesPerPage = 4; // 2x2
-        
+
         let cartaoAtual = 0;
-        
+
         for (let i = 0; i < usuarios.length; i++) {
           const usuario = usuarios[i];
-          
+
+          // Gerar QR code base64 para o usuário
+          const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(usuario.matricula || '')}&size=70x70`;
+          let qrBase64 = null;
+          try {
+            qrBase64 = await urlToBase64(qrUrl);
+          } catch (e) {
+            console.warn('QR code não pôde ser convertido para base64:', e);
+          }
+
           // Calcula posição do cartão na página
           const row = Math.floor(cartaoAtual % cartoesPerPage / cartoesPerRow);
           const col = cartaoAtual % cartoesPerRow;
-          
+
           const x = margem + (col * (cartaoWidth + margem));
           const y = margem + (row * (cartaoHeight + margem * 2));
-          
+
           // Nova página se necessário
           if (cartaoAtual > 0 && cartaoAtual % cartoesPerPage === 0) {
             doc.addPage();
           }
-          
-          // Desenha o cartão com tratamento de erro individual
+
+          // Desenha o cartão estruturado com QR code real
           try {
-            criarCartaoUsuario(doc, usuario, x, y, cartaoWidth, cartaoHeight);
+            criarCartaoUsuario(doc, usuario, x, y, cartaoWidth, cartaoHeight, qrBase64);
           } catch (cardError) {
             console.error(`Erro ao criar cartão para usuário ${usuario.nome}:`, cardError);
             // Continua para o próximo usuário
           }
-          
+
           cartaoAtual++;
         }
-        
+
         // Salva o PDF
         const dataAtual = new Date().toISOString().split('T')[0];
         doc.save(`cartoes-leitor-${dataAtual}.pdf`);
-        
+
         showAlert('success', `Cartões de leitor gerados com sucesso! ${usuarios.length} cartão(ões) criado(s).`);
-        
+
       } catch (error) {
         console.error('Erro ao criar PDF dos cartões:', error);
         showAlert('danger', 'Erro ao gerar cartões de leitor. Verifique os dados dos usuários.');
@@ -2580,7 +2611,7 @@
     }
 
     // Função para criar um cartão individual estruturado (PDF)
-    function criarCartaoUsuario(doc, usuario, x, y, width, height) {
+    function criarCartaoUsuario(doc, usuario, x, y, width, height, qrBase64) {
       // Cartão estruturado: cabeçalho, faixa magnética, área de dados, QR code
       if (!usuario || typeof usuario !== 'object') return;
 
@@ -2643,15 +2674,26 @@
       doc.setTextColor(34,34,34);
       doc.text(validade, safeX + 24, safeY + 58);
 
-      // QR code (imagem externa)
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(matriculaSegura)}&size=70x70`;
-      // Para evitar CORS, pode ser necessário baixar a imagem antes e converter para base64
-      // Aqui, apenas um placeholder
-      doc.setDrawColor(200,200,200);
-      doc.rect(safeX + safeWidth - 32, safeY + 34, 28, 28);
-      doc.setFontSize(6);
-      doc.setTextColor(180,180,180);
-      doc.text('QR', safeX + safeWidth - 18, safeY + 50);
+      // QR code real (se disponível)
+      if (qrBase64) {
+        try {
+          doc.addImage(qrBase64, 'PNG', safeX + safeWidth - 32, safeY + 34, 28, 28);
+        } catch (e) {
+          // fallback visual
+          doc.setDrawColor(200,200,200);
+          doc.rect(safeX + safeWidth - 32, safeY + 34, 28, 28);
+          doc.setFontSize(6);
+          doc.setTextColor(180,180,180);
+          doc.text('QR', safeX + safeWidth - 18, safeY + 50);
+        }
+      } else {
+        // fallback visual
+        doc.setDrawColor(200,200,200);
+        doc.rect(safeX + safeWidth - 32, safeY + 34, 28, 28);
+        doc.setFontSize(6);
+        doc.setTextColor(180,180,180);
+        doc.text('QR', safeX + safeWidth - 18, safeY + 50);
+      }
 
       // Rodapé
       doc.setFontSize(8);

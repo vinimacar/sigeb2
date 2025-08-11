@@ -65,102 +65,8 @@
       <div class="alert alert-info text-center mt-3" style="max-width:600px;margin:auto; border-radius:10px; background:#eaf6ff; color:#1a1a2e;">
         <i class='bx bx-info-circle'></i> O arquivo gerado pode ser importado diretamente no sistema SIGEB.
       </div>
-      display: flex;
     <!-- Modal de Cadastro de Livro -->
-      border-radius: 8px;
-      margin-bottom: 5px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .menu-item::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.1);
-      transition: var(--transition);
-    }
-
-    .menu-item:hover::before {
-      left: 0;
-    }
-
-    .menu-item.active {
-      background: rgba(255, 255, 255, 0.1);
-      color: #4facfe;
-    }
-
-    .menu-item i {
-      margin-right: 10px;
-      font-size: 1.2rem;
-    }
-
-    .main-content {
-      margin-left: 250px;
-      padding: 20px;
-      background: #f0f2f5;
-      min-height: 100vh;
-    }
-
-    .page-header {
-      background: white;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: var(--shadow-sm);
-      margin-bottom: 30px;
-      border-left: 5px solid #4facfe;
-    }
-
-    .page-header h1 {
-      margin: 0;
-      color: #1a1a2e;
-      display: flex;
-      align-items: center;
-    }
-
-    .page-header h1 i {
-      margin-right: 15px;
-      font-size: 2rem;
-      background: var(--accent-gradient);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .inventory-controls {
-      background: white;
-      padding: 25px;
-      border-radius: 15px;
-      box-shadow: var(--shadow-sm);
-      margin-bottom: 30px;
-    }
-
-    .inventory-card {
-      background: white;
-      border-radius: 15px;
-      padding: 25px;
-      box-shadow: var(--shadow-sm);
-      margin-bottom: 20px;
-      transition: var(--transition);
-      border-left: 4px solid transparent;
-    }
-
-    .inventory-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-    }
-
-    .inventory-card.status-disponivel {
-      border-left-color: #28a745;
-    }
-
-    .inventory-card.status-emprestado {
-      border-left-color: #ffc107;
-    }
-
+  <style>
     .inventory-card.status-manutencao {
       border-left-color: #dc3545;
     }
@@ -898,11 +804,14 @@
     });
 
     function setupEventListeners() {
-      // Busca em tempo real
-      document.getElementById('searchInput').addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        filterAndDisplayItems(searchTerm);
-      });
+      // Busca em tempo real (só adiciona se o campo existir)
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.addEventListener('input', function() {
+          const searchTerm = this.value.toLowerCase();
+          filterAndDisplayItems(searchTerm);
+        });
+      }
     }
 
   // Removido: função de carregar inventário do sistema

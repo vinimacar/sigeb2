@@ -2500,383 +2500,65 @@
 
     // Função para criar um cartão individual
     function criarCartaoUsuario(doc, usuario, x, y, width, height) {
-      try {
-        // Validação dos dados do usuário
-        if (!usuario || typeof usuario !== 'object') {
-          throw new Error('Dados do usuário inválidos');
-        }
-
-        // Dados seguros com fallbacks
-        const nomeSeguro = usuario.nome || 'Nome não informado';
-        const matriculaSegura = usuario.matricula || 'N/A';
-        const funcaoSegura = usuario.funcao || 'USUÁRIO';
-
-        // === DESIGN MODERNO DO CARTÃO ===
-        
-        // Fundo com gradiente sutil
-        doc.setFillColor(248, 250, 252);
-        doc.rect(x, y, width, height, 'F');
-        
-        // Sombra externa sutil
-        doc.setFillColor(220, 220, 220);
-        doc.rect(x + 0.5, y + 0.5, width, height, 'F');
-        
-        // Fundo principal branco
-        doc.setFillColor(255, 255, 255);
-        doc.rect(x, y, width, height, 'F');
-        
-        // Borda com cantos arredondados simulados
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.5);
-        doc.rect(x, y, width, height);
-        
-        // === CABEÇALHO MODERNO COM DESIGN WAVE ===
-        
-        // Fundo degradê azul-verde moderno
-        doc.setFillColor(26, 35, 126); // Azul profundo
-        doc.rect(x, y, width, 16, 'F');
-        
-        // Camada de sobreposição com transparência simulada
-        doc.setFillColor(45, 156, 219); // Azul médio
-        doc.rect(x, y, width, 12, 'F');
-        
-        // Accent line superior
-        doc.setFillColor(0, 188, 212); // Ciano
-        doc.rect(x, y, width, 3, 'F');
-
-        // === TÍTULOS MODERNOS E CENTRALIZADOS COM LOGOS ===
-        
-        // Título principal com fonte moderna
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        const tituloTexto = 'CARTÃO DE LEITOR';
-        const tituloWidth = doc.getTextWidth(tituloTexto);
-        const tituloX = x + (width - tituloWidth) / 2;
-        doc.text(tituloTexto, tituloX, y + 10);
-
-        // Logo icone.png (lado esquerdo do título)
-        if (logoSigebBase64) {
-          try {
-            doc.addImage(logoSigebBase64, 'PNG', tituloX - 18, y + 3, 14, 14);
-          } catch (error) {
-            // Fallback moderno
-            doc.setFillColor(255, 255, 255);
-            doc.circle(tituloX - 11, y + 10, 6, 'F');
-            doc.setDrawColor(255, 255, 255);
-            doc.setLineWidth(0.5);
-            doc.circle(tituloX - 11, y + 10, 6);
-            doc.setTextColor(26, 35, 126);
-            doc.setFontSize(5);
-            doc.setFont('helvetica', 'bold');
-            doc.text('ICON', tituloX - 14, y + 11);
-          }
-        } else {
-          doc.setFillColor(255, 255, 255);
-          doc.circle(tituloX - 11, y + 10, 6, 'F');
-          doc.setDrawColor(255, 255, 255);
-          doc.setLineWidth(0.5);
-          doc.circle(tituloX - 11, y + 10, 6);
-          doc.setTextColor(26, 35, 126);
-          doc.setFontSize(5);
-          doc.setFont('helvetica', 'bold');
-          doc.text('ICON', tituloX - 14, y + 11);
-        }
-
-        // Logo da escola Bias Fortes (lado direito do título)
-        if (logoBiasBase64) {
-          try {
-            doc.addImage(logoBiasBase64, 'PNG', tituloX + tituloWidth + 4, y + 3, 14, 14);
-          } catch (error) {
-            // Fallback circular moderno
-            doc.setFillColor(255, 255, 255);
-            doc.circle(tituloX + tituloWidth + 11, y + 10, 6, 'F');
-            doc.setDrawColor(255, 255, 255);
-            doc.setLineWidth(0.5);
-            doc.circle(tituloX + tituloWidth + 11, y + 10, 6);
-            doc.setTextColor(26, 35, 126);
-            doc.setFontSize(5);
-            doc.setFont('helvetica', 'bold');
-            doc.text('BF', tituloX + tituloWidth + 9, y + 11);
-          }
-        } else {
-          doc.setFillColor(255, 255, 255);
-          doc.circle(tituloX + tituloWidth + 11, y + 10, 6, 'F');
-          doc.setDrawColor(255, 255, 255);
-          doc.setLineWidth(0.5);
-          doc.circle(tituloX + tituloWidth + 11, y + 10, 6);
-          doc.setTextColor(26, 35, 126);
-          doc.setFontSize(5);
-          doc.setFont('helvetica', 'bold');
-          doc.text('BF', tituloX + tituloWidth + 9, y + 11);
-        }
-
-        // Subtítulo institucional moderno
-        doc.setFontSize(6.5);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(220, 245, 255);
-        const subtituloTexto = 'Escola Estadual Gov. Bias Fortes';
-        const subtituloWidth = doc.getTextWidth(subtituloTexto);
-        doc.text(subtituloTexto, x + (width - subtituloWidth) / 2, y + 14);
-
-        // === INFORMAÇÕES DO USUÁRIO COM DESIGN CARD ===
-        
-        // Card para o nome com fundo sutil (mais compacto ainda)
-        doc.setFillColor(248, 250, 252);
-        doc.rect(x + 6, y + 19, width - 12, 7, 'F');
-        doc.setDrawColor(230, 235, 240);
-        doc.setLineWidth(0.3);
-        doc.rect(x + 6, y + 19, width - 12, 7);
-        
-        // Nome em destaque centralizado (fonte ajustada)
-        doc.setTextColor(26, 35, 126);
-        doc.setFontSize(8.5);
-        doc.setFont('helvetica', 'bold');
-        const nomeMaxLength = 28;
-        const nomeDisplay = nomeSeguro.length > nomeMaxLength ? nomeSeguro.substring(0, nomeMaxLength) + '...' : nomeSeguro;
-        const nomeWidth = doc.getTextWidth(nomeDisplay.toUpperCase());
-        doc.text(nomeDisplay.toUpperCase(), x + (width - nomeWidth) / 2, y + 23.5);
-
-        // === LAYOUT ORGANIZADO DE INFORMAÇÕES ===
-        
-        // Container para informações - posição ajustada
-        const infoY = y + 28;
-        
-        // Primeira linha: Matrícula e Função
-        // Tag de matrícula
-        doc.setFillColor(0, 188, 212);
-        doc.rect(x + 6, infoY, 18, 4.5, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(4.5);
-        doc.setFont('helvetica', 'bold');
-        doc.text('MATRÍCULA', x + 6.5, infoY + 2.8);
-        
-        doc.setTextColor(26, 35, 126);
-        doc.setFontSize(6.5);
-        doc.setFont('helvetica', 'bold');
-        doc.text(matriculaSegura, x + 26, infoY + 2.8);
-        
-        // Tag de função
-        doc.setFillColor(45, 156, 219);
-        doc.rect(x + width - 21, infoY, 15, 4.5, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(4.5);
-        doc.setFont('helvetica', 'bold');
-        doc.text('FUNÇÃO', x + width - 20, infoY + 2.8);
-        
-        const funcaoDisplay = funcaoSegura.length > 10 ? funcaoSegura.substring(0, 10) : funcaoSegura;
-        doc.setTextColor(26, 35, 126);
-        doc.setFontSize(5.5);
-        doc.setFont('helvetica', 'bold');
-        const funcaoWidth = doc.getTextWidth(funcaoDisplay);
-        doc.text(funcaoDisplay, x + width - 6 - funcaoWidth, infoY + 7);
-
-        // Segunda linha: Email (centralizado)
-        if (usuario.email) {
-          const emailY = infoY + 10;
-          const emailMaxLength = 38;
-          const emailDisplay = usuario.email.length > emailMaxLength ? usuario.email.substring(0, emailMaxLength) + '...' : usuario.email;
-          
-          // Ícone de email
-          doc.setFillColor(100, 100, 100);
-          doc.rect(x + 8, emailY, 2, 1.2, 'F');
-          doc.setLineWidth(0.1);
-          doc.setDrawColor(100, 100, 100);
-          doc.line(x + 8, emailY, x + 9, emailY + 0.6);
-          doc.line(x + 10, emailY, x + 9, emailY + 0.6);
-          
-          // Label Email
-          doc.setTextColor(100, 100, 100);
-          doc.setFontSize(4);
-          doc.setFont('helvetica', 'bold');
-          doc.text('EMAIL:', x + 12, emailY + 0.8);
-          
-          // Texto do email
-          doc.setTextColor(60, 60, 60);
-          doc.setFontSize(4.5);
-          doc.setFont('helvetica', 'normal');
-          doc.text(emailDisplay, x + 20, emailY + 0.8);
-        }
-
-        // === CÓDIGO DE BARRAS EAN13 (baseado na matrícula) ===
-        
-        // Área para código de barras EAN13
-        const barcodeStartX = x + 8;
-        const barcodeY = y + height - 11;
-        const barcodeWidth = width - 16;
-        const barcodeHeight = 4;
-        
-        // Fundo branco para o código de barras
-        doc.setFillColor(255, 255, 255);
-        doc.rect(barcodeStartX - 1, barcodeY - 1, barcodeWidth + 2, barcodeHeight + 2, 'F');
-        
-        // Gerar código EAN13 baseado na matrícula
-        const matriculaNumeros = matriculaSegura.replace(/\D/g, '');
-        const codigo12 = ('789' + matriculaNumeros).padEnd(12, '0').substring(0, 12); // Código país 789 (Brasil) + matrícula
-        
-        // Calcular dígito verificador EAN13
-        function calcularDigitoVerificadorEAN13(codigo12) {
-          let soma = 0;
-          for (let i = 0; i < 12; i++) {
-            const digito = parseInt(codigo12[i]);
-            soma += i % 2 === 0 ? digito : digito * 3;
-          }
-          return (10 - (soma % 10)) % 10;
-        }
-        
-        const digitoVerificador = calcularDigitoVerificadorEAN13(codigo12);
-        const ean13Completo = codigo12 + digitoVerificador;
-        
-        // Padrões EAN13 para codificação
-        const patternsL = {
-          '0': '0001101', '1': '0011001', '2': '0010011', '3': '0111101',
-          '4': '0100011', '5': '0110001', '6': '0101111', '7': '0111011',
-          '8': '0110111', '9': '0001011'
-        };
-        
-        const patternsG = {
-          '0': '0100111', '1': '0110011', '2': '0011011', '3': '0100001',
-          '4': '0011101', '5': '0111001', '6': '0000101', '7': '0010001',
-          '8': '0001001', '9': '0010111'
-        };
-        
-        const patternsR = {
-          '0': '1110010', '1': '1100110', '2': '1101100', '3': '1000010',
-          '4': '1011100', '5': '1001110', '6': '1010000', '7': '1000100',
-          '8': '1001000', '9': '1110100'
-        };
-        
-        // Padrões de primeiro dígito (determina o uso de L e G na primeira metade)
-        const firstDigitPatterns = {
-          '0': 'LLLLLL', '1': 'LLGLGG', '2': 'LLGGLG', '3': 'LLGGGL',
-          '4': 'LGLLGG', '5': 'LGGLLG', '6': 'LGGGLL', '7': 'LGLGLG',
-          '8': 'LGLGGL', '9': 'LGGLGL'
-        };
-        
-        // Construir padrão EAN13 completo
-        const primeiroDigito = ean13Completo[0];
-        const patternType = firstDigitPatterns[primeiroDigito];
-        
-        let barcodePattern = '101'; // Start guard
-        
-        // Primeira metade (6 dígitos)
-        for (let i = 1; i <= 6; i++) {
-          const digito = ean13Completo[i];
-          if (patternType[i-1] === 'L') {
-            barcodePattern += patternsL[digito];
-          } else {
-            barcodePattern += patternsG[digito];
-          }
-        }
-        
-        barcodePattern += '01010'; // Center guard
-        
-        // Segunda metade (6 dígitos) - sempre padrão R
-        for (let i = 7; i <= 12; i++) {
-          const digito = ean13Completo[i];
-          barcodePattern += patternsR[digito];
-        }
-        
-        barcodePattern += '101'; // End guard
-        
-        // Desenhar código de barras EAN13
-        doc.setFillColor(0, 0, 0);
-        const barUnitWidth = barcodeWidth / barcodePattern.length;
-        
-        for (let i = 0; i < barcodePattern.length; i++) {
-          if (barcodePattern[i] === '1') {
-            doc.rect(
-              barcodeStartX + (i * barUnitWidth),
-              barcodeY,
-              barUnitWidth,
-              barcodeHeight,
-              'F'
-            );
-          }
-        }
-        
-        // Desenhar os números do EAN13 abaixo do código de barras
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(3.5);
-        doc.setFont('helvetica', 'normal');
-        
-        // Primeiro dígito (esquerda)
-        doc.text(ean13Completo[0], barcodeStartX - 2, barcodeY + barcodeHeight + 2.5);
-        
-        // Primeira metade (6 dígitos)
-        const firstHalfX = barcodeStartX + (3 * barUnitWidth); // Depois do start guard
-        for (let i = 1; i <= 6; i++) {
-          const digitX = firstHalfX + ((i-1) * 7 * barUnitWidth) + (3 * barUnitWidth);
-          doc.text(ean13Completo[i], digitX, barcodeY + barcodeHeight + 2.5);
-        }
-        
-        // Segunda metade (6 dígitos)
-        const secondHalfX = barcodeStartX + (3 + 42 + 5) * barUnitWidth; // Depois do center guard
-        for (let i = 7; i <= 12; i++) {
-          const digitX = secondHalfX + ((i-7) * 7 * barUnitWidth) + (3 * barUnitWidth);
-          doc.text(ean13Completo[i], digitX, barcodeY + barcodeHeight + 2.5);
-        }
-        
-        // Informação adicional sobre o código EAN13
-        doc.setTextColor(100, 100, 100);
-        doc.setFontSize(2.5);
-        doc.setFont('helvetica', 'italic');
-        doc.text(`EAN13: ${ean13Completo}`, barcodeStartX, barcodeY + barcodeHeight + 5);
-
-        // === RODAPÉ MÍNIMO ===
-        
-        // Barra inferior muito estreita
-        doc.setFillColor(240, 245, 248);
-        doc.rect(x, y + height - 3, width, 3, 'F');
-        
-        // Accent line inferior
-        doc.setFillColor(0, 188, 212);
-        doc.rect(x, y + height - 1, width, 1, 'F');
-        
-        // Data de validade muito compacta
-        const dataValidade = new Date();
-        dataValidade.setFullYear(dataValidade.getFullYear() + 1);
-        doc.setTextColor(80, 80, 80);
-        doc.setFontSize(3.5);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`Válido: ${dataValidade.toLocaleDateString('pt-BR')}`, x + 2, y + height - 1);
-
-        // Selo de autenticidade muito pequeno
-        doc.setFillColor(0, 188, 212);
-        doc.circle(x + width - 4, y + height - 6, 1.5, 'F');
-        
-        // Ícone de verificação
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(3);
-        doc.setFont('helvetica', 'bold');
-        doc.text('✓', x + width - 4.5, y + height - 5.5);
-      } catch (error) {
-        console.error('Erro ao criar cartão do usuário:', error);
-        // Em caso de erro, desenha um cartão básico moderno
-        doc.setFillColor(248, 250, 252);
-        doc.rect(x, y, width, height, 'F');
-        doc.setDrawColor(220, 220, 220);
-        doc.setLineWidth(1);
-        doc.rect(x, y, width, height);
-        
-        // Cabeçalho de erro moderno
-        doc.setFillColor(244, 67, 54);
-        doc.rect(x, y, width, 12, 'F');
-        
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
-        const errorTitle = 'ERRO NO CARTÃO';
-        const errorTitleWidth = doc.getTextWidth(errorTitle);
-        doc.text(errorTitle, x + (width - errorTitleWidth) / 2, y + 8);
-        
-        doc.setTextColor(150, 150, 150);
-        doc.setFontSize(7);
-        doc.setFont('helvetica', 'normal');
-        const errorMsg = 'Verifique os dados do usuário';
-        const errorMsgWidth = doc.getTextWidth(errorMsg);
-        doc.text(errorMsg, x + (width - errorMsgWidth) / 2, y + height/2);
+      // SIMPLIFICADO: Cartão de leitor minimalista com logos, escola, nome, matrícula e data de emissão
+      // Validação dos dados do usuário
+      if (!usuario || typeof usuario !== 'object') {
+        return;
       }
+
+      // Dados seguros
+      const nomeSeguro = usuario.nome || 'Nome não informado';
+      const matriculaSegura = usuario.matricula || 'N/A';
+
+      // Fundo branco com borda azul SIGEB
+      doc.setFillColor(255, 255, 255);
+      doc.rect(x, y, width, height, 'F');
+      doc.setDrawColor(26, 35, 126);
+      doc.setLineWidth(1);
+      doc.rect(x, y, width, height);
+
+      // Logos SIGEB (esquerda) e Bias (direita) no topo
+      const logoSize = 14;
+      const logoY = y + 4;
+      if (typeof logoSigebBase64 !== 'undefined' && logoSigebBase64) {
+        doc.addImage(logoSigebBase64, 'PNG', x + 6, logoY, logoSize, logoSize);
+      }
+      if (typeof logoBiasBase64 !== 'undefined' && logoBiasBase64) {
+        doc.addImage(logoBiasBase64, 'PNG', x + width - logoSize - 6, logoY, logoSize, logoSize);
+      }
+
+      // Nome da escola centralizado
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(26, 35, 126);
+      const escola = 'Escola Estadual Gov. Bias Fortes';
+      const escolaWidth = doc.getTextWidth(escola);
+      doc.text(escola, x + (width - escolaWidth) / 2, y + 12);
+
+      // Nome do aluno centralizado
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(26, 35, 126);
+      const nomeWidth = doc.getTextWidth(nomeSeguro.toUpperCase());
+      doc.text(nomeSeguro.toUpperCase(), x + (width - nomeWidth) / 2, y + 25);
+
+      // Matrícula centralizada
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(45, 156, 219);
+      const matriculaLabel = `Matrícula: ${matriculaSegura}`;
+      const matriculaWidth = doc.getTextWidth(matriculaLabel);
+      doc.text(matriculaLabel, x + (width - matriculaWidth) / 2, y + 33);
+
+      // Data de emissão centralizada
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(80, 80, 80);
+      const dataEmissao = new Date();
+      const dataStr = `Emitido em: ${dataEmissao.toLocaleDateString('pt-BR')}`;
+      const dataWidth = doc.getTextWidth(dataStr);
+      doc.text(dataStr, x + (width - dataWidth) / 2, y + height - 8);
+      // Fim do cartão minimalista
     }
 
     // Event listener para o botão de gerar cartão

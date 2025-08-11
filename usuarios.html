@@ -333,6 +333,120 @@
   </style>
 </head>
 <body>
+  <h2>Novo Cartão de Leitor (Modelo Estruturado)</h2>
+  <div class="card-reader-structured">
+    <div class="card-header">
+      <img src="logoaba.png" alt="Logo Biblioteca" class="card-logo">
+      <div class="card-title">CARTÃO DE LEITOR</div>
+    </div>
+    <div class="card-magnetic"></div>
+    <div class="card-body">
+      <div class="card-info">
+        <div><span class="label">Nome:</span> <span class="value">Maria da Silva</span></div>
+        <div><span class="label">Matrícula:</span> <span class="value">20251234</span></div>
+        <div><span class="label">Validade:</span> <span class="value">12/2026</span></div>
+      </div>
+      <div class="card-qr">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?data=20251234&size=70x70" alt="QR Code">
+      </div>
+    </div>
+    <div class="card-footer">
+      <span>Biblioteca Municipal</span>
+    </div>
+  </div>
+
+  <style>
+    .card-reader-structured {
+      width: 350px;
+      height: 210px;
+      background: #f7f7fa;
+      border-radius: 16px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.13);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin-bottom: 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      padding: 16px 20px 8px 20px;
+      background: linear-gradient(90deg, #2b5876 0%, #4e4376 100%);
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+    }
+    .card-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      margin-right: 18px;
+      background: #fff;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+    }
+    .card-title {
+      color: #fff;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+    }
+    .card-magnetic {
+      width: 100%;
+      height: 28px;
+      background: linear-gradient(90deg, #232526 60%, #414345 100%);
+      margin: 0;
+      opacity: 0.85;
+    }
+    .card-body {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 18px 20px 0 20px;
+      flex: 1;
+    }
+    .card-info {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 1.05rem;
+      color: #222;
+    }
+    .card-info .label {
+      font-weight: 600;
+      color: #4e4376;
+      margin-right: 4px;
+    }
+    .card-info .value {
+      font-weight: 400;
+      color: #222;
+    }
+    .card-qr {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+      padding: 6px;
+    }
+    .card-qr img {
+      width: 70px;
+      height: 70px;
+    }
+    .card-footer {
+      background: #eaeaf3;
+      color: #4e4376;
+      text-align: right;
+      font-size: 0.98rem;
+      padding: 8px 20px 10px 0;
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+      font-weight: 500;
+    }
+  </style>
   <div class="sidebar">
     <div class="sidebar-header">
       <h3>SIGEB</h3>

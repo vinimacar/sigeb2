@@ -2590,14 +2590,14 @@
 
     // Função para criar um cartão individual estruturado (PDF)
     function criarCartaoUsuario(doc, usuario, x, y, width, height, qrBase64) {
-      // Cartão estruturado: formato retangular, cores claras
+      // Cartão estruturado: formato retangular, cores claras, logos e nome da escola
       if (!usuario || typeof usuario !== 'object') return;
 
       // Dados seguros
       const nomeSeguro = usuario.nome || 'Nome não informado';
       const matriculaSegura = usuario.matricula || 'N/A';
       const validade = usuario.validade || '12/2026';
-      const escola = 'Biblioteca Municipal';
+      const escola = 'E.E. Gov. Bias Fortes';
 
       // Margens e dimensões
       const margin = 5;
@@ -2616,17 +2616,25 @@
       // Cabeçalho (faixa superior clara)
       doc.setFillColor(235, 242, 250);
       doc.rect(x, y, width, 18, 'F');
-      // Logo
+      // Logo SIGEB (esquerda)
       if (typeof logoSigebBase64 !== 'undefined' && logoSigebBase64) {
         try {
           doc.addImage(logoSigebBase64, 'PNG', safeX, safeY + 2, 12, 12);
         } catch {}
       }
-      // Título
+      // Logo Bias (direita)
+      if (typeof logoBiasBase64 !== 'undefined' && logoBiasBase64) {
+        try {
+          doc.addImage(logoBiasBase64, 'PNG', safeX + safeWidth - 12, safeY + 2, 12, 12);
+        } catch {}
+      }
+      // Título centralizado
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(80, 120, 180);
-      doc.text('CARTÃO DE LEITOR', safeX + 18, safeY + 10);
+      const titulo = 'CARTÃO DE LEITOR';
+      const tituloWidth = doc.getTextWidth(titulo);
+      doc.text(titulo, safeX + (safeWidth - tituloWidth) / 2, safeY + 10);
 
       // Faixa magnética (cinza claro)
       doc.setFillColor(220, 220, 220);
@@ -2668,11 +2676,12 @@
         doc.rect(safeX + safeWidth - 28, safeY + 28, 22, 22);
       }
 
-      // Rodapé
-      doc.setFontSize(7.5);
+      // Rodapé com nome da escola centralizado e destacado
+      doc.setFontSize(8);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(120, 140, 160);
-      doc.text(escola, safeX, y + height - 5);
+      doc.setTextColor(80, 120, 180);
+      const escolaWidth = doc.getTextWidth(escola);
+      doc.text(escola, safeX + (safeWidth - escolaWidth) / 2, y + height - 5);
     }
 
     // Event listener para o botão de gerar cartão

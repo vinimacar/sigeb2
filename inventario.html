@@ -923,8 +923,11 @@
 
     // Inicializar página
     document.addEventListener('DOMContentLoaded', function() {
-      // Carrega os dados automaticamente ao abrir a página
-      loadInventoryData();
+      // Não carrega dados do sistema, apenas prepara o inventário manual
+      const inventoryList = document.getElementById('inventoryList');
+      if (inventoryList) {
+        displayManualInventoryItems();
+      }
       setupEventListeners();
     });
 
@@ -936,72 +939,7 @@
       });
     }
 
-    async function loadInventoryData() {
-      const inventoryList = document.getElementById('inventoryList');
-      if (inventoryList) {
-        inventoryList.innerHTML = `<div class='text-center text-muted' style='padding: 40px 0;'><i class='bx bx-loader-alt bx-spin' style='font-size:2rem;'></i><br>Carregando materiais...</div>`;
-      }
-      try {
-        if (!window.firebase || !firebase.firestore) {
-          throw new Error('Firebase não inicializado.');
-        }
-        const db = firebase.firestore();
-        const booksSnapshot = await db.collection('livros').get();
-        const loansSnapshot = await db.collection('emprestimos').get();
-        // Criar mapa de empréstimos ativos
-        const activeLoans = {};
-        loansSnapshot.docs.forEach(doc => {
-          const loan = doc.data();
-          if (loan.status !== 'DEVOLVIDO') {
-            activeLoans[loan.bookId] = loan;
-          }
-        });
-        inventoryData = [];
-        booksSnapshot.docs.forEach(doc => {
-          const book = doc.data();
-          const loan = activeLoans[doc.id];
-          let status = 'disponivel';
-          let statusInfo = {};
-          if (loan) {
-            status = 'emprestado';
-            statusInfo = {
-              usuario: loan.userId,
-              dataEmprestimo: loan.loanDate,
-              dataRetorno: loan.returnDate
-            };
-          } else if (book.status) {
-            status = book.status;
-            statusInfo = book.statusInfo || {};
-          }
-          inventoryData.push({
-            id: doc.id,
-            ...book,
-            status: status,
-            statusInfo: statusInfo,
-            lastUpdate: book.lastUpdate || new Date().toISOString()
-          });
-        });
-        updateStatistics();
-        displayInventoryItems();
-        // Habilita o botão novamente após carregar
-        const btn = document.querySelector('button[onclick="loadInventoryData()"]');
-        if (btn) btn.disabled = false;
-      } catch (error) {
-        console.error('Erro ao carregar inventário:', error);
-        if (inventoryList) {
-          inventoryList.innerHTML = `
-            <div class="no-results">
-              <i class='bx bx-error'></i>
-              <h4>Erro ao carregar inventário</h4>
-              <p>Tente recarregar a página</p>
-            </div>
-          `;
-        }
-        // Habilita o botão em caso de erro
-        const btn = document.querySelector('button[onclick="loadInventoryData()"]');
-        if (btn) btn.disabled = false;
-      }
-    }
+  // Removido: função de carregar inventário do sistema
 
     function updateStatistics() {
       const stats = {

@@ -602,13 +602,13 @@
         <div class="row justify-content-center">
           <div class="col-md-8">
             <div class="d-flex flex-wrap gap-3 justify-content-center">
-              <!-- Botão Principal -->
-              <button class="btn btn-primary btn-lg px-4 py-3" onclick="initInventoryCheck()" style="min-width: 200px;">
-                <i class='bx bx-play-circle' style="font-size: 1.5rem;"></i>
+              <!-- Botão para lançar materiais -->
+              <button class="btn btn-primary btn-lg px-4 py-3" onclick="loadInventoryData()" style="min-width: 220px;">
+                <i class='bx bx-upload' style="font-size: 1.5rem;"></i>
                 <span class="d-block mt-1">
-                  <strong>Iniciar Inventário</strong>
+                  <strong>Lançar Materiais da Biblioteca</strong>
                 </span>
-                <small class="d-block text-white-50">Nova conferência</small>
+                <small class="d-block text-white-50">Adicionar todos os materiais cadastrados</small>
               </button>
               
               <!-- Botões Secundários -->
@@ -735,7 +735,14 @@
 
     // Inicializar página
     document.addEventListener('DOMContentLoaded', function() {
-      loadInventoryData();
+      // Não carrega os dados automaticamente
+      document.getElementById('inventoryList').innerHTML = `
+        <div class="text-center text-muted" style="padding: 60px 0;">
+          <i class='bx bx-package' style="font-size: 3rem;"></i>
+          <h4>O inventário está em branco</h4>
+          <p>Clique em <b>Lançar Materiais da Biblioteca</b> para iniciar o inventário.</p>
+        </div>
+      `;
       setupEventListeners();
     });
 

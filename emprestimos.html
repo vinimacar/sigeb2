@@ -3562,14 +3562,16 @@ function downloadLoanReceipt() {
         
         currentY += 8;
         
+        // CONFIGURAÇÃO DE COLUNAS PARA TODA A FUNÇÃO
+        const leftColumnX = marginLeft;
+        const rightColumnX = marginLeft + (contentWidth / 2) + 5;
+        const columnWidth = (contentWidth / 2) - 5;
+        
         // CAPTURAR CONTEÚDO DO MODAL
         const loanContent = document.getElementById('loanReceiptContent');
         
         if (loanContent) {
             // DADOS EM DUAS COLUNAS PARA ECONOMIZAR ESPAÇO
-            const leftColumnX = marginLeft;
-            const rightColumnX = marginLeft + (contentWidth / 2) + 5;
-            const columnWidth = (contentWidth / 2) - 5;
             
             // COLUNA ESQUERDA - DADOS DO EMPRÉSTIMO
             doc.setFontSize(10);

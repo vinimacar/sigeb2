@@ -212,6 +212,24 @@
       background: linear-gradient(45deg, #ff7f50, #ffa500);
     }
 
+    .inventory-card {
+      background: linear-gradient(135deg, #fff 0%, #f0f8ff 100%);
+      border: 2px solid #4facfe20;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: visible;
+    }
+
+    .inventory-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 15px 35px rgba(79, 172, 254, 0.25);
+      border-color: #4facfe;
+    }
+
+    .inventory-card::before {
+      background: linear-gradient(45deg, #4facfe, #00f2fe);
+    }
+
     .recent-activities {
       background: white;
       padding: 20px;
@@ -276,6 +294,151 @@
       font-size: 1.2rem;
       color: #4facfe;
       cursor: help;
+    }
+
+    /* Estilos para Atalhos Rápidos */
+    .quick-access {
+      margin: 40px 0;
+    }
+
+    .quick-access h4 {
+      color: #1a1a2e;
+      margin-bottom: 25px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+    }
+
+    .quick-access h4 i {
+      margin-right: 10px;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .shortcuts-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .shortcut-card {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      cursor: pointer;
+      border-left: 4px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .shortcut-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(79, 172, 254, 0.1), transparent);
+      transition: var(--transition);
+    }
+
+    .shortcut-card:hover::before {
+      left: 100%;
+    }
+
+    .shortcut-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .shortcut-card.inventory {
+      border-left-color: #4facfe;
+    }
+
+    .shortcut-card.books {
+      border-left-color: #28a745;
+    }
+
+    .shortcut-card.users {
+      border-left-color: #ffc107;
+    }
+
+    .shortcut-card.loans {
+      border-left-color: #dc3545;
+    }
+
+    .shortcut-card.reports {
+      border-left-color: #6f42c1;
+    }
+
+    .shortcut-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .shortcut-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      font-size: 1.5rem;
+      color: white;
+    }
+
+    .shortcut-icon.inventory {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .shortcut-icon.books {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+
+    .shortcut-icon.users {
+      background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    }
+
+    .shortcut-icon.loans {
+      background: linear-gradient(135deg, #dc3545 0%, #e91e63 100%);
+    }
+
+    .shortcut-icon.reports {
+      background: linear-gradient(135deg, #6f42c1 0%, #6610f2 100%);
+    }
+
+    .shortcut-info h5 {
+      margin: 0 0 5px 0;
+      color: #1a1a2e;
+      font-weight: 600;
+    }
+
+    .shortcut-info p {
+      margin: 0;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .shortcut-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .shortcut-badge.new {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     }
 
     .charts-section {
@@ -514,6 +677,10 @@
         <i class='bx bxs-bookmark'></i>
         Empréstimos
       </a>
+      <a href="inventario.html" class="menu-item" title="Controle de inventário">
+        <i class='bx bxs-package'></i>
+        Inventário
+      </a>
       <a href="relatorios.html" class="menu-item" title="Relatórios do sistema">
         <i class='bx bxs-report'></i>
         Relatórios
@@ -568,6 +735,13 @@
         <h3 style="font-size: 1.5rem;"><i class='bx bx-book-open' style="color: #ff7f50;"></i></h3>
         <p>Ranking de Livros</p>
         <small style="color: #ff7f50; font-weight: 500;">Clique para acessar</small>
+      </div>
+      <div class="stat-card inventory-card" data-aos="fade-up" data-aos-delay="800" onclick="window.location.href='inventario.html'">
+        <i class='bx bx-package tooltip-info' title="Acesse o módulo de inventário para controle completo do acervo"></i>
+        <h3 style="font-size: 1.5rem;"><i class='bx bx-package' style="color: #4facfe;"></i></h3>
+        <p>Inventário</p>
+        <small style="color: #4facfe; font-weight: 500;">Controle do Acervo</small>
+        <div style="position: absolute; top: 5px; right: 30px; background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.6rem; font-weight: bold;">NOVO</div>
       </div>
     </div>
 
@@ -639,7 +813,94 @@
       </div>
     </div>
 
-    <div class="recent-activities" data-aos="fade-up" data-aos-delay="1000">
+    <!-- Seção de Atalhos Rápidos -->
+    <div class="quick-access" data-aos="fade-up" data-aos-delay="900">
+      <h4><i class='bx bx-rocket'></i>Acesso Rápido</h4>
+      <div class="shortcuts-container">
+        <div class="shortcut-card inventory" onclick="window.location.href='inventario.html'" data-aos="fade-up" data-aos-delay="950">
+          <div class="shortcut-badge new">NOVO</div>
+          <div class="shortcut-header">
+            <div class="shortcut-icon inventory">
+              <i class='bx bxs-package'></i>
+            </div>
+            <div class="shortcut-info">
+              <h5>Inventário</h5>
+              <p>Controle completo do acervo físico</p>
+            </div>
+          </div>
+          <p style="color: #666; font-size: 0.85rem; margin: 0;">
+            <i class='bx bx-check-circle' style="color: #28a745;"></i>
+            Consulte status, localize livros e gerencie o patrimônio da biblioteca
+          </p>
+        </div>
+
+        <div class="shortcut-card books" onclick="window.location.href='livros.html'" data-aos="fade-up" data-aos-delay="1000">
+          <div class="shortcut-header">
+            <div class="shortcut-icon books">
+              <i class='bx bxs-book'></i>
+            </div>
+            <div class="shortcut-info">
+              <h5>Gerenciar Livros</h5>
+              <p>Cadastrar e editar o acervo</p>
+            </div>
+          </div>
+          <p style="color: #666; font-size: 0.85rem; margin: 0;">
+            <i class='bx bx-edit' style="color: #28a745;"></i>
+            Adicione novos títulos, edite informações e organize categorias
+          </p>
+        </div>
+
+        <div class="shortcut-card users" onclick="window.location.href='usuarios.html'" data-aos="fade-up" data-aos-delay="1050">
+          <div class="shortcut-header">
+            <div class="shortcut-icon users">
+              <i class='bx bxs-user'></i>
+            </div>
+            <div class="shortcut-info">
+              <h5>Gerenciar Usuários</h5>
+              <p>Cadastrar leitores e funcionários</p>
+            </div>
+          </div>
+          <p style="color: #666; font-size: 0.85rem; margin: 0;">
+            <i class='bx bx-user-plus' style="color: #ffc107;"></i>
+            Registre novos usuários e gerencie permissões
+          </p>
+        </div>
+
+        <div class="shortcut-card loans" onclick="window.location.href='emprestimos.html'" data-aos="fade-up" data-aos-delay="1100">
+          <div class="shortcut-header">
+            <div class="shortcut-icon loans">
+              <i class='bx bxs-bookmark'></i>
+            </div>
+            <div class="shortcut-info">
+              <h5>Empréstimos</h5>
+              <p>Controlar empréstimos e devoluções</p>
+            </div>
+          </div>
+          <p style="color: #666; font-size: 0.85rem; margin: 0;">
+            <i class='bx bx-time' style="color: #dc3545;"></i>
+            Registre empréstimos, devoluções e controle atrasos
+          </p>
+        </div>
+
+        <div class="shortcut-card reports" onclick="window.location.href='relatorios.html'" data-aos="fade-up" data-aos-delay="1150">
+          <div class="shortcut-header">
+            <div class="shortcut-icon reports">
+              <i class='bx bxs-report'></i>
+            </div>
+            <div class="shortcut-info">
+              <h5>Relatórios</h5>
+              <p>Analytics e estatísticas avançadas</p>
+            </div>
+          </div>
+          <p style="color: #666; font-size: 0.85rem; margin: 0;">
+            <i class='bx bx-line-chart' style="color: #6f42c1;"></i>
+            Visualize dados, tendências e insights detalhados
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="recent-activities" data-aos="fade-up" data-aos-delay="1200">
       <h4 class="mb-4">Atividades Recentes</h4>
       <div id="recentActivities">
         <div class="activity-item">

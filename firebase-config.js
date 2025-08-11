@@ -1,12 +1,12 @@
 const firebaseConfig = {
-    apiKey: "AIzaSyC558ddNk5dGkB-GgTxbnNVfcciiCwEQP8",
-    authDomain: "biblitech-35d1c.firebaseapp.com",
-    projectId: "biblitech-35d1c",
-    storageBucket: "biblitech-35d1c.firebasestorage.app",
-    messagingSenderId: "972405171947",
-    appId: "1:972405171947:web:acbc479d1410dff21480ae",
-    measurementId: "G-4WQTEHF4DS"
-  };
+  apiKey: "AIzaSyC558ddNk5dGkB-GgTxbnNVfcciiCwEQP8",
+  authDomain: "biblitech-35d1c.firebaseapp.com",
+  projectId: "biblitech-35d1c",
+  storageBucket: "biblitech-35d1c.appspot.com",
+  messagingSenderId: "972405171947",
+  appId: "1:972405171947:web:acbc479d1410dff21480ae",
+  measurementId: "G-4WQTEHF4DS"
+};
 
 // Antes de usar 'firebase', garanta que o SDK foi carregado
 if (typeof firebase === "undefined") {
@@ -20,4 +20,4 @@ const auth = firebase.auth();
 const storage = firebase.storage();
 const analytics = firebase.analytics();
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
+

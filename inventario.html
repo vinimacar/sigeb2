@@ -482,10 +482,11 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <script type="module">
-    // Garante que o botão está habilitado ao carregar a página
+
+    // Garante que todos os botões estão habilitados ao carregar a página
     document.addEventListener('DOMContentLoaded', function() {
-      var btn = document.getElementById('btnLancarMateriais');
-      if (btn) btn.disabled = false;
+      const buttons = document.querySelectorAll('button');
+      buttons.forEach(btn => btn.disabled = false);
     });
 
     // Função para abrir o modal de lançamento de livro
@@ -499,36 +500,73 @@
       }
     }
 
-    // Importa função do firestore.js
-    import('./firestore.js').then(({ addBookToInventory }) => {
-      var form = document.getElementById('formAddBook');
-      if (form) {
-        form.addEventListener('submit', async function(e) {
-          e.preventDefault();
-          // Coleta os dados do formulário
-          const livro = {
-            titulo: document.getElementById('tituloLivro').value,
-            autor: document.getElementById('autorLivro').value,
-            editora: document.getElementById('editoraLivro').value,
-            ano: document.getElementById('anoLivro').value,
-            quantidade: document.getElementById('quantidadeLivro').value,
-            responsavel: document.getElementById('responsavelLivro').value,
-            isbn: document.getElementById('isbnLivro').value,
-            genero: document.getElementById('generoLivro').value
-          };
-          try {
-            await addBookToInventory(livro);
-            alert('Livro lançado com sucesso!');
-          } catch (err) {
-            alert('Erro ao salvar livro no inventário!');
-          }
-          // Fecha o modal após salvar
-          var modal = bootstrap.Modal.getInstance(document.getElementById('modalAddBook'));
-          if (modal) modal.hide();
-          form.reset();
+    // Função para renderizar a lista de livros
+    async function renderInventoryList() {
+      const inventoryList = document.getElementById('inventoryList');
+      inventoryList.innerHTML = '<div class="loading"><i class="bx bx-loader-alt bx-spin" style="font-size:2.2rem;color:#4facfe;"></i><p>Carregando inventário...</p></div>';
+      try {
+        const snapshot = await window.firebase.firestore().collection('inventario').orderBy('titulo').get();
+        if (snapshot.empty) {
+          inventoryList.innerHTML = '<div class="no-results">Nenhum livro cadastrado ainda.</div>';
+          return;
+        }
+        let html = '';
+        snapshot.forEach(doc => {
+          const livro = doc.data();
+          html += `<div class="inventory-card">
+            <div class="book-info">
+              <div class="book-cover"><i class='bx bxs-book'></i></div>
+              <div class="book-details">
+                <h5>${livro.titulo || ''}</h5>
+                <p><b>Autor:</b> ${livro.autor || '-'}</p>
+                <p><b>Editora:</b> ${livro.editora || '-'}</p>
+                <p><b>Ano:</b> ${livro.ano || '-'}</p>
+                <p><b>Gênero:</b> ${livro.genero || '-'}</p>
+                <p><b>ISBN:</b> ${livro.isbn || '-'}</p>
+                <p><b>Quantidade:</b> ${livro.quantidade || '1'}</p>
+                <p><b>Responsável:</b> ${livro.responsavel || '-'}</p>
+              </div>
+            </div>
+          </div>`;
         });
+        inventoryList.innerHTML = html;
+      } catch (err) {
+        inventoryList.innerHTML = '<div class="no-results">Erro ao carregar inventário.</div>';
       }
-    });
+    }
+
+    // Atualiza lista ao abrir página
+    document.addEventListener('DOMContentLoaded', renderInventoryList);
+
+    // Salva livro e atualiza lista
+    var form = document.getElementById('formAddBook');
+    if (form) {
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const livro = {
+          titulo: document.getElementById('tituloLivro').value,
+          autor: document.getElementById('autorLivro').value,
+          editora: document.getElementById('editoraLivro').value,
+          ano: document.getElementById('anoLivro').value,
+          quantidade: document.getElementById('quantidadeLivro').value,
+          responsavel: document.getElementById('responsavelLivro').value,
+          isbn: document.getElementById('isbnLivro').value,
+          genero: document.getElementById('generoLivro').value
+        };
+        try {
+          await window.addBookToInventory(livro);
+          // Atualiza lista após salvar
+          await renderInventoryList();
+          alert('Livro lançado com sucesso!');
+        } catch (err) {
+          alert('Erro ao salvar livro no inventário!');
+        }
+        // Fecha o modal após salvar
+        var modal = bootstrap.Modal.getInstance(document.getElementById('modalAddBook'));
+        if (modal) modal.hide();
+        form.reset();
+      });
+    }
   </script>
 </body>
 </html>

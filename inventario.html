@@ -435,6 +435,10 @@
               <label for="isbnLivro" class="form-label">ISBN</label>
               <input type="text" class="form-control" id="isbnLivro">
             </div>
+            <div class="col-12 col-md-6 mb-2">
+              <label for="generoLivro" class="form-label">Gênero</label>
+              <input type="text" class="form-control" id="generoLivro" placeholder="Ex: Romance, Didático, HQ...">
+            </div>
             <div class="col-12 mb-2">
               <label for="responsavelLivro" class="form-label">Responsável pelo Lançamento</label>
               <input type="text" class="form-control" id="responsavelLivro" required>
@@ -470,14 +474,30 @@
       }
     }
 
-    // Exemplo de manipulação do formulário (você pode adaptar para salvar no backend/localStorage)
+    // Salva livro no Firestore ao submeter o formulário
     document.addEventListener('DOMContentLoaded', function() {
       var form = document.getElementById('formAddBook');
       if (form) {
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', async function(e) {
           e.preventDefault();
-          // Aqui você pode adicionar o código para salvar o livro no inventário
-          // Exemplo: alert('Livro lançado com sucesso!');
+          // Coleta os dados do formulário
+          const livro = {
+            titulo: document.getElementById('tituloLivro').value,
+            autor: document.getElementById('autorLivro').value,
+            editora: document.getElementById('editoraLivro').value,
+            ano: document.getElementById('anoLivro').value,
+            quantidade: document.getElementById('quantidadeLivro').value,
+            responsavel: document.getElementById('responsavelLivro').value,
+            isbn: document.getElementById('isbnLivro').value,
+            genero: document.getElementById('generoLivro').value
+          };
+          try {
+            // Chama função para salvar no Firestore
+            await window.addBookToInventory(livro);
+            alert('Livro lançado com sucesso!');
+          } catch (err) {
+            alert('Erro ao salvar livro no inventário!');
+          }
           // Fecha o modal após salvar
           var modal = bootstrap.Modal.getInstance(document.getElementById('modalAddBook'));
           if (modal) modal.hide();
@@ -485,6 +505,8 @@
         });
       }
     });
+    // Importa função do firestore.js
+    import('./firestore.js').then(mod => { window.addBookToInventory = mod.addBookToInventory; });
   </script>
 </body>
 </html>

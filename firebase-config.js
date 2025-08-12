@@ -1,23 +1,40 @@
-const firebaseConfig = {
-  apiKey: "AIzaSyC558ddNk5dGkB-GgTxbnNVfcciiCwEQP8",
-  authDomain: "biblitech-35d1c.firebaseapp.com",
-  projectId: "biblitech-35d1c",
-  storageBucket: "biblitech-35d1c.appspot.com",
-  messagingSenderId: "972405171947",
-  appId: "1:972405171947:web:acbc479d1410dff21480ae",
-  measurementId: "G-4WQTEHF4DS"
-};
 
-// Antes de usar 'firebase', garanta que o SDK foi carregado
-if (typeof firebase === "undefined") {
-  throw new Error("Firebase SDK não carregado. Verifique a ordem dos <script> no HTML.");
+
+// ATENÇÃO: Este arquivo deve ser usado com Firebase carregado via CDN em <script> no HTML
+// Exemplo de inclusão no HTML antes deste arquivo:
+// <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+// <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+
+// Inicializa Firestore global (compat)
+if (!window.firebaseApp) {
+  // Configure seu firebaseConfig aqui ou garanta que já foi inicializado no HTML
+  // window.firebase.initializeApp(firebaseConfig);
+  window.firebaseApp = window.firebase.app();
+}
+const db = window.firebase.firestore();
+
+// Função para buscar usuários do completarCadastro
+window.getUsersFromCompletarCadastro = async function() {
+    const usersSnapshot = await db.collection('completarCadastro').get();
+    const usersList = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return usersList;
 }
 
-// Inicialização do Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
-const storage = firebase.storage();
-const analytics = firebase.analytics();
+// Função para adicionar usuário
+window.addUserToDatabase = async function(user) {
+    try {
+        await db.collection('usuarios').add(user);
+    } catch (error) {
+        console.error('Error adding user to database:', error);
+    }
+}
 
-
+// Função para adicionar livro ao inventário
+window.addBookToInventory = async function(livro) {
+    try {
+        await db.collection('inventario').add(livro);
+    } catch (error) {
+        console.error('Erro ao adicionar livro ao inventário:', error);
+        throw error;
+    }
+}

@@ -2590,7 +2590,7 @@
 
     // Função para criar um cartão individual estruturado (PDF)
     function criarCartaoUsuario(doc, usuario, x, y, width, height, qrBase64) {
-      // Cartão: azul, branco e amarelo, layout institucional
+      // Cartão: azul, branco e amarelo, layout institucional, fundo gradiente, logo SIGEB
       if (!usuario || typeof usuario !== 'object') return;
 
       // Dados seguros
@@ -2606,12 +2606,21 @@
       const safeWidth = width - 2 * margin;
       const safeHeight = height - 2 * margin;
 
-      // Fundo principal branco
-      doc.setFillColor(255, 255, 255);
+      // Fundo gradiente azul claro para branco (simulado com duas sobreposições)
+      doc.setFillColor(180, 210, 255); // azul claro
       doc.rect(x, y, width, height, 'F');
+      doc.setFillColor(255, 255, 255);
+      doc.rect(x, y + height * 0.35, width, height * 0.65, 'F');
       doc.setDrawColor(0, 51, 153);
       doc.setLineWidth(1);
       doc.rect(x, y, width, height);
+
+      // Logo SIGEB (esquerda, topo)
+      if (typeof logoSigebBase64 !== 'undefined' && logoSigebBase64) {
+        try {
+          doc.addImage(logoSigebBase64, 'PNG', x + margin, y + 1.5, 11, 11);
+        } catch {}
+      }
 
       // Nome da escola no topo, azul escuro
       doc.setFontSize(8.5);

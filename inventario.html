@@ -481,7 +481,7 @@
   <!-- Adicione esta linha ANTES do fechamento da tag </body> para importar o JS do Bootstrap -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-  <script>
+  <script type="module">
     // Garante que o botão está habilitado ao carregar a página
     document.addEventListener('DOMContentLoaded', function() {
       var btn = document.getElementById('btnLancarMateriais');
@@ -489,7 +489,7 @@
     });
 
     // Função para abrir o modal de lançamento de livro
-    function showAddBookModal() {
+    window.showAddBookModal = function() {
       var modal = document.getElementById('modalAddBook');
       if (modal) {
         var modalInstance = new bootstrap.Modal(modal);
@@ -499,8 +499,8 @@
       }
     }
 
-    // Salva livro no Firestore ao submeter o formulário
-    document.addEventListener('DOMContentLoaded', function() {
+    // Importa função do firestore.js
+    import('./firestore.js').then(({ addBookToInventory }) => {
       var form = document.getElementById('formAddBook');
       if (form) {
         form.addEventListener('submit', async function(e) {
@@ -517,8 +517,7 @@
             genero: document.getElementById('generoLivro').value
           };
           try {
-            // Chama função para salvar no Firestore
-            await window.addBookToInventory(livro);
+            await addBookToInventory(livro);
             alert('Livro lançado com sucesso!');
           } catch (err) {
             alert('Erro ao salvar livro no inventário!');
@@ -530,8 +529,6 @@
         });
       }
     });
-    // Importa função do firestore.js
-    import('./firestore.js').then(mod => { window.addBookToInventory = mod.addBookToInventory; });
   </script>
 </body>
 </html>

@@ -12,7 +12,7 @@
   <style>
     body {
       font-family: 'Poppins', sans-serif;
-      background: #f7f9fb;
+      background: linear-gradient(120deg, #e3f0ff 0%, #f7f9fb 100%);
       margin: 0;
       padding: 0;
     }
@@ -23,6 +23,7 @@
       color: #fff;
       padding: 24px 0;
       z-index: 1000;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.04);
     }
     .sidebar-header {
       text-align: center;
@@ -32,6 +33,7 @@
       font-weight: 700;
       letter-spacing: 2px;
       color: #4facfe;
+      font-size: 2rem;
     }
     .menu-items {
       display: flex;
@@ -47,6 +49,7 @@
       align-items: center;
       gap: 10px;
       transition: background 0.2s;
+      font-size: 1.08rem;
     }
     .menu-item.active, .menu-item:hover {
       background: #24305e;
@@ -56,88 +59,148 @@
       margin-left: 220px;
       padding: 32px 24px;
       min-height: 100vh;
+      transition: margin-left 0.3s;
     }
     .page-header {
       background: #fff;
-      border-radius: 12px;
-      padding: 24px 32px;
+      border-radius: 16px;
+      padding: 32px 40px 24px 40px;
       margin-bottom: 32px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      border-left: 5px solid #4facfe;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      border-left: 7px solid #4facfe;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
     }
     .page-header h1 {
-      font-size: 2rem;
+      font-size: 2.2rem;
       margin: 0 0 8px 0;
       color: #1a1a2e;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
+    }
+    .page-header .subtitle {
+      font-size: 1.1rem;
+      color: #4facfe;
+      margin-bottom: 0;
+      font-weight: 500;
     }
     .stats-row {
       display: flex;
-      gap: 16px;
+      gap: 18px;
       margin-bottom: 32px;
       flex-wrap: wrap;
+      justify-content: flex-start;
     }
     .stat-card {
       flex: 1 1 180px;
-      background: #fff;
-      border-radius: 10px;
-      padding: 20px;
+      background: linear-gradient(120deg, #e3f0ff 0%, #fff 100%);
+      border-radius: 14px;
+      padding: 24px 18px 18px 18px;
       text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      min-width: 160px;
+      position: relative;
+      transition: box-shadow 0.2s;
     }
     .stat-card i {
-      font-size: 2rem;
+      font-size: 2.5rem;
       margin-bottom: 8px;
+      opacity: 0.85;
+    }
+    .stat-card h3 {
+      font-size: 2rem;
+      margin: 0;
+      color: #1a1a2e;
+    }
+    .stat-card p {
+      color: #4facfe;
+      font-weight: 500;
+      margin-bottom: 0;
     }
     .inventory-main-action {
       background: #f0f4fa;
-      border-radius: 12px;
-      padding: 24px 16px;
+      border-radius: 16px;
+      padding: 28px 18px 18px 18px;
       margin-bottom: 32px;
       text-align: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      justify-content: center;
     }
-    .inventory-main-action .btn {
-      min-width: 180px;
-      margin: 8px 8px 0 0;
+    .inventory-main-action .main-action {
+      flex: 1 1 220px;
+      min-width: 220px;
+      max-width: 260px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      padding: 18px 12px 12px 12px;
+      margin: 0 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .inventory-main-action .main-action .btn {
+      min-width: 160px;
+      margin-bottom: 8px;
+    }
+    .inventory-main-action .main-action .desc {
+      font-size: 0.98rem;
+      color: #6c757d;
     }
     .inventory-controls {
       background: #fff;
-      border-radius: 12px;
-      padding: 20px 16px;
+      border-radius: 14px;
+      padding: 22px 18px 12px 18px;
       margin-bottom: 24px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 18px;
+      justify-content: space-between;
     }
     .search-container {
       position: relative;
-      margin-bottom: 16px;
+      flex: 2 1 320px;
+      margin-bottom: 0;
     }
     .search-container input {
-      padding-left: 40px;
-      border-radius: 20px;
+      padding-left: 44px;
+      border-radius: 22px;
+      font-size: 1.08rem;
+      height: 44px;
     }
     .search-container i {
       position: absolute;
-      left: 14px;
+      left: 16px;
       top: 50%;
       transform: translateY(-50%);
-      color: #6c757d;
+      color: #4facfe;
+      font-size: 1.3rem;
     }
     .filter-buttons {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       flex-wrap: wrap;
+      align-items: center;
     }
     .filter-btn {
-      border: 1px solid #e9ecef;
+      border: 1.5px solid #e9ecef;
       background: #f7f9fb;
-      border-radius: 20px;
-      padding: 6px 18px;
+      border-radius: 22px;
+      padding: 7px 22px;
       cursor: pointer;
-      font-size: 0.95rem;
+      font-size: 1rem;
       color: #24305e;
       transition: background 0.2s, color 0.2s;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .filter-btn.active, .filter-btn:hover {
       background: #4facfe;
@@ -149,47 +212,53 @@
     }
     .inventory-card {
       background: #fff;
-      border-radius: 10px;
-      padding: 18px 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-      border-left: 4px solid #e9ecef;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      border-left: 5px solid #e9ecef;
       transition: box-shadow 0.2s;
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
     }
     .inventory-card:hover {
-      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.07);
     }
     .inventory-card .book-info {
       display: flex;
       gap: 18px;
       align-items: flex-start;
+      flex: 2 1 300px;
     }
     .book-cover {
-      width: 60px; height: 90px;
+      width: 64px; height: 96px;
       background: #4facfe;
       color: #fff;
-      border-radius: 6px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.4rem;
+      font-size: 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     }
     .book-details h5 {
       margin: 0 0 4px 0;
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       color: #1a1a2e;
+      font-weight: 600;
     }
     .book-details p {
       margin: 0 0 2px 0;
       color: #6c757d;
-      font-size: 0.95rem;
+      font-size: 0.98rem;
     }
     .status-badge {
       display: inline-block;
-      padding: 3px 12px;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      font-weight: 500;
+      padding: 4px 14px;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      font-weight: 600;
       margin-top: 4px;
     }
     .status-disponivel { background: #d4edda; color: #155724; }
@@ -198,13 +267,15 @@
     .status-perdido { background: #e2e3e5; color: #383d41; }
     .inventory-actions {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       margin-top: 10px;
+      flex-direction: column;
+      align-items: flex-end;
     }
     .btn-action {
-      font-size: 0.9rem;
-      border-radius: 6px;
-      padding: 6px 12px;
+      font-size: 0.98rem;
+      border-radius: 7px;
+      padding: 7px 14px;
     }
     .no-results, .loading {
       text-align: center;
@@ -215,6 +286,10 @@
       .main-content { margin-left: 0; padding: 16px 4px; }
       .sidebar { position: static; width: 100%; height: auto; }
       .stats-row { flex-direction: column; gap: 10px; }
+      .inventory-main-action { flex-direction: column; gap: 12px; }
+      .inventory-main-action .main-action { margin: 0 0 12px 0; }
+      .inventory-controls { flex-direction: column; gap: 10px; }
+      .search-container { width: 100%; }
     }
   </style>
 </head>
@@ -241,32 +316,32 @@
     <!-- Cabeçalho -->
     <section class="page-header">
       <h1><i class='bx bxs-package'></i> Inventário da Biblioteca</h1>
-      <p class="mb-0">Controle e acompanhe o acervo físico e o status dos materiais de forma simples.</p>
+      <span class="subtitle">Visualize, filtre e gerencie o acervo de forma intuitiva e moderna.</span>
     </section>
 
     <!-- Estatísticas -->
     <section class="stats-row">
-      <div class="stat-card">
+      <div class="stat-card" title="Total de itens cadastrados no acervo">
         <i class='bx bxs-book' style="color: #28a745;"></i>
         <h3 id="totalItens">0</h3>
         <p>Total de Itens</p>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" title="Itens disponíveis para empréstimo">
         <i class='bx bxs-check-circle' style="color: #28a745;"></i>
         <h3 id="itensDisponiveis">0</h3>
         <p>Disponíveis</p>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" title="Itens atualmente emprestados">
         <i class='bx bxs-time-five' style="color: #ffc107;"></i>
         <h3 id="itensEmprestados">0</h3>
         <p>Emprestados</p>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" title="Itens em manutenção">
         <i class='bx bxs-wrench' style="color: #dc3545;"></i>
         <h3 id="itensManutencao">0</h3>
         <p>Manutenção</p>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" title="Itens perdidos ou extraviados">
         <i class='bx bxs-error-circle' style="color: #6c757d;"></i>
         <h3 id="itensPerdidos">0</h3>
         <p>Perdidos</p>
@@ -275,20 +350,30 @@
 
     <!-- Ações principais -->
     <section class="inventory-main-action">
-      <h4 class="mb-2 text-primary"><i class='bx bx-clipboard-x'></i> Gestão de Inventário</h4>
-      <p class="text-muted mb-3">Lance novos materiais ou exporte relatórios do acervo.</p>
-      <button id="btnLancarMateriais" class="btn btn-primary btn-lg" onclick="showAddBookModal()" type="button">
-        <i class='bx bx-upload'></i> Lançar Materiais
-      </button>
-      <button class="btn btn-outline-secondary btn-lg" onclick="exportInventoryFile()">
-        <i class='bx bx-file'></i> Finalizar Inventário
-      </button>
-      <button class="btn btn-outline-success btn-lg" onclick="exportInventory()">
-        <i class='bx bx-download'></i> Exportar Dados
-      </button>
-      <button class="btn btn-outline-info btn-lg" onclick="showInventoryStatistics()">
-        <i class='bx bx-bar-chart-alt-2'></i> Estatísticas
-      </button>
+      <div class="main-action">
+        <button id="btnLancarMateriais" class="btn btn-primary btn-lg" onclick="showAddBookModal()" type="button">
+          <i class='bx bx-upload'></i> Lançar Materiais
+        </button>
+        <div class="desc">Adicione novos livros ou materiais ao acervo.</div>
+      </div>
+      <div class="main-action">
+        <button class="btn btn-outline-secondary btn-lg" onclick="exportInventoryFile()">
+          <i class='bx bx-file'></i> Finalizar Inventário
+        </button>
+        <div class="desc">Gere um relatório do inventário atual.</div>
+      </div>
+      <div class="main-action">
+        <button class="btn btn-outline-success btn-lg" onclick="exportInventory()">
+          <i class='bx bx-download'></i> Exportar Dados
+        </button>
+        <div class="desc">Exporte os dados do acervo em formato digital.</div>
+      </div>
+      <div class="main-action">
+        <button class="btn btn-outline-info btn-lg" onclick="showInventoryStatistics()">
+          <i class='bx bx-bar-chart-alt-2'></i> Estatísticas
+        </button>
+        <div class="desc">Visualize gráficos e estatísticas do acervo.</div>
+      </div>
     </section>
 
     <!-- Controles de busca e filtro -->
@@ -298,18 +383,18 @@
         <input type="text" id="searchInput" class="form-control" placeholder="Buscar por título, autor, código ou ISBN...">
       </div>
       <div class="filter-buttons">
-        <button class="filter-btn active" onclick="filterItems('todos')">Todos</button>
-        <button class="filter-btn" onclick="filterItems('disponivel')">Disponíveis</button>
-        <button class="filter-btn" onclick="filterItems('emprestado')">Emprestados</button>
-        <button class="filter-btn" onclick="filterItems('manutencao')">Manutenção</button>
-        <button class="filter-btn" onclick="filterItems('perdido')">Perdidos</button>
+        <button class="filter-btn active" onclick="filterItems('todos')"><i class='bx bx-list-ul'></i> Todos</button>
+        <button class="filter-btn" onclick="filterItems('disponivel')"><i class='bx bx-check'></i> Disponíveis</button>
+        <button class="filter-btn" onclick="filterItems('emprestado')"><i class='bx bx-time'></i> Emprestados</button>
+        <button class="filter-btn" onclick="filterItems('manutencao')"><i class='bx bx-wrench'></i> Manutenção</button>
+        <button class="filter-btn" onclick="filterItems('perdido')"><i class='bx bx-error'></i> Perdidos</button>
       </div>
     </section>
 
     <!-- Lista do inventário -->
     <section id="inventoryList">
       <div class="loading">
-        <i class='bx bx-loader-alt'></i>
+        <i class='bx bx-loader-alt bx-spin' style="font-size:2.2rem;color:#4facfe;"></i>
         <p>Carregando inventário...</p>
       </div>
     </section>
@@ -325,35 +410,36 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body">
-          <div class="mb-3">
-            <label for="tituloLivro" class="form-label">Título</label>
-            <input type="text" class="form-control" id="tituloLivro" required>
+          <div class="row g-2">
+            <div class="col-12 col-md-8 mb-2">
+              <label for="tituloLivro" class="form-label">Título</label>
+              <input type="text" class="form-control" id="tituloLivro" required>
+            </div>
+            <div class="col-12 col-md-4 mb-2">
+              <label for="anoLivro" class="form-label">Ano</label>
+              <input type="number" class="form-control" id="anoLivro" min="1000" max="9999">
+            </div>
+            <div class="col-12 col-md-6 mb-2">
+              <label for="autorLivro" class="form-label">Autor</label>
+              <input type="text" class="form-control" id="autorLivro" required>
+            </div>
+            <div class="col-12 col-md-6 mb-2">
+              <label for="editoraLivro" class="form-label">Editora</label>
+              <input type="text" class="form-control" id="editoraLivro">
+            </div>
+            <div class="col-12 col-md-6 mb-2">
+              <label for="quantidadeLivro" class="form-label">Quantidade</label>
+              <input type="number" class="form-control" id="quantidadeLivro" min="1" required>
+            </div>
+            <div class="col-12 col-md-6 mb-2">
+              <label for="isbnLivro" class="form-label">ISBN</label>
+              <input type="text" class="form-control" id="isbnLivro">
+            </div>
+            <div class="col-12 mb-2">
+              <label for="responsavelLivro" class="form-label">Responsável pelo Lançamento</label>
+              <input type="text" class="form-control" id="responsavelLivro" required>
+            </div>
           </div>
-          <div class="mb-3">
-            <label for="autorLivro" class="form-label">Autor</label>
-            <input type="text" class="form-control" id="autorLivro" required>
-          </div>
-          <div class="mb-3">
-            <label for="editoraLivro" class="form-label">Editora</label>
-            <input type="text" class="form-control" id="editoraLivro">
-          </div>
-          <div class="mb-3">
-            <label for="anoLivro" class="form-label">Ano</label>
-            <input type="number" class="form-control" id="anoLivro" min="1000" max="9999">
-          </div>
-          <div class="mb-3">
-            <label for="quantidadeLivro" class="form-label">Quantidade</label>
-            <input type="number" class="form-control" id="quantidadeLivro" min="1" required>
-          </div>
-          <div class="mb-3">
-            <label for="responsavelLivro" class="form-label">Nome do Responsável pelo Lançamento</label>
-            <input type="text" class="form-control" id="responsavelLivro" required>
-          </div>
-          <div class="mb-3">
-            <label for="isbnLivro" class="form-label">ISBN</label>
-            <input type="text" class="form-control" id="isbnLivro">
-          </div>
-          
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Salvar Livro</button>

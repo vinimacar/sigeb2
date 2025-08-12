@@ -2590,7 +2590,7 @@
 
     // Função para criar um cartão individual estruturado (PDF)
     function criarCartaoUsuario(doc, usuario, x, y, width, height, qrBase64) {
-      // Cartão: nome da escola no topo, layout equilibrado, QR Code menor, espaçamentos reduzidos
+      // Cartão: azul, branco e amarelo, layout institucional
       if (!usuario || typeof usuario !== 'object') return;
 
       // Dados seguros
@@ -2606,17 +2606,17 @@
       const safeWidth = width - 2 * margin;
       const safeHeight = height - 2 * margin;
 
-      // Fundo principal (azul muito claro)
-      doc.setFillColor(245, 248, 255);
+      // Fundo principal branco
+      doc.setFillColor(255, 255, 255);
       doc.rect(x, y, width, height, 'F');
-      doc.setDrawColor(210, 220, 240);
-      doc.setLineWidth(0.8);
+      doc.setDrawColor(0, 51, 153);
+      doc.setLineWidth(1);
       doc.rect(x, y, width, height);
 
-      // Nome da escola no topo, centralizado, destacado
+      // Nome da escola no topo, azul escuro
       doc.setFontSize(8.5);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(60, 100, 180);
+      doc.setTextColor(0, 51, 153);
       const escolaWidth = doc.getTextWidth(escola);
       doc.text(escola, x + (width - escolaWidth) / 2, y + 8);
 
@@ -2627,56 +2627,59 @@
         } catch {}
       }
 
-      // Título do cartão
+      // Título do cartão em azul
       doc.setFontSize(7.5);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(120, 140, 180);
+      doc.setTextColor(0, 51, 153);
       const titulo = 'CARTÃO DE LEITOR';
       const tituloWidth = doc.getTextWidth(titulo);
       doc.text(titulo, x + (width - tituloWidth) / 2, y + 15.5);
 
-      // Faixa magnética (azul suave)
+      // Faixa magnética azul forte
       const tarjaY = y + 18;
       const tarjaH = 10;
-      doc.setFillColor(210, 225, 245);
+      doc.setFillColor(0, 51, 153);
       doc.rect(x + 1.5, tarjaY, width - 3, tarjaH, 'F');
 
-      // Nome dentro da tarja, centralizado, maiúsculo e negrito
+      // Nome dentro da tarja, centralizado, maiúsculo, negrito, branco
       doc.setFontSize(8.2);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(60, 80, 120);
+      doc.setTextColor(255,255,255);
       const nomeWidth = doc.getTextWidth(nomeSeguro);
       doc.text(nomeSeguro, x + (width - nomeWidth) / 2, tarjaY + tarjaH/2 + 2.7);
 
       // Área de dados (matrícula e validade)
       doc.setFontSize(7);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(120, 140, 160);
+      doc.setTextColor(0, 51, 153);
       doc.text('Matrícula:', safeX, tarjaY + tarjaH + 8);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(60,60,60);
       doc.text(matriculaSegura, safeX + 20, tarjaY + tarjaH + 8);
 
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(120, 140, 160);
+      doc.setTextColor(255, 204, 0); // amarelo destaque
       doc.text('Validade:', safeX, tarjaY + tarjaH + 15);
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(60,60,60);
+      doc.setTextColor(120, 120, 60);
       doc.text(validade, safeX + 20, tarjaY + tarjaH + 15);
 
-      // QR code real (base64) - canto inferior direito, menor
+      // QR code real (base64) - canto inferior direito, menor, com borda amarela
       const qrSize = 15.5;
       const qrX = x + width - qrSize - margin + 1;
       const qrY = y + height - qrSize - margin + 1;
       if (qrBase64) {
         try {
+          doc.setDrawColor(255, 204, 0);
+          doc.setLineWidth(0.7);
+          doc.rect(qrX - 1, qrY - 1, qrSize + 2, qrSize + 2);
           doc.addImage(qrBase64, 'PNG', qrX, qrY, qrSize, qrSize);
         } catch {
-          doc.setDrawColor(220,220,220);
+          doc.setDrawColor(255,204,0);
           doc.rect(qrX, qrY, qrSize, qrSize);
         }
       } else {
-        doc.setDrawColor(220,220,220);
+        doc.setDrawColor(255,204,0);
         doc.rect(qrX, qrY, qrSize, qrSize);
       }
     }

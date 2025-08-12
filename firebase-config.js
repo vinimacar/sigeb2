@@ -1,4 +1,13 @@
 
+// Configuração do Firebase
+export const firebaseConfig = {
+    apiKey: "AIzaSyDidYV8Fsv77qlg16UyofbbHZ3IGSAdCKQ",
+    authDomain: "sigeb2-397a1.firebaseapp.com",
+    projectId: "sigeb2-397a1",
+    storageBucket: "sigeb2-397a1.firebasestorage.app",
+    messagingSenderId: "1073423701447",
+    appId: "1:1073423701447:web:f3e23c19fab1f299a5b5e2"
+};
 
 // ATENÇÃO: Este arquivo deve ser usado com Firebase carregado via CDN em <script> no HTML
 // Exemplo de inclusão no HTML antes deste arquivo:

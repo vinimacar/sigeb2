@@ -209,13 +209,36 @@
     }
     .book-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.2rem;
       margin-top: 1.2rem;
       width: 100%;
       max-width: 100vw;
       box-sizing: border-box;
       overflow-x: hidden;
+      padding: 0 1vw 1vw 1vw;
+    }
+
+    @media (max-width: 900px) {
+      .book-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0.7rem;
+        padding: 0 2vw 2vw 2vw;
+      }
+    }
+    @media (max-width: 600px) {
+      .book-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding: 0 2vw 2vw 2vw;
+      }
+    }
+    .book-card {
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
+      margin: 0 auto;
+      word-break: break-word;
     }
     .book-card {
       background: #fff;

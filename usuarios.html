@@ -2590,11 +2590,11 @@
 
     // Função para criar um cartão individual estruturado (PDF)
     function criarCartaoUsuario(doc, usuario, x, y, width, height, qrBase64) {
-      // Cartão estruturado: formato retangular, cores claras, logos e nome da escola
+      // Cartão estruturado: nome na tarja, QR code mais à direita
       if (!usuario || typeof usuario !== 'object') return;
 
       // Dados seguros
-      const nomeSeguro = usuario.nome || 'Nome não informado';
+      const nomeSeguro = (usuario.nome || 'Nome não informado').toUpperCase();
       const matriculaSegura = usuario.matricula || 'N/A';
       const validade = usuario.validade || '12/2026';
       const escola = 'E.E. Gov. Bias Fortes';
@@ -2637,18 +2637,20 @@
       doc.text(titulo, safeX + (safeWidth - tituloWidth) / 2, safeY + 10);
 
       // Faixa magnética (cinza claro)
+      const tarjaY = y + 20;
+      const tarjaH = 12;
       doc.setFillColor(220, 220, 220);
-      doc.rect(x, y + 20, width, 8, 'F');
+      doc.rect(x, tarjaY, width, tarjaH, 'F');
+
+      // Nome dentro da tarja, centralizado, maiúsculo e negrito
+      doc.setFontSize(9.5);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(60,60,60);
+      const nomeWidth = doc.getTextWidth(nomeSeguro);
+      doc.text(nomeSeguro, x + (width - nomeWidth) / 2, tarjaY + tarjaH/2 + 3);
 
       // Área de dados
       doc.setFontSize(8.5);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(120, 140, 160);
-      doc.text('Nome:', safeX, safeY + 32);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(60,60,60);
-      doc.text(nomeSeguro, safeX + 22, safeY + 32);
-
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(120, 140, 160);
       doc.text('Matrícula:', safeX, safeY + 41);
@@ -2663,17 +2665,20 @@
       doc.setTextColor(60,60,60);
       doc.text(validade, safeX + 22, safeY + 50);
 
-      // QR code real (base64)
+      // QR code real (base64) - mais à direita
+      const qrSize = 22;
+      const qrX = x + width - qrSize - margin - 2;
+      const qrY = safeY + 28;
       if (qrBase64) {
         try {
-          doc.addImage(qrBase64, 'PNG', safeX + safeWidth - 28, safeY + 28, 22, 22);
+          doc.addImage(qrBase64, 'PNG', qrX, qrY, qrSize, qrSize);
         } catch {
           doc.setDrawColor(220,220,220);
-          doc.rect(safeX + safeWidth - 28, safeY + 28, 22, 22);
+          doc.rect(qrX, qrY, qrSize, qrSize);
         }
       } else {
         doc.setDrawColor(220,220,220);
-        doc.rect(safeX + safeWidth - 28, safeY + 28, 22, 22);
+        doc.rect(qrX, qrY, qrSize, qrSize);
       }
 
       // Rodapé com nome da escola centralizado e destacado

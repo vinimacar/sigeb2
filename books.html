@@ -1,914 +1,2611 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIGEB - Gerenciar Livros</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SIGEB - Livros</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <!-- jsPDF e jsPDF-AutoTable para geração de PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+  <!-- SheetJS (xlsx) para geração de XLS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- Firebase SDK (modular) -->
+  <!-- Removido script duplicado de inicialização do Firebase para evitar erro de variável redeclarada -->
+  <style>
+    @media (max-width: 1100px) {
+      .main-content {
+        margin-left: 0;
+        padding: 16px 4vw 16px 4vw;
+      }
+      .sidebar {
+        position: static;
+        width: 100vw;
+        min-width: unset;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        box-shadow: none;
+        border-radius: 0 0 12px 12px;
+        padding: 0 0 0 0;
+      }
+      .sidebar-header {
+        padding: 16px 0 10px 0;
+        font-size: 1.1rem;
+      }
+      .menu-items {
+        flex-direction: row;
+        gap: 0.5rem;
+        padding: 0 0 0 10px;
+      }
+      .menu-item {
+        margin-bottom: 0;
+        padding: 10px 10px;
+        font-size: 0.98rem;
+      }
+    }
+    @media (max-width: 700px) {
+      .main-content {
+        padding: 8px 2vw 8px 2vw;
+      }
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 12px 6px 10px 6px;
+        margin-bottom: 12px;
+        border-radius: 10px;
+      }
+      .card-body.d-flex {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+      }
+      .book-grid {
+        grid-template-columns: 1fr;
+        gap: 0.7rem;
+      }
+      .book-card {
+        max-width: 100%;
+        padding: 0.7rem 0.4rem;
+        border-radius: 8px;
+      }
+      .d-flex.flex-wrap.gap-2 {
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100%;
+      }
+      .btn {
+        width: 100%;
+        min-width: 0;
+        font-size: 1rem;
+      }
+    }
+    /* Botão adicionar livro fixo */
+    .add-book-fixed {
+      position: fixed;
+      top: 30px;
+      right: 40px;
+      z-index: 1100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+      background: linear-gradient(90deg, #4facfe, #00f2fe);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 28px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      transition: box-shadow 0.2s, background 0.2s;
+    }
+    .add-book-fixed:hover {
+      background: linear-gradient(90deg, #00f2fe, #4facfe);
+      box-shadow: 0 4px 18px rgba(44,62,80,0.18);
+      color: #fff;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f7fafd;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      color: #1a1a2e;
+    }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 220px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #fff;
+      padding: 0 0 20px 0;
+      box-shadow: 2px 0 16px 0 rgba(44,62,80,0.10);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+    .sidebar-header {
+      padding: 28px 0 16px 0;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      letter-spacing: 0.04em;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #4facfe;
+    }
+    .main-content {
+      margin-left: 220px;
+      padding: 28px 24px 18px 24px;
+      min-height: 100vh;
+      background: #f7fafd;
+      transition: all 0.3s ease;
+    }
+    .page-header {
+      background: #fff;
+      padding: 20px 28px 18px 28px;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(44,62,80,0.07);
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #1a1a2e;
+      border: 1px solid #e3e6f0;
+    }
+    .menu-items {
+      padding: 20px 0;
+    }
+    .menu-item {
+      padding: 12px 20px;
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+      margin-bottom: 5px;
+    }
+    .menu-item:hover, .menu-item.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #4facfe;
+    }
+    .menu-item i {
+      margin-right: 10px;
+      font-size: 1.2rem;
+    }
+    .main-content {
+      margin-left: 240px;
+      padding: 36px 32px 32px 32px;
+      min-height: 100vh;
+      background: transparent;
+      transition: all 0.3s ease;
+    }
+    .page-header {
+      background: linear-gradient(90deg, #23243a 60%, #2b5876 100%);
+      padding: 28px 32px 24px 32px;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px rgba(44,62,80,0.13);
+      margin-bottom: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #eaf1fb;
+      border: 1px solid #2b5876;
+    }
+    .book-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 1rem;
+      margin-top: 1.2rem;
+    }
+    .book-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+      padding: 1rem 0.7rem 0.8rem 0.7rem;
+      transition: box-shadow 0.18s, transform 0.18s;
+      border: 1px solid #e3e6f0;
+      min-width: 0;
+      max-width: 200px;
+      margin: 0 auto;
+      color: #23243a;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .book-card:hover {
+      box-shadow: 0 6px 18px rgba(44,62,80,0.13);
+      transform: translateY(-2px) scale(1.02);
+      border-color: #4facfe;
+    }
+    .book-status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      margin-top: 10px;
+    }
+    .status-disponivel {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    .status-emprestado {
+      background: #ffebee;
+      color: #c62828;
+    }
+    .status-indisponivel {
+      background: #ffebee;
+      color: #c62828;
+    }
+    .status-estoque-baixo {
+      background: #fff8e1;
+      color: #f9a825;
+    }
+    .estoque-info {
+      margin-top: 10px;
+    }
+    .estoque-detalhes {
+      font-size: 0.8rem;
+      opacity: 0.8;
+    }
+    .add-button {
+      background: linear-gradient(90deg, #00f2fe, #4facfe);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+    .add-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .search-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto auto; /* Ajustado para 3 campos de texto, 1 select, 1 botão */
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .search-box input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .genre-filter {
+      max-width: 200px;
+      background-color: white;
+    }
+    .genre-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 10px;
+    }
+    .genre-badge {
+      background: var(--accent-gradient);
+      color: white;
+      padding: 3px 10px;
+      border-radius: 15px;
+      font-size: 0.8rem;
+    }
+    @media (max-width: 900px) {
+      .main-content {
+        margin-left: 0;
+        padding: 10px 2vw 10px 2vw;
+      }
+      .sidebar {
+        position: static;
+        width: 100vw;
+        min-width: unset;
+        box-shadow: none;
+        border-radius: 0 0 12px 12px;
+      }
+      .page-header {
+        padding: 12px 8px 10px 8px;
+        margin-bottom: 12px;
+        border-radius: 10px;
+      }
+      .book-grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.4rem;
+      }
+      .book-card {
+        padding: 0.5rem 0.2rem;
+        max-width: 120px;
+        border-radius: 8px;
+      }
+      .add-book-fixed {
+        right: 8px;
+        top: 8px;
+        padding: 8px 12px;
+        font-size: 0.95rem;
+      }
+    }
+    .modal-content {
+      border: none;
+      border-radius: 15px;
+    }
+    .modal-header {
+      background: var(--primary-gradient);
+      color: white;
+      border-radius: 15px 15px 0 0;
+      border-bottom: none;
+    }    .modal-header .btn-close {
+      filter: brightness(0) invert(1);
+      opacity: 1;
+      z-index: 10;
+      position: relative;
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      width: 1em;
+      height: 1em;
+    }    .modal-header .btn-close:hover {
+      opacity: 0.8;
+    }
+    #addBookForm {
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+    }
+    #addBookForm h4 {
+      margin-bottom: 20px;
+      color: #1a1a2e;
+    }
+    .modal-title {
+      font-weight: 600;
+    }
+    .form-label {
+      font-weight: 500;
+      color: #1a1a2e;
+    }
+    .form-control, .form-select {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px 15px;
+      transition: var(--transition);
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: #4facfe;
+      box-shadow: 0 0 0 0.2rem rgba(79, 172, 254, 0.25);
+    }
+    .btn-primary {
+      background: linear-gradient(90deg, #4facfe, #00f2fe);
+      border: none;
+      padding: 10px 22px;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 600;
+      font-size: 1.08rem;
+      box-shadow: 0 2px 8px rgba(44,62,80,0.07);
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(90deg, #00f2fe, #4facfe);
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(44,62,80,0.13);
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    .text-muted {
+      font-size: 0.8rem;
+    }
+    .modal-footer .btn-primary#saveBookBtn {
+      display: inline-block !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+      transition: none !important;
+    }
+    .genre-filter,
+    #generos,
+    #editGenero,
+    .genre-badge {
+      font-family: 'Poppins', sans-serif !important;
+    }
+
+    #addBookForm input:focus, #addBookForm select:focus, #addBookForm textarea:focus {
+      border-color: #4facfe;
+      box-shadow: 0 0 0 0.2rem rgba(79,172,254,.15);
+    }
+    #addBookForm .form-label {
+      color: #16213e;
+    }
+    #addBookForm .btn-primary {
+      background: linear-gradient(90deg, #00f2fe, #4facfe);
+      border: none;
+    }    #addBookForm .btn-primary:hover {
+      background: linear-gradient(90deg, #4facfe, #00f2fe);
+    }    /* Garantir visibilidade do botão de fechar nos modais */
+    #addBookModal .modal-header .btn-close {
+      filter: none !important;
+      opacity: 1 !important;
+      z-index: 1000 !important;
+      position: relative !important;
+      background: rgba(255, 255, 255, 0.2) !important;
+      border: 1px solid rgba(255, 255, 255, 0.3) !important;
+      border-radius: 50% !important;
+      font-size: 1.25rem !important;
+      width: 2em !important;
+      height: 2em !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      visibility: visible !important;
+      color: white !important;
+    }
     
-    <!-- Firebase Config -->
-    <script type="module">
-        import { auth, db } from './js/firebase-config.js';
-        import { collection, getDocs, addDoc, deleteDoc, doc, getDoc, updateDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        
-        // Make Firebase services available globally
-        window.db = db;
-        window.auth = auth;
-        window.collection = collection;
-        window.getDocs = getDocs;
-        window.addDoc = addDoc;
-        window.deleteDoc = deleteDoc;
-        window.doc = doc;
-        window.getDoc = getDoc;
-        window.updateDoc = updateDoc;
-        window.query = query;
-        window.orderBy = orderBy;
-        window.serverTimestamp = serverTimestamp;
-    </script>
+    #addBookModal .modal-header .btn-close::before {
+      content: '×' !important;
+      display: inline-block !important;
+      color: white !important;
+      font-weight: bold !important;
+      font-size: 1.5rem !important;
+      line-height: 1 !important;
+    }
     
-    <style>
-        /* Reuse the same styles from dashboard.html */
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: #f5f5f5;
-        }
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: 250px;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            padding: 20px;
-            color: white;
-        }
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-        }
-        .sidebar-logo {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 30px;
-            background: linear-gradient(90deg, #00f2fe, #4facfe);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .nav-link {
-            color: rgba(255, 255, 255, 0.8);
-            padding: 10px 15px;
-            border-radius: 5px;
-            margin-bottom: 5px;
-            transition: all 0.3s;
-        }
-        .nav-link:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-        .nav-link.active {
-            background: rgba(79, 172, 254, 0.2);
-            color: #4facfe;
-        }
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .book-table {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-        }
-        .book-table th {
-            background: #f8f9fa;
-            border: none;
-        }
-        .book-table td {
-            vertical-align: middle;
-        }
-        .action-buttons .btn {
-            padding: 5px 10px;
-            margin: 0 2px;
-        }
-        .form-control:focus {
-            border-color: #4facfe;
-            box-shadow: 0 0 0 0.25rem rgba(79, 172, 254, 0.25);
-        }
-        
-        /* Estilos para indicadores de estoque */
-        .stock-indicator {
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-        
-        .stock-low {
-            color: #fd7e14;
-        }
-        
-        .stock-out {
-            color: #dc3545;
-        }
-        
-        .stock-good {
-            color: #198754;
-        }
-        
-        /* Animação para botão de atualização */
-        .spin {
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Melhorias na tabela */
-        .table th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            border-top: none;
-        }
-        
-        .table td {
-            vertical-align: middle;
-        }
-        
-        .btn-group-sm .btn {
-            margin: 0 1px;
-        }
-        
-        /* Indicadores visuais de status */
-        .badge {
-            font-size: 0.8em;
-        }
-    </style>
+    #addBookModal .modal-header .btn-close:hover,
+    #addBookModal .modal-header .btn-close:focus {
+      opacity: 0.8 !important;
+      transform: scale(1.1) !important;
+      background: rgba(255, 255, 255, 0.3) !important;
+    }
+      #addBookModal .modal-header .btn-close:hover::before {
+      color: #ff6b6b !important;
+    }
+      /* Adicionar texto "Sair" visível no botão */
+    #addBookModal .modal-header .btn-close .visually-hidden {
+      position: static !important;
+      width: auto !important;
+      height: auto !important;
+      padding: 0 !important;
+      margin: 0 0 0 5px !important;
+      overflow: visible !important;
+      clip: auto !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+      color: rgb(12, 11, 11) !important;
+      font-size: 0.8rem !important;
+      font-weight: normal !important;
+    }
+
+    /* Garantir visibilidade do botão de fechar no modal de editar livro */
+    #editBookModal .modal-header .btn-close {
+      filter: none !important;
+      opacity: 1 !important;
+      z-index: 1000 !important;
+      position: relative !important;
+      background: rgba(255, 255, 255, 0.2) !important;
+      border: 1px solid rgba(255, 255, 255, 0.3) !important;
+      border-radius: 50% !important;
+      font-size: 1.25rem !important;
+      width: 2em !important;
+      height: 2em !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      visibility: visible !important;
+      color: white !important;
+    }
+    
+    #editBookModal .modal-header .btn-close::before {
+      content: '×' !important;
+      display: inline-block !important;
+      color: white !important;
+      font-weight: bold !important;
+      font-size: 1.5rem !important;
+      line-height: 1 !important;
+    }
+    
+    #editBookModal .modal-header .btn-close:hover,
+    #editBookModal .modal-header .btn-close:focus {
+      opacity: 0.8 !important;
+      transform: scale(1.1) !important;
+      background: rgba(255, 255, 255, 0.3) !important;
+    }
+    
+    #editBookModal .modal-header .btn-close:hover::before {
+      color: #ff6b6b !important;
+    }
+    
+    /* Adicionar texto "Sair" visível no botão do modal de edição */    #editBookModal .modal-header .btn-close .visually-hidden {
+      position: static !important;
+      width: auto !important;
+      height: auto !important;
+      padding: 0 !important;
+      margin: 0 0 0 5px !important;
+      overflow: visible !important;
+      clip: auto !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+      color: rgb(17, 17, 17) !important;
+      font-size: 0.8rem !important;
+      font-weight: normal !important;
+    }
+
+    /* Garantir visibilidade do botão de fechar no modal de importar livros */
+    #importBooksModal .modal-header .btn-close {
+      filter: none !important;
+      opacity: 1 !important;
+      z-index: 1000 !important;
+      position: relative !important;
+      background: rgba(255, 255, 255, 0.2) !important;
+      border: 1px solid rgba(255, 255, 255, 0.3) !important;
+      border-radius: 50% !important;
+      font-size: 1.25rem !important;
+      width: 2em !important;
+      height: 2em !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      visibility: visible !important;
+      color: white !important;
+    }
+    
+    #importBooksModal .modal-header .btn-close::before {
+      content: '×' !important;
+      display: inline-block !important;
+      color: white !important;
+      font-weight: bold !important;
+      font-size: 1.5rem !important;
+      line-height: 1 !important;
+    }
+    
+    #importBooksModal .modal-header .btn-close:hover,
+    #importBooksModal .modal-header .btn-close:focus {
+      opacity: 0.8 !important;
+      transform: scale(1.1) !important;
+      background: rgba(255, 255, 255, 0.3) !important;
+    }
+    
+    #importBooksModal .modal-header .btn-close:hover::before {
+      color: #ff6b6b !important;
+    }
+    
+    /* Adicionar texto "Sair" visível no botão do modal de importação */
+    #importBooksModal .modal-header .btn-close .visually-hidden {
+      position: static !important;
+      width: auto !important;
+      height: auto !important;
+      padding: 0 !important;
+      margin: 0 0 0 5px !important;
+      overflow: visible !important;
+      clip: auto !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+      color: rgb(14, 13, 13) !important;
+      font-size: 0.8rem !important;
+      font-weight: normal !important;
+    }/* Garantir que o botão de fechar seja sempre visível em todos os modais */
+    .btn-close {
+      position: relative !important;
+      z-index: 9999 !important;
+      background-color: transparent !important;
+      border: none !important;
+      font-size: 1.25rem !important;
+      opacity: 1 !important;
+      padding: 0.5rem !important;
+      margin: 0 !important;
+      width: auto !important;
+      height: auto !important;
+    }
+    
+    .btn-close:before {
+      content: '×' !important;
+      display: inline-block !important;
+      color: #000 !important;
+      font-weight: bold !important;
+      font-size: 1.5rem !important;
+      line-height: 1 !important;
+    }
+
+    .btn-close:hover:before {
+      color: #dc3545 !important;
+    }
+  </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="sidebar-logo">SIGEB</div>
-        <div class="user-profile mb-4">
-            <img id="userPhoto" src="" alt="Foto do perfil" class="rounded-circle mb-2" style="width: 64px; height: 64px; object-fit: cover;">
-            <div class="user-info">
-                <h6 id="userName" class="mb-1" style="color: white;">Carregando...</h6>
-                <small id="userEmail" class="text-muted">Carregando...</small>
-            </div>
+  <!-- Botão flutuante removido, botão ficará apenas no cabeçalho -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h3>SIGEB</h3>
+    </div>
+    <div class="menu-items">
+      <a href="dashboard.html" class="menu-item">
+        <i class='bx bxs-dashboard'></i>
+        Dashboard
+      </a>
+      <a href="livros.html" class="menu-item active">
+        <i class='bx bxs-book'></i>
+        Livros
+      </a>
+      <a href="usuarios.html" class="menu-item">
+        <i class='bx bxs-user'></i>
+        Usuários
+      </a>
+      <a href="emprestimos.html" class="menu-item">
+        <i class='bx bxs-bookmark'></i>
+        Empréstimos
+      </a>
+       <a href="relatorios.html" class="menu-item" title="Relatórios do sistema">
+        <i class='bx bxs-report'></i>
+        Relatórios
+      </a>
+      <a href="configuracoes.html" class="menu-item">
+        <i class='bx bxs-cog'></i>
+        Configurações
+      </a>
+      <a href="index.html" class="menu-item">
+        <i class='bx bxs-log-out'></i>
+        Sair
+      </a>
+    </div>
+  </div>
+
+  <div class="main-content container py-4">
+    <div class="card shadow-sm border-0 mb-4" style="border-radius: var(--radius-lg);">
+      <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+          <h2 class="h4 fw-bold text-primary mb-1"><i class='bx bxs-book me-2'></i> Gerenciamento de Livros</h2>
+          <p class="mb-0 text-secondary">Gerencie o acervo da biblioteca</p>
         </div>
-        <nav class="nav flex-column">
-            <a class="nav-link" href="dashboard.html"><i class="bi bi-speedometer2"></i> Dashboard</a>
-            <a class="nav-link active" href="books.html"><i class="bi bi-book"></i> Livros</a>
-            <a class="nav-link" href="users.html"><i class="bi bi-people"></i> Usuários</a>
-            <a class="nav-link" href="loans.html"><i class="bi bi-arrow-left-right"></i> Empréstimos</a>
-            <a class="nav-link" href="loans.html"><i class="bi bi-arrow-left-right"></i> Inventário</a>
-            <a class="nav-link" href="reports.html"><i class="bi bi-graph-up"></i> Relatórios</a>
-            <a class="nav-link" href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Sair</a>
-        </nav>
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-info" onclick="diagnosticarEstoque()" title="Diagnosticar problemas de estoque">
+            <i class='bx bx-search-alt'></i> Diagnosticar
+          </button>
+          <button class="btn btn-success" onclick="updateAllStock()" title="Atualizar estoque de todos os livros">
+            <i class='bx bx-refresh'></i> Atualizar Estoque
+          </button>
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBookModal">
+            <i class='bx bx-plus'></i> Adicionar Livro
+          </button>
+          <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#importBooksModal">
+            <i class='bx bx-import'></i> Importar Livros
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div class="main-content">
-        <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Gerenciar Livros</h2>
-                <div>
-                    <button class="btn btn-success me-2" onclick="updateAllStock()" title="Atualizar estoque de todos os livros">
-                        <i class="bi bi-arrow-clockwise"></i> Atualizar Estoque
-                    </button>
-                    <button class="btn btn-info me-2" onclick="testConnection()">
-                        <i class="bi bi-lightning"></i> Testar Conexão
-                    </button>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBookModal">
-                        <i class="bi bi-plus-lg"></i> Novo Livro
-                    </button>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-body">
-                    <div class="table-responsive book-table">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Título</th>
-                                    <th>Autor</th>
-                                    <th>ISBN</th>
-                                    <th>Categoria</th>
-                                    <th>Estoque (Disp./Total)</th>
-                                    <th>Status</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="booksTableBody">
-                                <!-- Books will be loaded here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="card shadow-sm border-0 mb-4" style="border-radius: var(--radius-lg);">
+      <div class="card-body">
+        <form class="row g-2 align-items-center" id="searchForm" onsubmit="return false;">
+          <div class="col-md-3">
+            <input type="text" class="form-control" id="filterTitulo" placeholder="Filtrar por Título...">
+          </div>
+          <div class="col-md-3">
+            <input type="text" class="form-control" id="filterAutor" placeholder="Filtrar por Autor...">
+          </div>
+          <div class="col-md-3">
+            <input type="text" class="form-control" id="filterEditora" placeholder="Filtrar por Editora...">
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" id="genreFilter">
+              <option value="">Todos os Gêneros</option>
+              <option value="ACADEMICO">Acadêmico</option>
+              <option value="AUTOAJUDA">Autoajuda</option>
+              <option value="AVENTURA">Aventura</option>
+              <option value="BIOGRAFIA">Biografia</option>
+              <option value="CIENCIAS">Ciências</option>
+              <option value="DIDATICO">Didático</option>
+              <option value="DRAMA">Drama</option>
+              <option value="EDUCACAO">Educação</option>
+              <option value="FANTASIA">Fantasia</option>
+              <option value="FICCAO">Ficção</option>
+              <option value="FICCAO_CIENTIFICA">Ficção Científica</option>
+              <option value="HISTORIA">História</option>
+              <option value="INFANTIL">Infantil</option>
+              <option value="JUVENIL">Juvenil</option>
+              <option value="LITERATURA">Literatura</option>
+              <option value="MISTERIO">Mistério</option>
+              <option value="NAO_FICCAO">Não Ficção</option>
+              <option value="OUTROS">Outros</option>
+              <option value="POESIA">Poesia</option>
+              <option value="ROMANCE">Romance</option>
+              <option value="TECNOLOGIA">Tecnologia</option>
+              <option value="TECNICO">Técnico</option>
+              <option value="TERROR">Terror</option>
+            </select>
+          </div>
+          <div class="col-md-1 d-flex gap-1">
+            <button class="btn btn-outline-primary w-100" id="searchButton">
+              <i class='bx bx-search'></i>
+            </button>
+            <button class="btn btn-outline-secondary w-100" id="showAllBooksButton">
+              <i class='bx bx-list-ul'></i>
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
-    <!-- Add Book Modal -->
-    <div class="modal fade" id="addBookModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Adicionar Novo Livro</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addBookForm">
-                        <div class="mb-3">
-                            <label class="form-label">Título</label>
-                            <input type="text" class="form-control" id="bookTitle" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Autor</label>
-                            <input type="text" class="form-control" id="bookAuthor" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">ISBN</label>
-                            <input type="text" class="form-control" id="bookIsbn" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Categoria</label>
-                            <input type="text" class="form-control" id="bookCategory" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Quantidade</label>
-                            <input type="number" class="form-control" id="bookQuantity" required min="1">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="addBook()">Salvar</button>
-                </div>
-            </div>
-        </div>
+    <div class="row g-3" id="bookGrid">
+      <!-- Cards de livros serão renderizados aqui pelo JS -->
     </div>
 
-    <!-- Edit Book Modal -->
-    <div class="modal fade" id="editBookModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Editar Livro</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <!-- Modal Adicionar Livro -->
+    <div class="modal fade" id="addBookModal" tabindex="-1" aria-labelledby="addBookModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">          <div class="modal-header">
+            <h5 class="modal-title" id="addBookModalLabel">Adicionar Novo Livro</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+              <span class="visually-hidden">Sair</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <!-- Exemplo de formulário moderno para cadastro de novo livro usando Bootstrap 5 -->
+            <form id="addBookForm" class="needs-validation" novalidate>
+              <h4 class="mb-4 text-primary"><i class="bx bxs-book"></i> Cadastro de Novo Livro</h4>
+              <div class="row g-3">
+                <div class="col-md-8">
+                  <label for="nomeLivro" class="form-label fw-semibold">Nome do Livro*</label>
+                  <input type="text" class="form-control" id="nomeLivro" required placeholder="Digite o nome do livro">
+                  <div class="invalid-feedback">Informe o nome do livro.</div>
                 </div>
-                <div class="modal-body">
-                    <!-- Adicione o campo oculto no formulário de edição -->
-                    <form id="editBookForm">
-                        <input type="hidden" id="editBookId">
-                        <div class="mb-3">
-                            <label class="form-label">Título</label>
-                            <input type="text" class="form-control" id="editTitulo" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Autor</label>
-                            <input type="text" class="form-control" id="editAutores" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">ISBN</label>
-                            <input type="text" class="form-control" id="editISBN" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Editora</label>
-                            <input type="text" class="form-control" id="editEditora" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Ano</label>
-                            <input type="number" class="form-control" id="editAno" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Edição</label>
-                            <input type="text" class="form-control" id="editEdicao" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Gênero</label>
-                            <input type="text" class="form-control" id="editGenero" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Quantidade</label>
-                            <input type="number" class="form-control" id="editQuantidade" required min="1">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Descrição</label>
-                            <textarea class="form-control" id="editDescricao" required rows="3"></textarea>
-                        </div>
-                    </form>
+                <div class="col-md-4">
+                  <label for="isbn" class="form-label fw-semibold">ISBN</label>
+                  <input type="text" class="form-control" id="isbn" placeholder="ISBN">
+                  <div id="isbnMessage" class="text-danger small mt-1"></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" form="editBookForm">Salvar</button>
+                <div class="col-md-6">
+                  <label for="autor" class="form-label fw-semibold">Autor*</label>
+                  <input type="text" class="form-control" id="autor" required placeholder="Nome do autor">
+                  <div class="invalid-feedback">Informe o autor.</div>
                 </div>
-            </div>
+                <div class="col-md-6">                  <label for="genero" class="form-label fw-semibold">Gênero*</label>                  <select class="form-select" id="genero" required>
+                    <option value="">Selecione o gênero</option>
+                    <option value="ACADEMICO">Acadêmico</option>
+                    <option value="AUTOAJUDA">Autoajuda</option>
+                    <option value="AVENTURA">Aventura</option>
+                    <option value="BIOGRAFIA">Biografia</option>
+                    <option value="CIENCIAS">Ciências</option>
+                    <option value="DIDATICO">Didático</option>
+                    <option value="DRAMA">Drama</option>
+                    <option value="EDUCACAO">Educação</option>
+                    <option value="FANTASIA">Fantasia</option>
+                    <option value="FICCAO">Ficção</option>
+                    <option value="FICCAO_CIENTIFICA">Ficção Científica</option>
+                    <option value="HISTORIA">História</option>
+                    <option value="INFANTIL">Infantil</option>
+                    <option value="JUVENIL">Juvenil</option>
+                    <option value="LITERATURA">Literatura</option>
+                    <option value="MISTERIO">Mistério</option>
+                    <option value="NAO_FICCAO">Não Ficção</option>
+                    <option value="OUTROS">Outros</option>
+                    <option value="POESIA">Poesia</option>
+                    <option value="ROMANCE">Romance</option>
+                    <option value="TECNOLOGIA">Tecnologia</option>
+                    <option value="TECNICO">Técnico</option>
+                    <option value="TERROR">Terror</option>
+                  </select>
+                  <div class="invalid-feedback">Selecione o gênero.</div>
+                </div>                <div class="col-md-4">
+                  <label for="quantidade" class="form-label fw-semibold">Quantidade*</label>
+                  <input type="number" class="form-control" id="quantidade" required min="1" placeholder="Ex: 10">
+                  <div class="invalid-feedback">Informe a quantidade.</div>
+                </div>
+                <div class="col-md-4">
+                  <label for="anoPublicacao" class="form-label fw-semibold">Ano de Publicação</label>
+                  <input type="number" class="form-control" id="anoPublicacao" min="1000" max="2030" placeholder="Ex: 2023">
+                  <div class="invalid-feedback">Informe um ano válido.</div>
+                </div>
+                <div class="col-md-4">
+                  <label for="editora" class="form-label fw-semibold">Editora</label>
+                  <input type="text" class="form-control" id="editora" placeholder="Nome da editora">
+                </div>
+              </div>
+              <div class="mt-4 d-flex justify-content-end gap-2">
+                <button type="reset" class="btn btn-outline-secondary">Limpar</button>
+                <button type="submit" class="btn btn-primary" id="saveBookBtn" style="display:inline-block;">Salvar Livro</button>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </div>
         </div>
+      </div>
     </div>
 
-    <script type="module">
-        import { testFirebaseConnection, addTestBook } from './js/firebase-test.js';
-        
-        // Make test functions available globally
-        window.testConnection = async function() {
-            const isConnected = await testFirebaseConnection();
-            if (isConnected) {
-                alert('Conexão com Firebase estabelecida com sucesso!');
-                // Try to add a test book
-                const bookAdded = await addTestBook();
-                if (bookAdded) {
-                    alert('Livro de teste adicionado com sucesso! Verifique a lista.');
-                    loadBooks(); // Reload the books list
-                }
-            } else {
-                alert('Erro na conexão com Firebase. Verifique o console para mais detalhes.');
-            }
-        };
-    </script>
-    
-    <script>
-        // Check authentication and load user data
-        onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.href = 'index.html';
-            } else {
-                // Update user profile information
-                document.getElementById('userPhoto').src = user.photoURL || 'https://via.placeholder.com/64';
-                document.getElementById('userName').textContent = user.displayName || 'Usuário';
-                document.getElementById('userEmail').textContent = user.email;
-                
-                loadBooks();
-            }
-        });
-
-        async function loadBooks(filterTitulo = '', filterAutor = '', filterEditora = '', selectedGenre = '') {
-            try {
-                const livrosRef = collection(db, 'livros');
-                const q = query(livrosRef, orderBy('titulo'));
-                const querySnapshot = await getDocs(q);
-
-                // Carregar todos os empréstimos ativos para calcular disponibilidade
-                const emprestimosRef = collection(db, 'emprestimos');
-                const emprestimosQuery = query(emprestimosRef);
-                const emprestimosSnapshot = await getDocs(emprestimosQuery);
-
-                // Criar mapa de livros emprestados
-                const livrosEmprestados = new Map();
-                
-                emprestimosSnapshot.forEach((doc) => {
-                    const emprestimo = doc.data();
-                    // Só contar empréstimos não devolvidos
-                    if (emprestimo.status !== 'DEVOLVIDO' && Array.isArray(emprestimo.books)) {
-                        emprestimo.books.forEach(book => {
-                            const bookId = book.bookId;
-                            const quantity = book.quantity || 1;
-                            const currentEmprestado = livrosEmprestados.get(bookId) || 0;
-                            livrosEmprestados.set(bookId, currentEmprestado + quantity);
-                        });
-                    }
-                });
-
-                const booksTableBody = document.getElementById('booksTableBody');
-                booksTableBody.innerHTML = '';
-
-                querySnapshot.forEach((docSnap) => {
-                    const book = docSnap.data();
-                    const bookId = docSnap.id;
-                    
-                    // Calcular quantidade disponível
-                    const quantidadeTotal = book.quantidade || 0;
-                    const quantidadeEmprestada = livrosEmprestados.get(bookId) || 0;
-                    const quantidadeDisponivel = Math.max(0, quantidadeTotal - quantidadeEmprestada);
-                    
-                    // Aplicar filtros se especificados
-                    const titulo = (book.titulo || '').toLowerCase();
-                    const autor = (book.autores || '').toLowerCase();
-                    const editora = (book.editora || '').toLowerCase();
-                    const genero = book.genero || '';
-
-                    if (filterTitulo && !titulo.includes(filterTitulo.toLowerCase())) return;
-                    if (filterAutor && !autor.includes(filterAutor.toLowerCase())) return;
-                    if (filterEditora && !editora.includes(filterEditora.toLowerCase())) return;
-                    if (selectedGenre && genero !== selectedGenre) return;
-
-                    // Determinar status visual
-                    let statusClass = '';
-                    let statusText = '';
-                    if (quantidadeDisponivel === 0) {
-                        statusClass = 'badge bg-danger';
-                        statusText = 'Indisponível';
-                    } else if (quantidadeDisponivel <= 2) {
-                        statusClass = 'badge bg-warning';
-                        statusText = 'Estoque Baixo';
-                    } else {
-                        statusClass = 'badge bg-success';
-                        statusText = 'Disponível';
-                    }
-
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${book.titulo || ''}</td>
-                        <td>${book.autores || ''}</td>
-                        <td>${book.isbn || ''}</td>
-                        <td>${book.genero || ''}</td>
-                        <td>
-                            <span class="fw-bold ${quantidadeDisponivel === 0 ? 'text-danger' : quantidadeDisponivel <= 2 ? 'text-warning' : 'text-success'}">
-                                ${quantidadeDisponivel}/${quantidadeTotal}
-                            </span>
-                            ${quantidadeEmprestada > 0 ? `<br><small class="text-muted">${quantidadeEmprestada} emprestado(s)</small>` : ''}
-                        </td>
-                        <td><span class="${statusClass}">${statusText}</span></td>
-                        <td class="action-buttons">
-                            <button class="btn btn-sm btn-info" onclick="viewBookDetails('${bookId}')" title="Ver Detalhes">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-warning" onclick="editBook('${bookId}')" title="Editar">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteBook('${bookId}')" title="Excluir">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    booksTableBody.appendChild(tr);
-                });
-
-                // Atualizar contadores no banco de dados se necessário
-                await updateBookCounters(livrosEmprestados);
-
-            } catch (error) {
-                console.error('Erro ao carregar livros:', error);
-                alert('Erro ao carregar livros');
-            }
-        }
-
-        // Função para atualizar contadores dos livros no banco de dados
-        async function updateBookCounters(livrosEmprestados) {
-            try {
-                const livrosRef = collection(db, 'livros');
-                const querySnapshot = await getDocs(livrosRef);
-
-                const batch = db.batch();
-                let updates = 0;
-
-                querySnapshot.forEach((docSnap) => {
-                    const book = docSnap.data();
-                    const bookId = docSnap.id;
-                    const quantidadeTotal = book.quantidade || 0;
-                    const quantidadeEmprestada = livrosEmprestados.get(bookId) || 0;
-                    const quantidadeDisponivel = Math.max(0, quantidadeTotal - quantidadeEmprestada);
-
-                    if (book.quantidadeDisponivel !== quantidadeDisponivel || book.emprestados !== quantidadeEmprestada) {
-                        const docRef = doc(db, 'livros', bookId);
-                        batch.update(docRef, {
-                            quantidadeDisponivel: quantidadeDisponivel,
-                            emprestados: quantidadeEmprestada,
-                            disponivel: quantidadeDisponivel > 0,
-                            ultimaAtualizacao: serverTimestamp()
-                        });
-                        updates++;
-                    }
-                });
-
-                if (updates > 0) {
-                    await batch.commit();
-                    console.log(`${updates} livros atualizados com contadores de estoque`);
-                }
-            } catch (error) {
-                console.error('Erro ao atualizar contadores:', error);
-            }
-        }
-
-        function logout() {
-            auth.signOut().then(() => {
-                window.location.href = 'index.html';
-            }).catch((error) => {
-                console.error("Erro ao fazer logout:", error);
-            });
-        }
-
-        function addBook() {
-            const title = document.getElementById('bookTitle').value.trim();
-            const author = document.getElementById('bookAuthor').value.trim();
-            const isbn = document.getElementById('bookIsbn').value.trim();
-            const category = document.getElementById('bookCategory').value.trim();
-            const quantity = parseInt(document.getElementById('bookQuantity').value);
-
-            if (!title || !author || !isbn || !category || isNaN(quantity)) {
-                alert('Por favor, preencha todos os campos corretamente.');
-                return;
-            }
-
-            addDoc(collection(db, 'livros'), {
-                titulo: title,
-                autores: author,
-                isbn: isbn,
-                genero: category,
-                quantidade: quantity,
-                quantidadeDisponivel: quantity,
-                emprestados: 0,
-                disponivel: quantity > 0,
-                editora: '',
-                ano: new Date().getFullYear(),
-                edicao: '1',
-                descricao: '',
-                dataCadastro: serverTimestamp()
-            }).then(() => {
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addBookModal'));
-                modal.hide();
-                document.getElementById('addBookForm').reset();
-                loadBooks();
-                alert('Livro adicionado com sucesso!');
-            }).catch((error) => {
-                console.error("Erro ao adicionar livro:", error);
-                alert('Erro ao adicionar livro: ' + error.message);
-            });
-        }
-
-        // Função para visualizar detalhes do livro com informações de empréstimo
-        async function viewBookDetails(bookId) {
-            try {
-                const bookDoc = await getDoc(doc(db, 'livros', bookId));
-                if (!bookDoc.exists()) {
-                    alert('Livro não encontrado!');
-                    return;
-                }
-
-                const book = bookDoc.data();
-
-                // Buscar empréstimos ativos deste livro
-                const emprestimosRef = collection(db, 'emprestimos');
-                const emprestimosSnapshot = await getDocs(emprestimosRef);
-
-                const emprestimosAtivos = [];
-                let totalEmprestado = 0;
-
-                emprestimosSnapshot.forEach((empDoc) => {
-                    const emprestimo = empDoc.data();
-                    if (emprestimo.status !== 'DEVOLVIDO' && Array.isArray(emprestimo.books)) {
-                        emprestimo.books.forEach(empBook => {
-                            if (empBook.bookId === bookId) {
-                                emprestimosAtivos.push({
-                                    id: empDoc.id,
-                                    ...emprestimo,
-                                    quantidade: empBook.quantity || 1
-                                });
-                                totalEmprestado += empBook.quantity || 1;
-                            }
-                        });
-                    }
-                });
-
-                // Buscar nomes dos usuários
-                for (let emprestimo of emprestimosAtivos) {
-                    try {
-                        const userDoc = await getDoc(doc(db, 'usuarios', emprestimo.userId));
-                        if (userDoc.exists()) {
-                            emprestimo.nomeUsuario = userDoc.data().nome || 'Usuário não encontrado';
-                        }
-                    } catch (error) {
-                        emprestimo.nomeUsuario = 'Erro ao carregar nome';
-                    }
-                }
-
-                const quantidadeDisponivel = Math.max(0, (book.quantidade || 0) - totalEmprestado);
-
-                // Criar modal para mostrar detalhes
-                const modalId = 'bookDetailsModal';
-                let modal = document.getElementById(modalId);
-                
-                if (!modal) {
-                    modal = document.createElement('div');
-                    modal.className = 'modal fade';
-                    modal.id = modalId;
-                    modal.setAttribute('tabindex', '-1');
-                    modal.innerHTML = `
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">
-                                        <i class="bi bi-book me-2"></i>Detalhes do Livro
-                                    </h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body" id="bookDetailsBody">
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-primary" onclick="loadBooks()">
-                                        <i class="bi bi-arrow-clockwise me-2"></i>Atualizar Estoque
-                                    </button>
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    document.body.appendChild(modal);
-                }
-
-                // Preencher conteúdo do modal
-                let emprestimosHtml = '';
-                if (emprestimosAtivos.length > 0) {
-                    emprestimosHtml = `
-                        <h6 class="mt-4">Empréstimos Ativos:</h6>
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Usuário</th>
-                                        <th>Quantidade</th>
-                                        <th>Data Empréstimo</th>
-                                        <th>Data Devolução</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                    `;
-                    
-                    emprestimosAtivos.forEach(emp => {
-                        const statusClass = emp.status === 'ATRASADO' ? 'text-danger' : 'text-warning';
-                        emprestimosHtml += `
-                            <tr>
-                                <td>${emp.nomeUsuario}</td>
-                                <td>${emp.quantidade}</td>
-                                <td>${emp.loanDate || 'N/A'}</td>
-                                <td>${emp.returnDate || 'N/A'}</td>
-                                <td><span class="${statusClass}">${emp.status}</span></td>
-                            </tr>
-                        `;
-                    });
-                    
-                    emprestimosHtml += `
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
-                } else {
-                    emprestimosHtml = '<p class="text-muted mt-3">Nenhum empréstimo ativo para este livro.</p>';
-                }
-
-                document.getElementById('bookDetailsBody').innerHTML = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6>Informações Básicas</h6>
-                            <p><strong>Título:</strong> ${book.titulo || 'N/A'}</p>
-                            <p><strong>Autor(es):</strong> ${book.autores || 'N/A'}</p>
-                            <p><strong>ISBN:</strong> ${book.isbn || 'N/A'}</p>
-                            <p><strong>Gênero:</strong> ${book.genero || 'N/A'}</p>
-                            <p><strong>Editora:</strong> ${book.editora || 'N/A'}</p>
-                            <p><strong>Ano:</strong> ${book.ano || 'N/A'}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <h6>Controle de Estoque</h6>
-                            <div class="alert ${quantidadeDisponivel === 0 ? 'alert-danger' : quantidadeDisponivel <= 2 ? 'alert-warning' : 'alert-success'}">
-                                <h5 class="mb-2">
-                                    <i class="bi ${quantidadeDisponivel === 0 ? 'bi-exclamation-triangle' : quantidadeDisponivel <= 2 ? 'bi-exclamation-circle' : 'bi-check-circle'}"></i>
-                                    ${quantidadeDisponivel === 0 ? 'Indisponível' : quantidadeDisponivel <= 2 ? 'Estoque Baixo' : 'Disponível'}
-                                </h5>
-                                <p class="mb-1"><strong>Total:</strong> ${book.quantidade || 0} exemplares</p>
-                                <p class="mb-1"><strong>Disponível:</strong> ${quantidadeDisponivel} exemplares</p>
-                                <p class="mb-0"><strong>Emprestado:</strong> ${totalEmprestado} exemplares</p>
-                            </div>
-                        </div>
-                    </div>
-                    ${book.descricao ? `<div class="mt-3"><h6>Descrição</h6><p>${book.descricao}</p></div>` : ''}
-                    ${emprestimosHtml}
-                `;
-                
-                // Mostrar modal
-                const bsModal = new bootstrap.Modal(modal);
-                bsModal.show();
-
-            } catch (error) {
-                console.error('Erro ao carregar detalhes do livro:', error);
-                alert('Erro ao carregar detalhes do livro');
-            }
-        }
-
-        async function deleteBook(bookId) {
-            try {
-                // Verificar se há empréstimos ativos para este livro
-                const emprestimosRef = collection(db, 'emprestimos');
-                const emprestimosSnapshot = await getDocs(emprestimosRef);
-
-                let hasActiveLoans = false;
-                emprestimosSnapshot.forEach((empDoc) => {
-                    const emprestimo = empDoc.data();
-                    if (emprestimo.status !== 'DEVOLVIDO' && Array.isArray(emprestimo.books)) {
-                        emprestimo.books.forEach(empBook => {
-                            if (empBook.bookId === bookId) {
-                                hasActiveLoans = true;
-                            }
-                        });
-                    }
-                });
-
-                if (hasActiveLoans) {
-                    alert('Não é possível excluir este livro porque há empréstimos ativos. Aguarde a devolução de todos os exemplares emprestados.');
-                    return;
-                }
-
-                if (confirm('Tem certeza que deseja excluir este livro? Esta ação é irreversível.')) {
-                    await deleteDoc(doc(db, 'livros', bookId));
-                    console.log("Livro excluído com sucesso!");
-                    alert('Livro excluído com sucesso!');
-                    loadBooks(); // Recarregar lista
-                }
-            } catch (error) {
-                console.error("Erro ao excluir livro:", error);
-                alert('Erro ao excluir livro: ' + error.message);
-            }
-        }
-
-        async function editBook(bookId) {
-            try {
-                const bookDoc = await getDoc(doc(db, 'livros', bookId));
-                if (bookDoc.exists()) {
-                    const book = bookDoc.data();
-                    // Populate the edit form with book data
-                    document.getElementById('editBookId').value = bookId;
-                    document.getElementById('editTitulo').value = book.titulo || '';
-                    document.getElementById('editAutores').value = book.autores || '';
-                    document.getElementById('editISBN').value = book.isbn || '';
-                    document.getElementById('editEditora').value = book.editora || '';
-                    document.getElementById('editAno').value = book.ano || '';
-                    document.getElementById('editEdicao').value = book.edicao || '';
-                    document.getElementById('editGenero').value = book.genero || '';
-                    document.getElementById('editQuantidade').value = book.quantidade || 0;
-                    document.getElementById('editDescricao').value = book.descricao || '';
-                    
-                    // Show the edit modal
-                    const editModal = new bootstrap.Modal(document.getElementById('editBookModal'));
-                    editModal.show();
-                } else {
-                    console.error("Livro não encontrado!");
-                    alert('Erro: Livro não encontrado!');
-                }
-            } catch (error) {
-                console.error("Erro ao carregar dados do livro:", error);
-                alert('Erro ao carregar dados do livro: ' + error.message);
-            }
-        }
-
-        // Handle edit form submission
-        document.getElementById('editBookForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+    <!-- Modal Importar Livros -->
+    <div class="modal fade" id="importBooksModal" tabindex="-1" aria-labelledby="importBooksModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">          <div class="modal-header">
+            <h5 class="modal-title" id="importBooksModalLabel">Importar Livros</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+              <span class="visually-hidden">Sair</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-12">
+                <div class="alert alert-info">                  <h6><i class="bx bx-info-circle"></i> Formatos Suportados:</h6>
+                  <ul class="mb-0">
+                    <li><strong>CSV:</strong> titulo,autor,isbn,editora,ano,genero,quantidade</li>
+                    <li><strong>TXT:</strong> Uma linha por livro (separado por vírgula ou tab)</li>
+                    <li><strong>XML:</strong> Estrutura com tags &lt;livro&gt;</li>
+                    <li><strong>XLS/XLSX:</strong> Planilha Excel com colunas organizadas</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
             
-            try {
-                const bookId = document.getElementById('editBookId').value;
-                const newQuantidade = parseInt(document.getElementById('editQuantidade').value);
-                
-                // Verificar se a nova quantidade não é menor que os empréstimos ativos
-                const emprestimosRef = collection(db, 'emprestimos');
-                const emprestimosSnapshot = await getDocs(emprestimosRef);
+            <div class="row">
+              <div class="col-12">
+                <div class="mb-3">
+                  <label for="importFile" class="form-label">Selecione o arquivo para importar:</label>                  <input type="file" class="form-control" id="importFile" accept=".csv,.txt,.xml,.xls,.xlsx" required>
+                  <small class="form-text text-muted">Formatos aceitos: CSV, TXT, XML, XLS, XLSX</small>
+                </div>
+              </div>
+            </div>
 
-                let quantidadeEmprestada = 0;
-                emprestimosSnapshot.forEach((empDoc) => {
-                    const emprestimo = empDoc.data();
-                    if (emprestimo.status !== 'DEVOLVIDO' && Array.isArray(emprestimo.books)) {
-                        emprestimo.books.forEach(empBook => {
-                            if (empBook.bookId === bookId) {
-                                quantidadeEmprestada += empBook.quantity || 1;
-                            }
-                        });
-                    }
-                });
+            <div class="row">
+              <div class="col-12">
+                <div class="mb-3">
+                  <label for="importFormat" class="form-label">Formato do arquivo:</label>                  <select class="form-select" id="importFormat">
+                    <option value="auto">Detectar automaticamente</option>
+                    <option value="csv">CSV (Comma Separated Values)</option>
+                    <option value="txt">TXT (Texto separado por vírgula/tab)</option>
+                    <option value="xml">XML (Extensible Markup Language)</option>
+                    <option value="xls">XLS/XLSX (Planilha Excel)</option>
+                  </select>
+                </div>
+              </div>
+            </div>            <div class="row" id="csvOptions" style="display: none;">
+              <div class="col-12">
+                <div class="mb-3">
+                  <label class="form-label">Opções CSV:</label>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="csvHasHeader" checked>
+                    <label class="form-check-label" for="csvHasHeader">
+                      Primeira linha contém cabeçalhos
+                    </label>
+                  </div>
+                  <div class="mt-2">
+                    <label for="csvSeparator" class="form-label">Separador:</label>
+                    <select class="form-select" id="csvSeparator">
+                      <option value=",">Vírgula (,)</option>
+                      <option value=";">Ponto e vírgula (;)</option>
+                      <option value="\t">Tab</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-                if (newQuantidade < quantidadeEmprestada) {
-                    alert(`Não é possível reduzir a quantidade para ${newQuantidade} porque há ${quantidadeEmprestada} exemplares emprestados. A quantidade mínima permitida é ${quantidadeEmprestada}.`);
-                    return;
-                }
+            <div class="row" id="xlsOptions" style="display: none;">
+              <div class="col-12">
+                <div class="mb-3">
+                  <label class="form-label">Opções Excel:</label>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="xlsHasHeader" checked>
+                    <label class="form-check-label" for="xlsHasHeader">
+                      Primeira linha contém cabeçalhos
+                    </label>
+                  </div>
+                  <div class="mt-2">
+                    <label for="xlsSheet" class="form-label">Planilha:</label>
+                    <select class="form-select" id="xlsSheet">
+                      <option value="0">Primeira planilha</option>
+                    </select>
+                    <small class="form-text text-muted">As planilhas disponíveis serão carregadas após selecionar o arquivo</small>
+                  </div>                  <div class="mt-2">
+                    <div class="alert alert-info small">
+                      <strong>📋 Ordem esperada das colunas:</strong><br>
+                      <div class="row text-center mt-2">
+                        <div class="col">A<br><small>Título</small></div>
+                        <div class="col">B<br><small>Autor</small></div>
+                        <div class="col">C<br><small>ISBN</small></div>
+                        <div class="col">D<br><small>Editora</small></div>
+                        <div class="col">E<br><small>Ano</small></div>
+                        <div class="col">F<br><small>Gênero</small></div>
+                        <div class="col">G<br><small>Quantidade</small></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-                const bookData = {
-                    titulo: document.getElementById('editTitulo').value.trim(),
-                    autores: document.getElementById('editAutores').value.trim(),
-                    isbn: document.getElementById('editISBN').value.trim(),
-                    editora: document.getElementById('editEditora').value.trim(),
-                    ano: parseInt(document.getElementById('editAno').value),
-                    edicao: document.getElementById('editEdicao').value.trim(),
-                    genero: document.getElementById('editGenero').value,
-                    quantidade: newQuantidade,
-                    quantidadeDisponivel: Math.max(0, newQuantidade - quantidadeEmprestada),
-                    emprestados: quantidadeEmprestada,
-                    descricao: document.getElementById('editDescricao').value.trim(),
-                    disponivel: (newQuantidade - quantidadeEmprestada) > 0,
-                    dataAtualizacao: serverTimestamp()
-                };
+            <div class="row">
+              <div class="col-12">
+                <div class="mb-3">
+                  <button type="button" class="btn btn-outline-primary" id="previewImportBtn">
+                    <i class="bx bx-search"></i> Visualizar Prévia
+                  </button>
+                </div>
+              </div>
+            </div>
 
-                // Validate required fields
-                if (!bookData.titulo || !bookData.autores || !bookData.isbn || !bookData.genero || isNaN(bookData.quantidade)) {
-                    alert('Por favor, preencha todos os campos obrigatórios corretamente.');
-                    return;
-                }
+            <div id="importPreview" style="display: none;">
+              <hr>
+              <h6>Prévia dos dados:</h6>
+              <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                  <thead>
+                    <tr>
+                      <th>Título</th>
+                      <th>Autor</th>
+                      <th>ISBN</th>
+                      <th>Editora</th>
+                      <th>Ano</th>
+                      <th>Gênero</th>
+                      <th>Quantidade</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="previewTableBody">
+                  </tbody>
+                </table>
+              </div>
+              <div class="mt-3">
+                <div class="alert alert-warning">
+                  <strong>Atenção:</strong> Verifique os dados antes de importar. Livros com dados incompletos serão ignorados.
+                </div>
+              </div>
+            </div>
 
-                // Update book in Firebase
-                await updateDoc(doc(db, 'livros', bookId), bookData);
-                
-                const modal = bootstrap.Modal.getInstance(document.getElementById('editBookModal'));
-                modal.hide();
-                alert('Livro atualizado com sucesso!');
-                loadBooks(); // Recarregar lista
-                
-            } catch (error) {
-                console.error("Erro ao atualizar livro:", error);
-                alert('Erro ao atualizar livro: ' + error.message);
-            }
-        });
+            <div id="importProgress" style="display: none;">
+              <hr>
+              <h6>Progresso da Importação:</h6>
+              <div class="progress mb-3">
+                <div class="progress-bar" role="progressbar" style="width: 0%" id="importProgressBar"></div>
+              </div>
+              <div id="importStatus"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="startImportBtn" disabled>
+              <i class="bx bx-import"></i> Importar Livros
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        // Função para atualizar manualmente todo o estoque
-        async function updateAllStock() {
-            const button = event.target;
-            const originalHtml = button.innerHTML;
-            button.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> Atualizando...';
-            button.disabled = true;
+    <!-- Modal Editar Livro -->
+    <div class="modal fade" id="editBookModal" tabindex="-1" aria-labelledby="editBookModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">          <div class="modal-header">
+            <h5 class="modal-title" id="editBookModalLabel">Editar Livro</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+              <span class="visually-hidden">Sair</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="editBookForm" class="needs-validation" novalidate>
+              <input type="hidden" id="editBookId">
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="mb-3">
+                    <label for="editTitulo" class="form-label">Título*</label>
+                    <input type="text" class="form-control" id="editTitulo" required>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="mb-3">
+                    <label for="editISBN" class="form-label">ISBN</label>
+                    <input type="text" class="form-control" id="editISBN">
+                  </div>
+                </div>
+              </div>
 
-            try {
-                await loadBooks();
-                alert('Estoque atualizado com sucesso!');
-            } catch (error) {
-                console.error('Erro ao atualizar estoque:', error);
-                alert('Erro ao atualizar estoque');
-            } finally {
-                button.innerHTML = originalHtml;
-                button.disabled = false;
-            }
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="mb-3">
+                    <label for="editAutores" class="form-label">Autor(es)*</label>
+                    <input type="text" class="form-control" id="editAutores" required>
+                    <div class="form-text">Separe múltiplos autores com vírgula</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="editEditora" class="form-label">Editora*</label>
+                    <input type="text" class="form-control" id="editEditora" required>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="mb-3">
+                    <label for="editAno" class="form-label">Ano*</label>
+                    <input type="number" class="form-control" id="editAno" required min="1800" max="2024">
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="mb-3">
+                    <label for="editEdicao" class="form-label">Edição</label>
+                    <input type="text" class="form-control" id="editEdicao">
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">                    <label for="editGenero" class="form-label">Gênero*</label>
+                    <select class="form-select" id="editGenero" required>
+                      <option value="">Selecione o gênero</option>
+                      <option value="ACADEMICO">Acadêmico</option>
+                      <option value="AUTOAJUDA">Autoajuda</option>
+                      <option value="AVENTURA">Aventura</option>
+                      <option value="BIOGRAFIA">Biografia</option>
+                      <option value="CIENCIAS">Ciências</option>
+                      <option value="DIDATICO">Didático</option>
+                      <option value="DRAMA">Drama</option>
+                      <option value="EDUCACAO">Educação</option>
+                      <option value="FANTASIA">Fantasia</option>
+                      <option value="FICCAO">Ficção</option>
+                      <option value="FICCAO_CIENTIFICA">Ficção Científica</option>
+                      <option value="HISTORIA">História</option>
+                      <option value="INFANTIL">Infantil</option>
+                      <option value="JUVENIL">Juvenil</option>
+                      <option value="LITERATURA">Literatura</option>
+                      <option value="MISTERIO">Mistério</option>
+                      <option value="NAO_FICCAO">Não Ficção</option>
+                      <option value="OUTROS">Outros</option>
+                      <option value="POESIA">Poesia</option>
+                      <option value="ROMANCE">Romance</option>
+                      <option value="TECNOLOGIA">Tecnologia</option>
+                      <option value="TECNICO">Técnico</option>
+                      <option value="TERROR">Terror</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="editQuantidade" class="form-label">Quantidade*</label>
+                    <input type="number" class="form-control" id="editQuantidade" required min="0">
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="mb-3">
+                    <label for="editDescricao" class="form-label">Descrição</label>
+                    <textarea class="form-control" id="editDescricao" rows="3"></textarea>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" form="editBookForm" class="btn btn-primary">Salvar Alterações</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import {
+    getFirestore, collection, getDocs, query, where, orderBy, addDoc, doc, getDoc, updateDoc, deleteDoc, serverTimestamp, writeBatch
+  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  import {
+    getAuth, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC558ddNk5dGkB-GgTxbnNVfcciiCwEQP8",
+    authDomain: "biblitech-35d1c.firebaseapp.com",
+    projectId: "biblitech-35d1c",
+    storageBucket: "biblitech-35d1c.firebasestorage.app",
+    messagingSenderId: "972405171947",
+    appId: "1:972405171947:web:acbc479d1410dff21480ae",
+    measurementId: "G-4WQTEHF4DS"
+  };
+  // Inicialize o Firebase apenas uma vez
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // Buscar escolaId do usuário logado (modular)
+  let escolaIdUsuario = null;
+  async function buscarEscolaIdUsuario() {
+    return new Promise((resolve) => {
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          const userDocRef = doc(db, 'usuarios', user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          if (userDocSnap.exists() && userDocSnap.data().escolaId) {
+            escolaIdUsuario = userDocSnap.data().escolaId;
+            resolve(escolaIdUsuario);
+          } else {
+            escolaIdUsuario = null;
+            resolve(null);
+          }
+        } else {
+          escolaIdUsuario = null;
+          resolve(null);
         }
+      });
+    });  }
 
-        // Função para buscar dados do livro pelo ISBN usando Open Library
-        async function buscarLivroPorISBNBooks() {
-            const isbnInput = document.getElementById('bookIsbn');
-            if (!isbnInput) return;
-            const isbn = isbnInput.value.trim().replace(/[^0-9Xx]/g, '');
-            if (!isbn) return;
+  // Função para carregar livros
+  async function loadBooks(filterTitulo = '', filterAutor = '', filterEditora = '', selectedGenre = '') {
+    const bookGrid = document.getElementById('bookGrid');
+    if (!bookGrid) {
+      console.error('Elemento #bookGrid não encontrado no DOM.');
+      return;
+    }
+    try {
+      bookGrid.innerHTML = '<p class="text-center p-4">Carregando livros...</p>';
 
-            const url = `https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`;
+      // Debug: mostrar os filtros aplicados
+      console.log('=== CARREGANDO LIVROS ===');
+      console.log('Filtros aplicados:', { filterTitulo, filterAutor, filterEditora, selectedGenre });
 
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                const livro = data[`ISBN:${isbn}`];
+      // Buscar todos os livros
+      let q = query(collection(db, 'livros'), orderBy('titulo'));
+      const snapshot = await getDocs(q);
+      console.log(`Total de livros no banco: ${snapshot.docs.length}`);
 
-                if (livro) {
-                    document.getElementById('bookTitle').value = livro.title || '';
-                    document.getElementById('bookAuthor').value = livro.authors?.map(a => a.name).join(', ') || '';
-                    document.getElementById('bookCategory').value = livro.subjects?.map(s => s.name).join(', ') || '';
-                    // Se quiser adicionar editora ou ano, crie os campos e preencha aqui
-                } else {
-                    alert('Livro não encontrado.');
-                }
-            } catch (error) {
-                alert('Erro ao buscar o livro.');
-                console.error(error);
-            }
+      // Buscar todos os empréstimos para calcular disponibilidade
+      const emprestimosSnapshot = await getDocs(collection(db, 'emprestimos'));
+      console.log(`Total de empréstimos no banco: ${emprestimosSnapshot.docs.length}`);
+      
+      // Mapear livros emprestados (apenas empréstimos ativos)
+      const livrosEmprestados = new Map();
+      let emprestimosAtivos = 0;
+      let emprestimosDevolvidos = 0;
+      let emprestimosInvalidos = 0;
+      
+      emprestimosSnapshot.forEach(doc => {
+        const emprestimo = doc.data();
+        const emprestimoId = doc.id;
+        
+        console.log(`\n=== EMPRÉSTIMO ${emprestimoId} ===`);
+        console.log(`Status: ${emprestimo.status}`);
+        console.log(`Data: ${emprestimo.dataEmprestimo ? new Date(emprestimo.dataEmprestimo.seconds * 1000).toLocaleDateString() : 'N/A'}`);
+        console.log(`Usuário ID: ${emprestimo.userId || 'N/A'}`);
+        console.log(`Books array:`, emprestimo.books);
+        
+        // Apenas contar empréstimos que estão EMPRESTADO ou ATRASADO (não DEVOLVIDO ou CANCELADO)
+        const statusAtivos = ['EMPRESTADO', 'ATRASADO'];
+        
+        if (statusAtivos.includes(emprestimo.status)) {
+          if (Array.isArray(emprestimo.books) && emprestimo.books.length > 0) {
+            emprestimosAtivos++;
+            emprestimo.books.forEach((book, index) => {
+              console.log(`  Livro ${index + 1}:`);
+              console.log(`    BookID: ${book.bookId}`);
+              console.log(`    Quantity: ${book.quantity} (tipo: ${typeof book.quantity})`);
+              console.log(`    Título: ${book.titulo || 'N/A'}`);
+              
+              const bookId = book.bookId;
+              const quantity = parseInt(book.quantity) || 1; // Garantir que seja número
+              
+              if (bookId) {
+                const currentEmprestado = livrosEmprestados.get(bookId) || 0;
+                livrosEmprestados.set(bookId, currentEmprestado + quantity);
+                console.log(`    → Adicionado ${quantity} ao total emprestado do livro ${bookId}`);
+              } else {
+                console.log(`    ⚠️ BookID inválido!`);
+              }
+            });
+          } else {
+            console.log(`  ⚠️ Empréstimo ativo sem livros válidos!`);
+            emprestimosInvalidos++;
+          }
+        } else if (['DEVOLVIDO', 'CANCELADO'].includes(emprestimo.status)) {
+          emprestimosDevolvidos++;
+          console.log(`  ✅ Empréstimo ${emprestimo.status.toLowerCase()}`);
+        } else {
+          console.log(`  ⚠️ Status desconhecido: ${emprestimo.status}`);
+          emprestimosInvalidos++;
         }
+      });
 
-        // Adiciona o evento ao sair do campo ISBN no modal de novo livro
-        document.addEventListener('DOMContentLoaded', function() {
-            const isbnInput = document.getElementById('bookIsbn');
-            if (isbnInput) {
-                isbnInput.addEventListener('blur', buscarLivroPorISBNBooks);
-            }
+      console.log(`\n=== RESUMO DOS EMPRÉSTIMOS ===`);
+      console.log(`Total de empréstimos: ${emprestimosSnapshot.docs.length}`);
+      console.log(`Empréstimos ativos: ${emprestimosAtivos}`);
+      console.log(`Empréstimos devolvidos/cancelados: ${emprestimosDevolvidos}`);
+      console.log(`Empréstimos inválidos: ${emprestimosInvalidos}`);
+      console.log(`Livros com exemplares emprestados:`, Array.from(livrosEmprestados.entries()));
 
-            // Atualizar estoque a cada 30 segundos (opcional)
-            setInterval(async function() {
-                try {
-                    // Atualização silenciosa sem recarregar a interface
-                    const livrosRef = collection(db, 'livros');
-                    const emprestimosRef = collection(db, 'emprestimos');
-                    
-                    const [livrosSnapshot, emprestimosSnapshot] = await Promise.all([
-                        getDocs(livrosRef),
-                        getDocs(emprestimosRef)
-                    ]);
+      let booksToDisplay = snapshot.docs.map(doc => {
+        const bookData = doc.data();
+        const bookId = doc.id;
+        
+        // QUANTIDADE = VALOR FIXO DO CADASTRO
+        const quantidade = bookData.quantidade || 0;
+        const quantidadeEmprestada = livrosEmprestados.get(bookId) || 0;
+        // DISPONÍVEL = QUANTIDADE - EMPRESTADOS
+        const quantidadeDisponivel = Math.max(0, quantidade - quantidadeEmprestada);
+        
+        return { 
+          id: bookId, 
+          ...bookData,
+          quantidadeEmprestada,
+          quantidadeDisponivel
+        };
+      });
 
-                    const livrosEmprestados = new Map();
-                    emprestimosSnapshot.forEach((doc) => {
-                        const emprestimo = doc.data();
-                        if (emprestimo.status !== 'DEVOLVIDO' && Array.isArray(emprestimo.books)) {
-                            emprestimo.books.forEach(book => {
-                                const bookId = book.bookId;
-                                const quantity = book.quantity || 1;
-                                const currentEmprestado = livrosEmprestados.get(bookId) || 0;
-                                livrosEmprestados.set(bookId, currentEmprestado + quantity);
-                            });
-                        }
-                    });
-
-                    await updateBookCounters(livrosEmprestados);
-                    console.log('Estoque atualizado automaticamente');
-                } catch (error) {
-                    console.error('Erro na atualização automática:', error);
-                }
-            }, 30000); // 30 segundos
+      // Aplicar filtro de gênero
+      if (selectedGenre && selectedGenre.trim()) {
+        booksToDisplay = booksToDisplay.filter(book => {
+          return book.genero && book.genero === selectedGenre;
         });
-    </script>
+      }
+
+      // Aplicar filtro de título
+      if (filterTitulo.trim()) {
+        const lowerTitulo = filterTitulo.toLowerCase().trim();
+        booksToDisplay = booksToDisplay.filter(book => {
+          if (typeof book.titulo === 'string') {
+            return book.titulo.toLowerCase().includes(lowerTitulo);
+          }
+          return false;
+        });
+      }
+      
+      // Aplicar filtro de autor
+      if (filterAutor.trim()) {
+        const lowerAutor = filterAutor.toLowerCase().trim();
+        booksToDisplay = booksToDisplay.filter(book => {
+          if (Array.isArray(book.autores)) {
+            return book.autores.some(author => author.toLowerCase().includes(lowerAutor));
+          } else if (typeof book.autores === 'string') {
+            return book.autores.toLowerCase().includes(lowerAutor);
+          }
+          return false;
+        });
+      }
+      
+      // Aplicar filtro de editora
+      if (filterEditora.trim()) {
+        const lowerEditora = filterEditora.toLowerCase().trim();
+        booksToDisplay = booksToDisplay.filter(book => {
+          if (typeof book.editora === 'string') {
+            return book.editora.toLowerCase().includes(lowerEditora);
+          }
+          return false;
+        });
+      }
+
+      console.log(`Livros encontrados: ${booksToDisplay.length}`);
+
+      // Atualizar contadores no banco de dados
+      await updateBookCounters(livrosEmprestados);
+
+      bookGrid.innerHTML = '';
+      if (booksToDisplay.length === 0) {
+        bookGrid.innerHTML = '<p class="text-center p-4">Nenhum livro encontrado com os critérios selecionados.</p>';
+      } else {
+        booksToDisplay.forEach(bookData => {
+          const card = createBookCard(bookData.id, bookData);
+          bookGrid.appendChild(card);
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao carregar livros:', error);
+      bookGrid.innerHTML = '<p class="text-center text-danger p-4">Erro ao carregar livros. Tente novamente mais tarde.</p>';
+      showAlert('danger', 'Erro ao carregar livros: ' + error.message);
+    }
+  }
+
+  // Função para atualizar contadores dos livros no banco de dados
+  async function updateBookCounters(livrosEmprestados) {
+    try {
+      const livrosRef = collection(db, 'livros');
+      const querySnapshot = await getDocs(livrosRef);
+
+      const batch = writeBatch(db);
+      let updates = 0;
+
+      querySnapshot.forEach((docSnap) => {
+        const book = docSnap.data();
+        const bookId = docSnap.id;
+        // QUANTIDADE = VALOR FIXO DO CADASTRO
+        const estoqueCadastrado = book.quantidade || 0;
+        const quantidadeEmprestada = livrosEmprestados.get(bookId) || 0;
+        // DISPONÍVEL = QUANTIDADE - EMPRESTADOS
+        const quantidadeDisponivel = Math.max(0, estoqueCadastrado - quantidadeEmprestada);
+        
+        batch.update(doc(db, 'livros', bookId), {
+          quantidadeDisponivel: quantidadeDisponivel,
+          emprestados: quantidadeEmprestada,
+          disponivel: quantidadeDisponivel > 0,
+          ultimaAtualizacao: serverTimestamp()
+        });
+        updates++;
+      });
+
+      if (updates > 0) {
+        await batch.commit();
+        console.log(`${updates} livros atualizados com contadores de estoque`);
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar contadores:', error);
+    }
+  }
+
+  // Função para criar card do livro
+  function createBookCard(id, book) {
+    const card = document.createElement('div');
+    card.className = 'book-card';
+
+    // QUANTIDADE = VALOR FIXO DO CADASTRO (NUNCA MUDA)
+    const quantidade = book.quantidade || 0;
+
+    let statusClass = '';
+    let statusText = '';
+    let statusIcon = '';
+
+    if (quantidade === 0) {
+        statusClass = 'status-indisponivel';
+        statusText = 'Sem quantidade cadastrada';
+        statusIcon = 'bx-x-circle';
+    } else {
+        statusClass = 'status-disponivel';
+        statusText = `Estoque: ${quantidade}`;
+        statusIcon = 'bx-archive';
+    }
+
+    card.innerHTML = `
+      <div class="d-flex justify-content-between align-items-start">
+        <div class="flex-grow-1">
+          <div class="book-title mb-1" style="font-size:1.3rem;font-weight:700;color:#1a1a2e;display:flex;align-items:center;gap:0.5rem;">
+            <i class='bx bxs-book' style="color:#3a86ff;font-size:1.2rem;"></i> ${book.titulo || 'Sem título'}
+          </div>
+          <div class="book-author mb-1" style="font-size:1.08rem;color:#3a86ff;font-weight:500;display:flex;align-items:center;gap:0.4rem;">
+            <i class="bx bx-user"></i> ${Array.isArray(book.autores) ? book.autores.join(', ') : book.autores || 'Autor desconhecido'}
+          </div>
+          <div class="book-editora mb-2" style="font-size:1.01rem;color:#6c757d;display:flex;align-items:center;gap:0.4rem;">
+            <i class="bx bx-buildings"></i> ${book.editora || 'N/A'}${(book.anoPublicacao || book.ano) ? ', ' + (book.anoPublicacao || book.ano) : ''}
+          </div>
+          <hr style="border:none;border-top:1px solid #e3e6f0;margin:0.7rem 0 0.9rem 0;" />
+          <div class="book-info mb-1"><b>Ano:</b> ${book.anoPublicacao || book.ano || '-'}</div>
+          <div class="book-info mb-1"><b>Gênero:</b> ${book.genero || '-'}</div>
+          <div class="book-info mb-1"><b>Exemplares:</b> ${quantidade || '-'}</div>
+          <div class="estoque-info mb-2">
+            <span class="book-status ${statusClass}">
+              <i class="bx ${statusIcon} me-1"></i>
+              ${statusText}
+            </span>
+          </div>
+          ${book.isbn ? `<small class="text-muted"><i class="bx bx-barcode me-1"></i>ISBN: ${book.isbn}</small>` : ''}
+        </div>
+        <div class="dropdown">
+          <button class="btn btn-link" type="button" data-bs-toggle="dropdown">
+            <i class='bx bx-dots-vertical-rounded'></i>
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#" onclick="viewBookDetails('${id}')">
+              <i class="bx bx-eye me-2"></i>Ver Detalhes
+            </a></li>
+            <li><a class="dropdown-item" href="#" onclick="editBook('${id}')">
+              <i class="bx bx-edit me-2"></i>Editar
+            </a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" onclick="deleteBook('${id}')">
+              <i class="bx bx-trash me-2"></i>Excluir
+            </a></li>
+          </ul>
+        </div>
+      </div>
+    `;
+    return card;
+  }
+
+  // Função para visualizar detalhes do livro
+  window.viewBookDetails = async function(id) {
+    try {
+      const docRef = doc(db, 'livros', id);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        showAlert('danger', 'Livro não encontrado');
+        return;
+      }
+      
+      const book = docSnap.data();
+
+      // Buscar empréstimos ativos deste livro
+      const emprestimosSnapshot = await getDocs(collection(db, 'emprestimos'));
+      const emprestimosAtivos = [];
+      let totalEmprestado = 0;
+
+      emprestimosSnapshot.forEach((empDoc) => {
+        const emprestimo = empDoc.data();
+        // Apenas contar empréstimos que estão EMPRESTADO ou ATRASADO
+        const statusAtivos = ['EMPRESTADO', 'ATRASADO'];
+        if (statusAtivos.includes(emprestimo.status) && Array.isArray(emprestimo.books)) {
+          emprestimo.books.forEach(empBook => {
+            if (empBook.bookId === id) {
+              const quantidade = parseInt(empBook.quantity) || 1;
+              emprestimosAtivos.push({
+                id: empDoc.id,
+                ...emprestimo,
+                quantidade: quantidade
+              });
+              totalEmprestado += quantidade;
+            }
+          });
+        }
+      });
+
+      // Buscar nomes dos usuários
+      for (let emprestimo of emprestimosAtivos) {
+        try {
+          const userDoc = await getDoc(doc(db, 'usuarios', emprestimo.userId));
+          if (userDoc.exists()) {
+            emprestimo.nomeUsuario = userDoc.data().nome || 'Usuário não encontrado';
+          }
+        } catch (error) {
+          emprestimo.nomeUsuario = 'Erro ao carregar nome';
+        }
+      }
+
+      // QUANTIDADE = VALOR FIXO DO CADASTRO
+      const quantidade = book.quantidade || 0;
+      const quantidadeDisponivel = Math.max(0, quantidade - totalEmprestado);
+
+      console.log(`=== DETALHES DO LIVRO: ${book.titulo} ===`);
+      console.log(`Quantidade (FIXO): ${quantidade}`);
+      console.log(`Empréstimos ativos encontrados: ${emprestimosAtivos.length}`);
+      console.log(`Total emprestado calculado: ${totalEmprestado}`);
+      console.log(`Disponível calculado: ${quantidadeDisponivel} (${quantidade} - ${totalEmprestado})`);
+      console.log(`Dados salvos no banco:`, {
+        quantidadeDisponivel: book.quantidadeDisponivel,
+        emprestados: book.emprestados,
+        disponivel: book.disponivel
+      });
+
+      // Criar modal para mostrar detalhes
+      const modalId = 'bookDetailsModal';
+      let modal = document.getElementById(modalId);
+      
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = modalId;
+        modal.setAttribute('tabindex', '-1');
+        modal.innerHTML = `
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">
+                  <i class="bx bx-book me-2"></i>Detalhes do Livro
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body" id="bookDetailsBody">
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="loadBooks()">
+                  <i class="bx bx-refresh me-2"></i>Atualizar Estoque
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+
+      // Preencher conteúdo do modal
+      document.getElementById('bookDetailsBody').innerHTML = `
+        <div class="row">
+          <div class="col-md-6">
+            <h6>Informações Básicas</h6>
+            <p><strong>Título:</strong> ${book.titulo || 'N/A'}</p>
+            <p><strong>Autor(es):</strong> ${Array.isArray(book.autores) ? book.autores.join(', ') : book.autores || 'N/A'}</p>
+            <p><strong>ISBN:</strong> ${book.isbn || 'N/A'}</p>
+            <p><strong>Gênero:</strong> ${book.genero || 'N/A'}</p>
+            <p><strong>Editora:</strong> ${book.editora || 'N/A'}</p>
+            <p><strong>Ano:</strong> ${book.anoPublicacao || book.ano || 'N/A'}</p>
+          </div>
+          <div class="col-md-6">
+            <h6>Controle de Estoque</h6>
+            <div class="alert ${quantidadeDisponivel === 0 ? 'alert-danger' : 'alert-success'}">
+              <h5 class="mb-2">
+                <i class="bx ${quantidadeDisponivel === 0 ? 'bx-x-circle' : 'bx-check-circle'}"></i>
+                ${quantidadeDisponivel === 0 ? 'Indisponível' : 'Disponível'}
+              </h5>
+              <p class="mb-1"><strong>Total:</strong> ${quantidade} exemplares</p>
+              <p class="mb-1"><strong>Disponível:</strong> ${quantidadeDisponivel} exemplares</p>
+              <p class="mb-1"><strong>Emprestado:</strong> ${totalEmprestado} exemplares</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      let emprestimosHtml = '';
+      if (emprestimosAtivos.length > 0) {
+        emprestimosHtml = `
+          <h6 class="mt-4">Empréstimos Ativos:</h6>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Usuário</th>
+                  <th>Quantidade</th>
+                  <th>Data Empréstimo</th>
+                  <th>Data Devolução</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+        
+        emprestimosAtivos.forEach(emp => {
+          const statusClass = emp.status === 'ATRASADO' ? 'text-danger' : 'text-warning';
+          emprestimosHtml += `
+            <tr>
+              <td>${emp.nomeUsuario}</td>
+              <td>${emp.quantidade}</td>
+              <td>${emp.loanDate || 'N/A'}</td>
+              <td>${emp.returnDate || 'N/A'}</td>
+              <td><span class="${statusClass}">${emp.status}</span></td>
+            </tr>
+          `;
+        });
+        
+        emprestimosHtml += `
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else {
+        emprestimosHtml = '<p class="text-muted mt-3">Nenhum empréstimo ativo para este livro.</p>';
+      }
+
+      document.getElementById('bookDetailsBody').innerHTML += emprestimosHtml;
+      
+      // Mostrar modal
+      const bsModal = new bootstrap.Modal(modal);
+      bsModal.show();
+
+    } catch (error) {
+      console.error('Erro ao carregar detalhes do livro:', error);
+      showAlert('danger', 'Erro ao carregar detalhes do livro');
+    }
+  };
+
+  // Função para editar livro
+  window.editBook = async function(id) {
+    try {
+      const docRef = doc(db, 'livros', id);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        showAlert('danger', 'Livro não encontrado');
+        return;
+      }
+      const book = docSnap.data();
+
+      // Preencher os campos do formulário
+      document.getElementById('editBookId').value = id;
+      document.getElementById('editTitulo').value = book.titulo || '';
+      document.getElementById('editISBN').value = book.isbn || '';
+      document.getElementById('editAutores').value = Array.isArray(book.autores) ? book.autores.join(', ') : book.autores || '';
+      document.getElementById('editEditora').value = book.editora || '';
+      document.getElementById('editAno').value = book.anoPublicacao || book.ano || '';
+      document.getElementById('editEdicao').value = book.edicao || '';
+      document.getElementById('editQuantidade').value = book.quantidade || 0;
+      document.getElementById('editDescricao').value = book.descricao || '';
+
+      // Abrir o modal
+      const editModal = new bootstrap.Modal(document.getElementById('editBookModal'));
+      editModal.show();
+
+      // Aguardar o modal ser totalmente exibido antes de definir o gênero
+      setTimeout(() => {
+        const generoSelect = document.getElementById('editGenero');
+        if (generoSelect && book.genero) {
+          generoSelect.value = book.genero;
+          
+          // Debug: verificar se o valor foi definido corretamente
+          if (generoSelect.value !== book.genero) {
+            console.warn('Gênero não encontrado nas opções:', book.genero);
+            console.log('Opções disponíveis:', Array.from(generoSelect.options).map(opt => opt.value));
+            
+            // Tentar encontrar uma correspondência aproximada
+            const opcoes = Array.from(generoSelect.options);
+            const opcaoEncontrada = opcoes.find(opt => 
+              opt.textContent.toLowerCase() === book.genero.toLowerCase() ||
+              opt.value.toLowerCase() === book.genero.toLowerCase()
+            );
+            
+            if (opcaoEncontrada) {
+              generoSelect.value = opcaoEncontrada.value;
+            } else {
+              // Se não encontrar, criar uma opção temporária
+              const novaOpcao = document.createElement('option');
+              novaOpcao.value = book.genero;
+              novaOpcao.textContent = book.genero;
+              generoSelect.appendChild(novaOpcao);
+              generoSelect.value = book.genero;
+            }
+          }
+        }
+      }, 100);    } catch (error) {
+      console.error('Erro ao carregar dados do livro:', error);
+      showAlert('danger', 'Erro ao carregar dados do livro');
+    }
+  }
+
+  // Função para salvar edições
+  async function handleEditSubmission(event) {
+    event.preventDefault();
+
+    const form = document.getElementById('editBookForm');
+    if (!form.checkValidity()) {
+      form.classList.add('was-validated');
+      return;
+    }
+
+    try {
+      const id = document.getElementById('editBookId').value;
+      const newQuantidade = parseInt(document.getElementById('editQuantidade').value);
+      
+      // Verificar se a nova quantidade não é menor que os empréstimos ativos
+      const emprestimosSnapshot = await getDocs(collection(db, 'emprestimos'));
+      let quantidadeEmprestada = 0;
+      
+      emprestimosSnapshot.forEach((empDoc) => {
+        const emprestimo = empDoc.data();
+        // Apenas contar empréstimos que estão EMPRESTADO ou ATRASADO
+        const statusAtivos = ['EMPRESTADO', 'ATRASADO'];
+        if (statusAtivos.includes(emprestimo.status) && Array.isArray(emprestimo.books)) {
+          emprestimo.books.forEach(empBook => {
+            if (empBook.bookId === id) {
+              quantidadeEmprestada += parseInt(empBook.quantity) || 1;
+            }
+          });
+        }
+      });
+
+      if (newQuantidade < quantidadeEmprestada) {
+        showAlert('danger', `Não é possível reduzir a quantidade para ${newQuantidade} porque há ${quantidadeEmprestada} exemplares emprestados. A quantidade mínima permitida é ${quantidadeEmprestada}.`);
+        return;
+      }
+
+      let autores = document.getElementById('editAutores').value;
+      autores = autores.split(',').map(a => a.trim()).filter(a => a);
+
+      const quantidadeDisponivel = Math.max(0, newQuantidade - quantidadeEmprestada);
+
+      const bookData = {
+        titulo: document.getElementById('editTitulo').value,
+        isbn: document.getElementById('editISBN').value,
+        autores: autores,
+        editora: document.getElementById('editEditora').value,
+        anoPublicacao: parseInt(document.getElementById('editAno').value),
+        edicao: document.getElementById('editEdicao').value,
+        genero: document.getElementById('editGenero').value,
+        quantidade: newQuantidade,
+        quantidadeDisponivel: quantidadeDisponivel,
+        emprestados: quantidadeEmprestada,
+        disponivel: quantidadeDisponivel > 0,
+        descricao: document.getElementById('editDescricao').value,
+        updatedAt: serverTimestamp()
+      };
+
+      // Atualizar no Firestore
+      await updateDoc(doc(db, 'livros', id), bookData);
+
+      showAlert('success', 'Livro atualizado com sucesso!');
+      bootstrap.Modal.getInstance(document.getElementById('editBookModal')).hide();
+      loadBooks();
+
+    } catch (error) {
+      console.error('Erro ao atualizar livro:', error);
+      showAlert('danger', 'Erro ao atualizar livro');
+    }
+  }
+
+  // Função para excluir livro
+  window.deleteBook = async function(id) {
+    try {
+      // Verificar se há empréstimos ativos para este livro
+      const emprestimosSnapshot = await getDocs(collection(db, 'emprestimos'));
+      let hasActiveLoans = false;
+      
+      emprestimosSnapshot.forEach((empDoc) => {
+        const emprestimo = empDoc.data();
+        if (emprestimo.status !== 'DEVOLVIDO' && Array.isArray(emprestimo.books)) {
+          emprestimo.books.forEach(empBook => {
+            if (empBook.bookId === id) {
+              hasActiveLoans = true;
+            }
+          });
+        }
+      });
+
+      if (hasActiveLoans) {
+        showAlert('danger', 'Não é possível excluir este livro porque há empréstimos ativos. Aguarde a devolução de todos os exemplares emprestados.');
+        return;
+      }
+
+      // Primeiro alerta de confirmação
+      if (!confirm('Tem certeza que deseja excluir este livro?')) return;
+      
+      // Segundo alerta de confirmação mais específico
+      const confirmacao = confirm('⚠️ ATENÇÃO! Esta ação é IRREVERSÍVEL!\n\nO livro será permanentemente removido do sistema e não poderá ser recuperado.\n\nDeseja realmente continuar com a exclusão?');
+      if (!confirmacao) return;
+
+      await deleteDoc(doc(db, 'livros', id));
+      showAlert('success', 'Livro excluído com sucesso!');
+      loadBooks();
+    } catch (error) {
+      console.error('Erro ao excluir livro:', error);
+      showAlert('danger', 'Erro ao excluir livro');
+    }
+  };
+  
+  // Função para atualizar manualmente todo o estoque
+  window.updateAllStock = async function() {
+    const button = event.target;
+    const originalHtml = button.innerHTML;
+    button.innerHTML = '<i class="bx bx-loader bx-spin"></i> Atualizando...';
+    button.disabled = true;
+
+    try {
+      console.log('=== FORÇANDO ATUALIZAÇÃO COMPLETA DE ESTOQUE ===');
+      
+      // Buscar todos os empréstimos
+      const emprestimosSnapshot = await getDocs(collection(db, 'emprestimos'));
+      const livrosEmprestados = new Map();
+      
+      console.log(`Analisando ${emprestimosSnapshot.docs.length} empréstimos...`);
+      
+      emprestimosSnapshot.forEach(doc => {
+        const emprestimo = doc.data();
+        const statusAtivos = ['EMPRESTADO', 'ATRASADO'];
+        
+        if (statusAtivos.includes(emprestimo.status) && Array.isArray(emprestimo.books)) {
+          emprestimo.books.forEach(book => {
+            const bookId = book.bookId;
+            const quantity = parseInt(book.quantity) || 1;
+            const currentEmprestado = livrosEmprestados.get(bookId) || 0;
+            livrosEmprestados.set(bookId, currentEmprestado + quantity);
+          });
+        }
+      });
+      
+      // Forçar atualização de todos os livros
+      const livrosRef = collection(db, 'livros');
+      const querySnapshot = await getDocs(livrosRef);
+      const batch = writeBatch(db);
+      let updates = 0;
+      
+      querySnapshot.forEach((docSnap) => {
+        const book = docSnap.data();
+        const bookId = docSnap.id;
+        // QUANTIDADE = VALOR FIXO DO CADASTRO
+        const quantidade = book.quantidade || 0;
+        const quantidadeEmprestada = livrosEmprestados.get(bookId) || 0;
+        // DISPONÍVEL = QUANTIDADE - EMPRESTADOS
+        const quantidadeDisponivel = Math.max(0, quantidade - quantidadeEmprestada);
+        
+        batch.update(doc(db, 'livros', bookId), {
+          quantidadeDisponivel: quantidadeDisponivel,
+          emprestados: quantidadeEmprestada,
+          disponivel: quantidadeDisponivel > 0,
+          ultimaAtualizacao: serverTimestamp()
+        });
+        updates++;
+      });
+      
+      if (updates > 0) {
+        await batch.commit();
+        showAlert('success', `Estoque atualizado! ${updates} livros foram atualizados.`);
+        await loadBooks();
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar estoque:', error);
+      showAlert('danger', 'Erro ao atualizar estoque: ' + error.message);
+    } finally {
+      button.innerHTML = originalHtml;
+      button.disabled = false;
+    }
+  };
+
+
+  // Função para diagnosticar problemas de estoque
+  window.diagnosticarEstoque = async function() {
+    const button = event.target;
+    const originalHtml = button.innerHTML;
+    button.innerHTML = '<i class="bx bx-loader bx-spin"></i> Analisando...';
+    button.disabled = true;
+
+    try {
+      console.log('=== DIAGNÓSTICO COMPLETO DE ESTOQUE ===');
+      
+      // Buscar todos os livros
+      const livrosSnapshot = await getDocs(collection(db, 'livros'));
+      console.log(`Total de livros cadastrados: ${livrosSnapshot.docs.length}`);
+      
+      // Buscar todos os empréstimos
+      const emprestimosSnapshot = await getDocs(collection(db, 'emprestimos'));
+      console.log(`Total de empréstimos no banco: ${emprestimosSnapshot.docs.length}`);
+      
+      const livrosEmprestados = new Map();
+      let contadorStatus = {
+        EMPRESTADO: 0,
+        ATRASADO: 0,
+        DEVOLVIDO: 0,
+        CANCELADO: 0,
+        OUTROS: 0
+      };
+      
+      // Analisar todos os empréstimos
+      console.log('\n=== ANÁLISE DOS EMPRÉSTIMOS ===');
+      emprestimosSnapshot.forEach(doc => {
+        const emprestimo = doc.data();
+        const status = emprestimo.status || 'SEM_STATUS';
+        
+        if (contadorStatus.hasOwnProperty(status)) {
+          contadorStatus[status]++;
+        } else {
+          contadorStatus.OUTROS++;
+          console.log(`Status desconhecido encontrado: ${status}`);
+        }
+        
+        const statusAtivos = ['EMPRESTADO', 'ATRASADO'];
+        
+        if (statusAtivos.includes(status) && Array.isArray(emprestimo.books)) {
+          emprestimo.books.forEach(book => {
+            const bookId = book.bookId;
+            const quantity = parseInt(book.quantity) || 1;
+            const currentEmprestado = livrosEmprestados.get(bookId) || 0;
+            livrosEmprestados.set(bookId, currentEmprestado + quantity);
+          });
+        }
+      });
+      
+      console.log('Contadores por status:', contadorStatus);
+      console.log('Livros com exemplares emprestados:', Array.from(livrosEmprestados.entries()));
+      
+      // Analisar cada livro
+      let problemas = [];
+      let livrosCorretos = 0;
+      
+      console.log('\n=== ANÁLISE POR LIVRO ===');
+      livrosSnapshot.forEach(doc => {
+        const book = doc.data();
+        const bookId = doc.id;
+        
+        const quantidade = book.quantidade || 0;
+        const quantidadeEmprestadaCalculada = livrosEmprestados.get(bookId) || 0;
+        const quantidadeDisponivelCalculada = Math.max(0, quantidade - quantidadeEmprestadaCalculada);
+        
+        const quantidadeDisponivelSalva = book.quantidadeDisponivel;
+        const emprestadosSalvos = book.emprestados || 0;
+        
+        console.log(`\nLivro: ${book.titulo}`);
+        console.log(`  Quantidade: ${quantidade}`);
+        console.log(`  Emprestados (calculado): ${quantidadeEmprestadaCalculada}`);
+        console.log(`  Emprestados (salvo): ${emprestadosSalvos}`);
+        console.log(`  Disponível (calculado): ${quantidadeDisponivelCalculada}`);
+        console.log(`  Disponível (salvo): ${quantidadeDisponivelSalva}`);
+        
+        // Verificar discrepâncias
+        if (quantidadeDisponivelSalva !== quantidadeDisponivelCalculada || 
+            emprestadosSalvos !== quantidadeEmprestadaCalculada) {
+          console.log(`  ⚠️ PROBLEMA ENCONTRADO!`);
+          problemas.push({
+            id: bookId,
+            titulo: book.titulo,
+            quantidade: quantidade,
+            emprestadosCalculados: quantidadeEmprestadaCalculada,
+            disponivelCalculado: quantidadeDisponivelCalculada,
+            emprestadosSalvos: emprestadosSalvos,
+            disponivelSalvo: quantidadeDisponivelSalva
+          });
+        } else {
+          console.log(`  ✅ OK`);
+          livrosCorretos++;
+        }
+      });
+      
+      console.log(`\n=== RESULTADO FINAL ===`);
+      console.log(`Livros corretos: ${livrosCorretos}`);
+      console.log(`Livros com problemas: ${problemas.length}`);
+      
+      if (problemas.length > 0) {
+        console.log('\nProblemas encontrados:');
+        problemas.forEach(p => {
+          console.log(`- ${p.titulo}: Calculado(${p.emprestadosCalculados}/${p.disponivelCalculado}) vs Salvo(${p.emprestadosSalvos}/${p.disponivelSalvo})`);
+        });
+        showAlert('warning', `Encontrados ${problemas.length} livros com discrepâncias. Verifique o console para detalhes. Clique em "Atualizar Estoque" para corrigir.`);
+      } else {
+        showAlert('success', 'Todos os contadores estão corretos!');
+      }
+      
+    } catch (error) {
+      console.error('Erro no diagnóstico:', error);
+      showAlert('danger', 'Erro no diagnóstico: ' + error.message);
+    } finally {
+      button.innerHTML = originalHtml;
+      button.disabled = false;
+    }
+  };
+
+  // Função para mostrar alertas
+  function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    document.querySelector('.main-content').insertBefore(alertDiv, document.querySelector('.search-box'));
+
+    setTimeout(() => {
+      alertDiv.remove();
+    }, 5000);
+  }
+
+  // FUNCIONALIDADES DE IMPORTAÇÃO
+  let parsedImportData = [];
+  // Função para detectar formato do arquivo
+  function detectFileFormat(filename, content) {
+    const extension = filename.toLowerCase().split('.').pop();
+    
+    if (extension === 'xml') return 'xml';
+    if (extension === 'csv') return 'csv';
+    if (extension === 'txt') return 'txt';
+    if (extension === 'xls' || extension === 'xlsx') return 'xls';
+    
+    // Tentar detectar pelo conteúdo
+    if (content.trim().startsWith('<')) return 'xml';
+    if (content.includes(',') && content.split('\n').length > 1) return 'csv';
+    return 'txt';
+  }
+
+  // Função para parsear CSV
+  function parseCSV(content, separator = ',', hasHeader = true) {
+    const lines = content.trim().split('\n');
+    if (lines.length === 0) return [];
+    
+    const data = [];
+    const startIndex = hasHeader ? 1 : 0;
+    
+    for (let i = startIndex; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      
+      const values = line.split(separator).map(v => v.trim().replace(/^["']|["']$/g, ''));
+      
+      if (values.length >= 4) { // Mínimo: título, autor, ISBN, quantidade
+        const book = {
+          titulo: values[0] || '',
+          autor: values[1] || '',
+          isbn: values[2] || '',
+          editora: values[3] || '',
+          ano: values[4] ? parseInt(values[4]) : new Date().getFullYear(),
+          genero: values[5] || 'Outros',
+          quantidade: values[6] ? parseInt(values[6]) : 1,
+          valid: !!(values[0] && values[1])
+        };
+        data.push(book);
+      }
+    }
+    
+    return data;
+  }
+
+  // Função para parsear TXT
+  function parseTXT(content) {
+    const lines = content.trim().split('\n');
+    const data = [];
+    
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      
+      // Tentar diferentes separadores
+      let values = [];
+      if (line.includes('\t')) {
+        values = line.split('\t');
+      } else if (line.includes(',')) {
+        values = line.split(',');
+      } else if (line.includes(';')) {
+        values = line.split(';');
+      } else {
+        continue; // Linha não reconhecida
+      }
+      
+      values = values.map(v => v.trim().replace(/^["']|["']$/g, ''));
+      
+      if (values.length >= 2) {
+        const book = {
+          titulo: values[0] || '',
+          autor: values[1] || '',
+          isbn: values[2] || '',
+          editora: values[3] || '',
+          ano: values[4] ? parseInt(values[4]) : new Date().getFullYear(),
+          genero: values[5] || 'Outros',
+          quantidade: values[6] ? parseInt(values[6]) : 1,
+          valid: !!(values[0] && values[1])
+        };
+        data.push(book);
+      }
+    }
+    
+    return data;
+  }
+  // Função para parsear XML
+  function parseXML(content) {
+    const data = [];
+    
+    try {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(content, 'text/xml');
+      
+      // Verificar se há erros de parsing
+      if (xmlDoc.getElementsByTagName('parsererror').length > 0) {
+        throw new Error('XML inválido');
+      }
+      
+      const livros = xmlDoc.getElementsByTagName('livro');
+      
+      for (const livro of livros) {
+        const getTextContent = (tagName) => {
+          const elements = livro.getElementsByTagName(tagName);
+          return elements.length > 0 ? elements[0].textContent.trim() : '';
+        };
+        
+        const titulo = getTextContent('titulo') || getTextContent('title') || getTextContent('nome');
+        const autor = getTextContent('autor') || getTextContent('author') || getTextContent('autores');
+          if (titulo && autor) {
+          const book = {
+            titulo,
+            autor,
+            isbn: getTextContent('isbn'),
+            editora: getTextContent('editora') || getTextContent('publisher'),
+            anoPublicacao: parseInt(getTextContent('ano') || getTextContent('year') || getTextContent('anoPublicacao')) || new Date().getFullYear(),
+            genero: getTextContent('genero') || getTextContent('genre') || 'Outros',
+            quantidade: parseInt(getTextContent('quantidade') || getTextContent('quantity')) || 1,
+            valid: true
+          };
+          data.push(book);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao parsear XML:', error);
+      showAlert('danger', 'Erro ao processar arquivo XML: ' + error.message);
+    }
+    
+    return data;
+  }
+
+  // Variável global para armazenar dados do Excel
+  let currentWorkbook = null;
+
+  // Função para parsear XLS/XLSX
+  function parseXLS(arrayBuffer, sheetIndex = 0, hasHeader = true) {
+    const data = [];
+    
+    try {
+      // Ler o arquivo Excel
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      currentWorkbook = workbook;
+      
+      // Atualizar lista de planilhas
+      updateSheetList(workbook.SheetNames);
+      
+      // Obter a planilha especificada
+      const sheetName = workbook.SheetNames[sheetIndex];
+      if (!sheetName) {
+        throw new Error('Planilha não encontrada');
+      }
+      
+      const worksheet = workbook.Sheets[sheetName];
+      
+      // Converter para JSON
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+        header: 1, // Usar arrays ao invés de objetos
+        defval: '' // Valor padrão para células vazias
+      });
+      
+      if (jsonData.length === 0) {
+        throw new Error('Planilha vazia');
+      }
+      
+      const startRow = hasHeader ? 1 : 0;
+      
+      // Processar cada linha
+      for (let i = startRow; i < jsonData.length; i++) {
+        const row = jsonData[i];
+        
+        // Pular linhas vazias
+        if (!row || row.every(cell => !cell)) continue;
+          // Extrair dados (assumindo ordem: título, autor, isbn, editora, ano, gênero, quantidade)
+        const titulo = row[0] ? String(row[0]).trim() : '';
+        const autor = row[1] ? String(row[1]).trim() : '';
+        const isbn = row[2] ? String(row[2]).trim() : '';
+        const editora = row[3] ? String(row[3]).trim() : '';
+        const anoPublicacao = row[4] ? parseInt(row[4]) || new Date().getFullYear() : new Date().getFullYear();
+        const genero = row[5] ? String(row[5]).trim() : 'Outros';
+        const quantidade = row[6] ? parseInt(row[6]) || 1 : 1;
+        
+        if (titulo && autor) {
+          const book = {
+            titulo,
+            autor,
+            isbn,
+            editora,
+            anoPublicacao,
+            genero,
+            quantidade,
+            valid: true
+          };
+          data.push(book);        } else if (titulo || autor) {
+          // Dados incompletos
+          const book = {
+            titulo,
+            autor,
+            isbn,
+            editora,
+            anoPublicacao,
+            genero,
+            quantidade,
+            valid: false
+          };
+          data.push(book);
+        }
+      }
+      
+    } catch (error) {
+      console.error('Erro ao parsear Excel:', error);
+      showAlert('danger', 'Erro ao processar arquivo Excel: ' + error.message);
+    }
+    
+    return data;
+  }
+
+  // Função para atualizar lista de planilhas
+  function updateSheetList(sheetNames) {
+    const sheetSelect = document.getElementById('xlsSheet');
+    sheetSelect.innerHTML = '';
+    
+    sheetNames.forEach((name, index) => {
+      const option = document.createElement('option');
+      option.value = index;
+      option.textContent = `${index + 1}. ${name}`;
+      sheetSelect.appendChild(option);
+    });
+  }
+  // Função para processar arquivo de importação
+  async function processImportFile() {
+    const fileInput = document.getElementById('importFile');
+    const formatSelect = document.getElementById('importFormat');
+    
+    if (!fileInput.files[0]) {
+      showAlert('warning', 'Selecione um arquivo para importar');
+      return;
+    }
+    
+    const file = fileInput.files[0];
+    
+    let format = formatSelect.value;
+    if (format === 'auto') {
+      format = detectFileFormat(file.name, '');
+    }
+    
+    // Processar baseado no formato
+    switch (format) {
+      case 'csv':
+        const content = await file.text();
+        const separator = document.getElementById('csvSeparator').value;
+        const hasHeader = document.getElementById('csvHasHeader').checked;
+        parsedImportData = parseCSV(content, separator, hasHeader);
+        break;
+        
+      case 'txt':
+        const txtContent = await file.text();
+        parsedImportData = parseTXT(txtContent);
+        break;
+        
+      case 'xml':
+        const xmlContent = await file.text();
+        parsedImportData = parseXML(xmlContent);
+        break;
+        
+      case 'xls':
+        const arrayBuffer = await file.arrayBuffer();
+        const xlsSheetIndex = parseInt(document.getElementById('xlsSheet').value) || 0;
+        const xlsHasHeader = document.getElementById('xlsHasHeader').checked;
+        parsedImportData = parseXLS(arrayBuffer, xlsSheetIndex, xlsHasHeader);
+        break;
+        
+      default:
+        showAlert('danger', 'Formato de arquivo não suportado');
+        return;
+    }
+    
+    // Mostrar prévia
+    displayImportPreview();
+  }
+
+  // Função para exibir prévia dos dados
+  function displayImportPreview() {
+    const previewDiv = document.getElementById('importPreview');
+    const tableBody = document.getElementById('previewTableBody');
+    const startImportBtn = document.getElementById('startImportBtn');
+    
+    tableBody.innerHTML = '';
+    
+    if (parsedImportData.length === 0) {
+      showAlert('warning', 'Nenhum dado válido encontrado no arquivo');
+      startImportBtn.disabled = true;
+      return;
+    }
+    
+    // Mostrar primeiros 10 registros na prévia
+    const previewData = parsedImportData.slice(0, 10);
+    
+    previewData.forEach(book => {
+      const row = document.createElement('tr');
+      row.className = book.valid ? 'table-success' : 'table-danger';
+      
+      row.innerHTML = `
+        <td>${book.titulo}</td>
+        <td>${book.autor}</td>
+        <td>${book.isbn}</td>
+        <td>${book.editora}</td>
+        <td>${book.ano}</td>
+        <td>${book.genero}</td>
+        <td>${book.quantidade}</td>
+        <td>${book.valid ? '<i class="bx bx-check text-success"></i> Válido' : '<i class="bx bx-x text-danger"></i> Inválido'}</td>
+      `;
+      
+      tableBody.appendChild(row);
+    });
+    
+    previewDiv.style.display = 'block';
+    startImportBtn.disabled = false;
+    
+    const validCount = parsedImportData.filter(book => book.valid).length;
+    const totalCount = parsedImportData.length;
+    
+    showAlert('info', `Prévia carregada: ${validCount} de ${totalCount} registros são válidos`);
+  }
+
+  // Função para importar os livros
+  async function importBooks() {
+  const validBooks = parsedImportData.filter(book => book.valid);
+
+  if (validBooks.length === 0) {
+    showAlert('warning', 'Nenhum livro válido para importar');
+    return;
+  }
+
+  const progressDiv = document.getElementById('importProgress');
+  const progressBar = document.getElementById('importProgressBar');
+  const statusDiv = document.getElementById('importStatus');
+  const startBtn = document.getElementById('startImportBtn');
+
+  progressDiv.style.display = 'block';
+  startBtn.disabled = true;
+
+  let imported = 0;
+  let errors = 0;
+
+  for (let i = 0; i < validBooks.length; i++) {
+    const book = validBooks[i];
+
+    try {
+      // Corrigir campo ano para nunca ser undefined
+      let ano = book.ano;
+      if (ano === undefined || ano === null || isNaN(Number(ano))) {
+        ano = (book.anoPublicacao !== undefined && !isNaN(Number(book.anoPublicacao)))
+          ? Number(book.anoPublicacao)
+          : new Date().getFullYear();
+      }
+
+      const bookData = {
+        titulo: book.titulo,
+        autores: book.autor.split(',').map(a => a.trim()),
+        isbn: book.isbn,
+        editora: book.editora,
+        ano: ano,
+        genero: book.genero,
+        quantidade: book.quantidade,
+        quantidadeDisponivel: Math.max(0, book.quantidade - (book.emprestados || 0)),
+        emprestados: 0,
+        createdAt: serverTimestamp(),
+        importedAt: serverTimestamp()
+      };
+
+      await addDoc(collection(db, 'livros'), bookData);
+      imported++;
+
+    } catch (error) {
+      console.error('Erro ao importar livro:', book.titulo, error);
+      errors++;
+    }
+
+    // Atualizar progresso
+    const progress = ((i + 1) / validBooks.length) * 100;
+    progressBar.style.width = progress + '%';
+    statusDiv.innerHTML = `Importando... ${i + 1}/${validBooks.length} (${imported} sucessos, ${errors} erros)`;
+  }
+
+  // Finalizar importação
+  setTimeout(() => {
+    progressDiv.style.display = 'none';
+    startBtn.disabled = false;
+    
+    if (imported > 0) {
+      showAlert('success', `Importação concluída! ${imported} livros importados com sucesso${errors > 0 ? `, ${errors} erros` : ''}`);
+      bootstrap.Modal.getInstance(document.getElementById('importBooksModal')).hide();
+      loadBooks(); // Recarregar lista de livros
+    } else {
+      showAlert('danger', 'Nenhum livro foi importado. Verifique o formato dos dados.');
+    }
+    
+    // Limpar dados da importação
+    parsedImportData = [];
+    document.getElementById('importFile').value = '';
+    document.getElementById('importPreview').style.display = 'none';
+    
+  }, 1000);
+  }
+
+  // Função para lidar com a submissão do formulário de adicionar livro
+  async function handleAddBookSubmission(event) {
+    event.preventDefault?.();
+
+    const form = document.getElementById('addBookForm');
+    if (!form) return;
+
+    form.classList.add('was-validated');
+    if (!form.checkValidity()) return;    // Pegue os campos e verifique se existem antes de acessar .value
+    const nomeLivroInput = document.getElementById('nomeLivro');
+    const isbnInput = document.getElementById('isbn');
+    const autorInput = document.getElementById('autor');
+    const generoInput = document.getElementById('genero');
+    const quantidadeInput = document.getElementById('quantidade');
+    const editoraInput = document.getElementById('editora');
+    const anoPublicacaoInput = document.getElementById('anoPublicacao');
+
+    if (!nomeLivroInput || !autorInput || !generoInput || !quantidadeInput) {
+      alert('Preencha todos os campos obrigatórios.');
+      return;
+    }
+
+    const titulo = nomeLivroInput.value.trim();
+    const isbn = isbnInput ? isbnInput.value.trim() : '';
+    const autores = autorInput.value.split(',').map(a => a.trim()).filter(a => a);
+    const genero = generoInput.value;
+    const quantidade = Number(quantidadeInput.value);
+    const editora = editoraInput ? editoraInput.value.trim() : '';
+    const anoPublicacao = anoPublicacaoInput ? Number(anoPublicacaoInput.value) : null;
+
+    const livro = {
+      titulo,
+      isbn,
+      autores,
+      genero,
+      quantidade,
+      quantidadeDisponivel: quantidade, // Inicialmente toda quantidade está disponível
+      emprestados: 0, // Inicialmente nenhum exemplar emprestado
+      disponivel: quantidade > 0,
+      editora,
+      anoPublicacao,
+      createdAt: serverTimestamp()
+    };
+
+    try {
+      await addDoc(collection(db, 'livros'), livro);
+      alert('Livro cadastrado com sucesso!');
+      form.reset();
+      form.classList.remove('was-validated');
+      loadBooks();
+    } catch (error) {
+      console.error('Erro ao adicionar livro:', error);
+      alert('Erro ao adicionar livro.');
+    }
+  }
+  // Adicione o event listener corretamente:
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('addBookForm');
+    if (form) {
+      form.addEventListener('submit', handleAddBookSubmission);
+    }
+    const editForm = document.getElementById('editBookForm');
+    if (editForm) {
+      editForm.addEventListener('submit', handleEditSubmission);
+    }    // EVENT LISTENERS PARA IMPORTAÇÃO
+    const importFormatSelect = document.getElementById('importFormat');
+    const csvOptionsDiv = document.getElementById('csvOptions');
+    const xlsOptionsDiv = document.getElementById('xlsOptions');
+    const previewBtn = document.getElementById('previewImportBtn');
+    const startImportBtn = document.getElementById('startImportBtn');
+    const importFileInput = document.getElementById('importFile');
+
+    // Mostrar/ocultar opções baseado no formato
+    if (importFormatSelect && csvOptionsDiv && xlsOptionsDiv) {
+      importFormatSelect.addEventListener('change', async function() {
+        const format = this.value;
+        const filename = importFileInput.files[0]?.name.toLowerCase() || '';
+        
+        // Esconder todas as opções primeiro
+        csvOptionsDiv.style.display = 'none';
+        xlsOptionsDiv.style.display = 'none';
+        
+        // Mostrar opções específicas
+        if (format === 'csv' || (format === 'auto' && filename.endsWith('.csv'))) {
+          csvOptionsDiv.style.display = 'block';
+        } else if (format === 'xls' || (format === 'auto' && (filename.endsWith('.xls') || filename.endsWith('.xlsx')))) {
+          xlsOptionsDiv.style.display = 'block';
+              
+          // Carregar planilhas automaticamente para arquivos Excel
+          try {
+            const arrayBuffer = await importFileInput.files[0].arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+            updateSheetList(workbook.SheetNames);
+            currentWorkbook = workbook;
+            showAlert('info', `Arquivo Excel carregado. ${workbook.SheetNames.length} planilha(s) encontrada(s).`);
+          } catch (error) {
+            showAlert('warning', 'Erro ao carregar planilhas do Excel: ' + error.message);
+          }
+        }
+      });
+    }
+
+    // Event listener para mudança no arquivo
+    if (importFileInput) {
+      importFileInput.addEventListener('change', async function() {
+        document.getElementById('importPreview').style.display = 'none';
+        document.getElementById('startImportBtn').disabled = true;
+        parsedImportData = [];
+        
+        // Auto-detectar formato e mostrar opções apropriadas
+        if (this.files[0]) {
+          const filename = this.files[0].name.toLowerCase();
+          const formatSelect = document.getElementById('importFormat');
+          
+          if (formatSelect.value === 'auto') {
+            // Esconder todas as opções primeiro
+            csvOptionsDiv.style.display = 'none';
+            xlsOptionsDiv.style.display = 'none';
+            
+            if (filename.endsWith('.csv')) {
+              csvOptionsDiv.style.display = 'block';
+            } else if (filename.endsWith('.xls') || filename.endsWith('.xlsx')) {
+              xlsOptionsDiv.style.display = 'block';
+              
+              // Carregar planilhas automaticamente para arquivos Excel
+              try {
+                const arrayBuffer = await this.files[0].arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                updateSheetList(workbook.SheetNames);
+                currentWorkbook = workbook;
+                showAlert('info', `Arquivo Excel carregado. ${workbook.SheetNames.length} planilha(s) encontrada(s).`);
+              } catch (error) {
+                showAlert('warning', 'Erro ao carregar planilhas do Excel: ' + error.message);
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Event listener para mudança de planilha no Excel
+    const xlsSheetSelect = document.getElementById('xlsSheet');
+    if (xlsSheetSelect) {
+      xlsSheetSelect.addEventListener('change', function() {
+        // Limpar prévia quando mudar de planilha
+        document.getElementById('importPreview').style.display = 'none';
+        document.getElementById('startImportBtn').disabled = true;
+        parsedImportData = [];
+      });
+    }
+
+    // Event listener para prévia
+    if (previewBtn) {
+      previewBtn.addEventListener('click', processImportFile);
+    }
+
+    // Event listener para iniciar importação
+    if (startImportBtn) {
+      startImportBtn.addEventListener('click', function() {
+        if (confirm(`Deseja importar ${parsedImportData.filter(book => book.valid).length} livros válidos?`)) {
+          importBooks();
+        }
+      });
+    }
+
+    // Ativar filtro por título, autor, editora e gênero
+    const filterTituloInput = document.getElementById('filterTitulo');
+    const filterAutorInput = document.getElementById('filterAutor');
+    const filterEditoraInput = document.getElementById('filterEditora');
+    const genreFilterSelect = document.getElementById('genreFilter');    function applyFilters() {
+      const titulo = filterTituloInput ? filterTituloInput.value : '';
+      const autor = filterAutorInput ? filterAutorInput.value : '';
+      const editora = filterEditoraInput ? filterEditoraInput.value : '';
+      const genero = genreFilterSelect ? genreFilterSelect.value : '';
+      
+      loadBooks(titulo, autor, editora, genero);
+    }
+
+    if (filterTituloInput) {
+      filterTituloInput.addEventListener('input', applyFilters);
+    }
+    if (filterAutorInput) {
+      filterAutorInput.addEventListener('input', applyFilters);
+    }
+    if (filterEditoraInput) {
+      filterEditoraInput.addEventListener('input', applyFilters);
+    }
+    if (genreFilterSelect) {
+      genreFilterSelect.addEventListener('change', applyFilters);
+    }    // Carregar livros ao iniciar
+    loadBooks();
+    document.querySelectorAll('.add-button').forEach(btn => btn.disabled = false);
+
+    // Event listeners para os botões de pesquisa
+    const searchButton = document.getElementById('searchButton');
+    const showAllBooksButton = document.getElementById('showAllBooksButton');
+
+    if (searchButton) {
+      searchButton.addEventListener('click', applyFilters);
+    }
+
+    if (showAllBooksButton) {
+      showAllBooksButton.addEventListener('click', function() {
+        // Limpar todos os filtros
+        if (filterTituloInput) filterTituloInput.value = '';
+        if (filterAutorInput) filterAutorInput.value = '';
+        if (filterEditoraInput) filterEditoraInput.value = '';
+        if (genreFilterSelect) genreFilterSelect.value = '';
+        
+        // Carregar todos os livros
+        loadBooks();
+      });
+    }
+
+    // Busca automática de dados pelo ISBN
+    const isbnInput = document.getElementById('isbn');
+    const nomeLivroInput = document.getElementById('nomeLivro');
+    const autorInput = document.getElementById('autor');
+    const isbnMessage = document.getElementById('isbnMessage');
+
+    if (isbnInput) {
+      isbnInput.addEventListener('blur', async function() {
+        const isbn = isbnInput.value.replace(/[^0-9Xx]/g, '').trim();
+        if (isbn.length < 10) return; // ISBN muito curto
+
+        isbnMessage.textContent = 'Buscando dados do livro...';
+        try {
+          const resp = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
+          const data = await resp.json();
+          const book = data[`ISBN:${isbn}`];
+          if (book) {
+            if (nomeLivroInput && book.title) nomeLivroInput.value = book.title;
+            if (autorInput && book.authors && book.authors.length > 0) {
+              autorInput.value = book.authors.map(a => a.name).join(', ');
+            }
+            isbnMessage.textContent = 'Dados preenchidos automaticamente!';
+          } else {
+            isbnMessage.textContent = 'Livro não encontrado pelo ISBN.';
+          }
+        } catch (e) {
+          isbnMessage.textContent = 'Erro ao buscar dados do ISBN.';
+        }
+      });
+    }
+  });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-
-
-
-
 

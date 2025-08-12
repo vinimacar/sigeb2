@@ -2389,10 +2389,11 @@
     const editora = editoraInput ? editoraInput.value.trim() : '';
     const anoPublicacao = anoPublicacaoInput ? Number(anoPublicacaoInput.value) : null;
 
-    // Verificar se o ISBN já está cadastrado
+    // Verificar se o ISBN já está cadastrado (usando API modular)
     if (isbn) {
       try {
-        const querySnapshot = await window.firebase.firestore().collection('livros').where('isbn', '==', isbn).get();
+        const q = query(collection(db, 'livros'), where('isbn', '==', isbn));
+        const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
           alert('Já existe um livro cadastrado com este ISBN!');
           return;

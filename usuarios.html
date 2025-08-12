@@ -2590,7 +2590,7 @@
 
     // Função para criar um cartão individual estruturado (PDF)
     function criarCartaoUsuario(doc, usuario, x, y, width, height, qrBase64) {
-      // Cartão estruturado: nome na tarja, QR code mais à direita
+      // Cartão: nome da escola no topo, layout equilibrado, cores suaves, sem ícone SIGEB
       if (!usuario || typeof usuario !== 'object') return;
 
       // Dados seguros
@@ -2606,69 +2606,68 @@
       const safeWidth = width - 2 * margin;
       const safeHeight = height - 2 * margin;
 
-      // Fundo principal (cor clara)
-      doc.setFillColor(255, 255, 255);
+      // Fundo principal (azul muito claro)
+      doc.setFillColor(245, 248, 255);
       doc.rect(x, y, width, height, 'F');
-      doc.setDrawColor(220, 220, 220);
-      doc.setLineWidth(0.7);
+      doc.setDrawColor(210, 220, 240);
+      doc.setLineWidth(0.8);
       doc.rect(x, y, width, height);
 
-      // Cabeçalho (faixa superior clara)
-      doc.setFillColor(235, 242, 250);
-      doc.rect(x, y, width, 18, 'F');
-      // Logo SIGEB (esquerda)
-      if (typeof logoSigebBase64 !== 'undefined' && logoSigebBase64) {
-        try {
-          doc.addImage(logoSigebBase64, 'PNG', safeX, safeY + 2, 12, 12);
-        } catch {}
-      }
-      // Logo Bias (direita)
-      if (typeof logoBiasBase64 !== 'undefined' && logoBiasBase64) {
-        try {
-          doc.addImage(logoBiasBase64, 'PNG', safeX + safeWidth - 12, safeY + 2, 12, 12);
-        } catch {}
-      }
-      // Título centralizado
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(80, 120, 180);
-      const titulo = 'CARTÃO DE LEITOR';
-      const tituloWidth = doc.getTextWidth(titulo);
-      doc.text(titulo, safeX + (safeWidth - tituloWidth) / 2, safeY + 10);
-
-      // Faixa magnética (cinza claro)
-      const tarjaY = y + 20;
-      const tarjaH = 12;
-      doc.setFillColor(220, 220, 220);
-      doc.rect(x, tarjaY, width, tarjaH, 'F');
-
-      // Nome dentro da tarja, centralizado, maiúsculo e negrito
+      // Nome da escola no topo, centralizado, destacado
       doc.setFontSize(9.5);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(60,60,60);
-      const nomeWidth = doc.getTextWidth(nomeSeguro);
-      doc.text(nomeSeguro, x + (width - nomeWidth) / 2, tarjaY + tarjaH/2 + 3);
+      doc.setTextColor(60, 100, 180);
+      const escolaWidth = doc.getTextWidth(escola);
+      doc.text(escola, x + (width - escolaWidth) / 2, y + 10);
 
-      // Área de dados
+      // Logo Bias (direita, topo)
+      if (typeof logoBiasBase64 !== 'undefined' && logoBiasBase64) {
+        try {
+          doc.addImage(logoBiasBase64, 'PNG', x + width - margin - 13, y + 2, 13, 13);
+        } catch {}
+      }
+
+      // Título do cartão
       doc.setFontSize(8.5);
       doc.setFont('helvetica', 'bold');
+      doc.setTextColor(120, 140, 180);
+      const titulo = 'CARTÃO DE LEITOR';
+      const tituloWidth = doc.getTextWidth(titulo);
+      doc.text(titulo, x + (width - tituloWidth) / 2, y + 19);
+
+      // Faixa magnética (azul suave)
+      const tarjaY = y + 23;
+      const tarjaH = 13;
+      doc.setFillColor(210, 225, 245);
+      doc.rect(x + 2, tarjaY, width - 4, tarjaH, 'F');
+
+      // Nome dentro da tarja, centralizado, maiúsculo e negrito
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(60, 80, 120);
+      const nomeWidth = doc.getTextWidth(nomeSeguro);
+      doc.text(nomeSeguro, x + (width - nomeWidth) / 2, tarjaY + tarjaH/2 + 4);
+
+      // Área de dados (matrícula e validade)
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
       doc.setTextColor(120, 140, 160);
-      doc.text('Matrícula:', safeX, safeY + 41);
+      doc.text('Matrícula:', safeX, tarjaY + tarjaH + 12);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(60,60,60);
-      doc.text(matriculaSegura, safeX + 22, safeY + 41);
+      doc.text(matriculaSegura, safeX + 24, tarjaY + tarjaH + 12);
 
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(120, 140, 160);
-      doc.text('Validade:', safeX, safeY + 50);
+      doc.text('Validade:', safeX, tarjaY + tarjaH + 21);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(60,60,60);
-      doc.text(validade, safeX + 22, safeY + 50);
+      doc.text(validade, safeX + 24, tarjaY + tarjaH + 21);
 
-      // QR code real (base64) - mais à direita
-      const qrSize = 22;
-      const qrX = x + width - qrSize - margin - 2;
-      const qrY = safeY + 28;
+      // QR code real (base64) - canto inferior direito
+      const qrSize = 24;
+      const qrX = x + width - qrSize - margin;
+      const qrY = y + height - qrSize - margin;
       if (qrBase64) {
         try {
           doc.addImage(qrBase64, 'PNG', qrX, qrY, qrSize, qrSize);
@@ -2680,13 +2679,6 @@
         doc.setDrawColor(220,220,220);
         doc.rect(qrX, qrY, qrSize, qrSize);
       }
-
-      // Rodapé com nome da escola centralizado e destacado
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(80, 120, 180);
-      const escolaWidth = doc.getTextWidth(escola);
-      doc.text(escola, safeX + (safeWidth - escolaWidth) / 2, y + height - 5);
     }
 
     // Event listener para o botão de gerar cartão

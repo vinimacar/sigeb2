@@ -2612,6 +2612,7 @@
 
         isbnMessage.textContent = 'Buscando dados do livro...';
         try {
+          // Busca na Open Library
           const resp = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
           const data = await resp.json();
           const book = data[`ISBN:${isbn}`];

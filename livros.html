@@ -748,16 +748,19 @@
             <!-- Exemplo de formulário moderno para cadastro de novo livro usando Bootstrap 5 -->
             <form id="addBookForm" class="needs-validation" novalidate>
               <h4 class="mb-4 text-primary"><i class="bx bxs-book"></i> Cadastro de Novo Livro</h4>
+              <div class="alert alert-info mb-3">
+                <strong>Antes de preencher os dados, digite o ISBN e aguarde a busca automática!</strong>
+              </div>
               <div class="row g-3">
+                <div class="col-md-4">
+                  <label for="isbn" class="form-label fw-semibold">ISBN (busque primeiro)</label>
+                  <input type="text" class="form-control" id="isbn" placeholder="ISBN">
+                  <div id="isbnMessage" class="text-danger small mt-1"></div>
+                </div>
                 <div class="col-md-8">
                   <label for="nomeLivro" class="form-label fw-semibold">Nome do Livro*</label>
                   <input type="text" class="form-control" id="nomeLivro" required placeholder="Digite o nome do livro">
                   <div class="invalid-feedback">Informe o nome do livro.</div>
-                </div>
-                <div class="col-md-4">
-                  <label for="isbn" class="form-label fw-semibold">ISBN</label>
-                  <input type="text" class="form-control" id="isbn" placeholder="ISBN">
-                  <div id="isbnMessage" class="text-danger small mt-1"></div>
                 </div>
                 <div class="col-md-6">
                   <label for="autor" class="form-label fw-semibold">Autor*</label>

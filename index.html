@@ -691,6 +691,7 @@
     // --- Google Login ---
     document.getElementById('googleLoginBtn').onclick = async function() {
       const provider = new firebase.auth.GoogleAuthProvider();
+      const errorDiv = document.getElementById('loginError');
       try {
         const result = await auth.signInWithPopup(provider);
         // Salva usuário no banco se for novo
@@ -705,7 +706,14 @@
         }
         window.location.href = 'dashboard.html';
       } catch (error) {
-        alert('Erro ao fazer login com Google: ' + (error.message || 'Tente novamente.'));
+        if (error.code === 'auth/popup-closed-by-user') {
+          // Não mostra nada, ou mostra mensagem amigável discreta
+          errorDiv.textContent = 'Login cancelado pelo usuário.';
+          errorDiv.style.display = 'block';
+        } else {
+          errorDiv.textContent = 'Erro ao fazer login com Google: ' + (error.message || 'Tente novamente.');
+          errorDiv.style.display = 'block';
+        }
       }
     };
 

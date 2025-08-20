@@ -1537,27 +1537,32 @@
     }
 
     // Event listeners para os botões de backup
-    document.getElementById('btnBackup').addEventListener('click', fazerBackupCompleto);
-    
-    document.getElementById('btnBackupLivros').addEventListener('click', () => {
+    const btnBackup = document.getElementById('btnBackup');
+    if (btnBackup) btnBackup.addEventListener('click', fazerBackupCompleto);
+
+    const btnBackupLivros = document.getElementById('btnBackupLivros');
+    if (btnBackupLivros) btnBackupLivros.addEventListener('click', () => {
       const agora = new Date();
       const timestamp = agora.toISOString().slice(0, 19).replace(/:/g, '-');
       exportarDados('livros', `SIGEB_Backup_Livros_${timestamp}.json`);
     });
-    
-    document.getElementById('btnBackupUsuarios').addEventListener('click', () => {
+
+    const btnBackupUsuarios = document.getElementById('btnBackupUsuarios');
+    if (btnBackupUsuarios) btnBackupUsuarios.addEventListener('click', () => {
       const agora = new Date();
       const timestamp = agora.toISOString().slice(0, 19).replace(/:/g, '-');
       exportarDados('usuarios', `SIGEB_Backup_Usuarios_${timestamp}.json`);
     });
-    
-    document.getElementById('btnBackupEmprestimos').addEventListener('click', () => {
+
+    const btnBackupEmprestimos = document.getElementById('btnBackupEmprestimos');
+    if (btnBackupEmprestimos) btnBackupEmprestimos.addEventListener('click', () => {
       const agora = new Date();
       const timestamp = agora.toISOString().slice(0, 19).replace(/:/g, '-');
       exportarDados('emprestimos', `SIGEB_Backup_Emprestimos_${timestamp}.json`);
     });
-    
-    document.getElementById('btnRestoreBackup').addEventListener('click', restaurarBackup);
+
+    const btnRestoreBackup = document.getElementById('btnRestoreBackup');
+    if (btnRestoreBackup) btnRestoreBackup.addEventListener('click', restaurarBackup);
 
     // Função para listar escolas cadastradas
     async function listarEscolas() {

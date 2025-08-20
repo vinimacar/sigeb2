@@ -723,6 +723,13 @@
   </style>
 </head>
 <body>
+  <nav class="navbar navbar-dark" style="background: linear-gradient(90deg, #16213e 60%, #4facfe 100%); box-shadow: 0 2px 12px #0002;">
+    <div class="container-fluid justify-content-end">
+      <span id="userLogInfo" class="navbar-text" style="color:#fff; font-size:1rem; font-weight:500;"></span>
+      <button id="logoutBtn" class="btn btn-sm btn-outline-light ms-3">Sair</button>
+    </div>
+  </nav>
+
   <div class="sidebar">
     <div class="sidebar-header">
       <img src="logobias.png" alt="Logo da Escola" style="width:90px; height:90px; object-fit:contain; border-radius:50%; margin-bottom:10px; box-shadow:0 2px 12px #0002;">
@@ -759,8 +766,9 @@
       </a>
     </div>
   </div>
+
+  <!-- Sidebar responsivo igual ao dashboard -->
   <script>
-    // Sidebar responsivo igual ao dashboard
     document.addEventListener('DOMContentLoaded', function() {
       const toggleSidebar = () => {
         const sidebar = document.querySelector('.sidebar');

@@ -1553,7 +1553,10 @@
       // Carrega usuários apenas do Firebase (sem dados estáticos)
       async function loadUsers() {
         const tbody = document.querySelector('#usuariosTableBody');
-        
+        if (!tbody) {
+          console.warn('Elemento #usuariosTableBody não encontrado.');
+          return;
+        }
         try {
           // Mostra indicador de carregamento
           tbody.innerHTML = `
@@ -1569,12 +1572,9 @@
               </td>
             </tr>
           `;
-          
           const snapshot = await db.collection('usuarios').get();
-          
           // Limpa a tabela após carregamento
           tbody.innerHTML = '';
-          
           if (snapshot.empty) {
             // Se não há usuários no banco, mostra mensagem informativa
             tbody.innerHTML = `
@@ -1593,7 +1593,6 @@
             `;
             return;
           }
-          
           // Carrega usuários do Firebase e organiza em ordem alfabética
           const users = [];
           snapshot.forEach(doc => {
@@ -2063,134 +2062,138 @@
       };
     }
 
-    document.getElementById('xlsInput').addEventListener('change', async function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const fileName = file.name.toLowerCase();
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        try {
-          let usuariosRaw = [];
-          if (fileName.endsWith('.csv')) {
-            // CSV com tabulação (Excel exporta assim para colunas)
-            usuariosRaw = csvToArray(e.target.result, "\t");
-            // Se não encontrar, tenta ponto e vírgula
-            if (usuariosRaw.length === 0 || (Array.isArray(usuariosRaw[0]) && usuariosRaw[0].length < 2)) {
-              usuariosRaw = csvToArray(e.target.result, ";");
-            }
-            // Se não encontrar, tenta vírgula
-            if (usuariosRaw.length === 0 || (Array.isArray(usuariosRaw[0]) && usuariosRaw[0].length < 2)) {
-              usuariosRaw = csvToArray(e.target.result, ",");
-            }
-            // Se for array de arrays, converte para objetos
-            if (Array.isArray(usuariosRaw[0])) {
-              const cabecalhos = usuariosRaw[0].map(c => c.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s/g, '').toLowerCase());
-              usuariosRaw = usuariosRaw.slice(1).map(linha => {
-                const obj = {};
-                linha.forEach((valor, idx) => {
-                  obj[cabecalhos[idx]] = valor;
+    const xlsInput = document.getElementById('xlsInput');
+    if (xlsInput) {
+      xlsInput.addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const fileName = file.name.toLowerCase();
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          try {
+            let usuariosRaw = [];
+            if (fileName.endsWith('.csv')) {
+              // CSV com tabulação (Excel exporta assim para colunas)
+              usuariosRaw = csvToArray(e.target.result, "\t");
+              // Se não encontrar, tenta ponto e vírgula
+              if (usuariosRaw.length === 0 || (Array.isArray(usuariosRaw[0]) && usuariosRaw[0].length < 2)) {
+                usuariosRaw = csvToArray(e.target.result, ";");
+              }
+              // Se não encontrar, tenta vírgula
+              if (usuariosRaw.length === 0 || (Array.isArray(usuariosRaw[0]) && usuariosRaw[0].length < 2)) {
+                usuariosRaw = csvToArray(e.target.result, ",");
+              }
+              // Se for array de arrays, converte para objetos
+              if (Array.isArray(usuariosRaw[0])) {
+                const cabecalhos = usuariosRaw[0].map(c => c.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s/g, '').toLowerCase());
+                usuariosRaw = usuariosRaw.slice(1).map(linha => {
+                  const obj = {};
+                  linha.forEach((valor, idx) => {
+                    obj[cabecalhos[idx]] = valor;
+                  });
+                  return obj;
                 });
-                return obj;
+              }
+            } else {
+              const data = e.target.result;
+              const workbook = XLSX.read(data, { type: 'binary' });
+              const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+              const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+              // Remove as linhas em branco
+              for (let i = json.length - 1; i >= 0; i--) {
+                if (json[i].every(cell => cell === null || cell === '')) {
+                  json.splice(i, 1);
+                }
+              }
+              // Converte para objeto com chaves normalizadas
+              const cabecalhos = json[0].map(cabecalho =>
+                cabecalho
+                  ? cabecalho.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s/g, '').toLowerCase()
+                  : ''
+              );
+              usuariosRaw = json.slice(1).map(linha => {
+                const usuario = {};
+                linha.forEach((valor, index) => {
+                  usuario[cabecalhos[index]] = valor;
+                });
+                return usuario;
               });
             }
-          } else {
-            const data = e.target.result;
-            const workbook = XLSX.read(data, { type: 'binary' });
-            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-            // Remove as linhas em branco
-            for (let i = json.length - 1; i >= 0; i--) {
-              if (json[i].every(cell => cell === null || cell === '')) {
-                json.splice(i, 1);
-              }
-            }
-            // Converte para objeto com chaves normalizadas
-            const cabecalhos = json[0].map(cabecalho =>
-              cabecalho
-                ? cabecalho.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s/g, '').toLowerCase()
-                : ''
-            );
-            usuariosRaw = json.slice(1).map(linha => {
-              const usuario = {};
-              linha.forEach((valor, index) => {
-                usuario[cabecalhos[index]] = valor;
-              });
-              return usuario;
-            });
-          }
 
-          // Aceita usuário se tiver nome e matrícula (email não é obrigatório)
-          const usuariosValidos = usuariosRaw.filter(u => u.nome && u.matricula);
+            // Aceita usuário se tiver nome e matrícula (email não é obrigatório)
+            const usuariosValidos = usuariosRaw.filter(u => u.nome && u.matricula);
 
-          if (usuariosValidos.length === 0) {
-            alert('Nenhum usuário válido encontrado no arquivo.\n\nVerifique se os cabeçalhos estão como "Nome" e "Matrícula" (ou "nome" e "matricula").');
-            return;
-          }
-
-          criarModalConfirmacaoImportacao(usuariosValidos, async (modal, usuarios) => {
-            const updateProgress = (percent) => {
-              const progressBar = document.querySelector('.progress-bar');
-              const progressText = document.getElementById('importProgressText');
-              progressBar.style.width = `${percent}%`;
-              progressText.textContent = `${percent}% concluído`;
-            };
-
-            // Limpa usuários existentes (exceto admin)
-            try {
-              const snapshot = await db.collection('usuarios').get();
-              const deletarUsuarios = snapshot.docs.filter(doc => doc.data().matricula !== 'admin');
-              for (const doc of deletarUsuarios) {
-                await db.collection('usuarios').doc(doc.id).delete();
-              }
-            } catch (error) {
-              showAlert('danger', 'Erro ao remover usuários existentes. Importação cancelada.');
-              modal.hide();
+            if (usuariosValidos.length === 0) {
+              alert('Nenhum usuário válido encontrado no arquivo.\n\nVerifique se os cabeçalhos estão como "Nome" e "Matrícula" (ou "nome" e "matricula").');
               return;
             }
 
-            // Importa usuários válidos
-            for (let i = 0; i < usuarios.length; i++) {
-              const usuario = usuarios[i];
-              try {
-                await db.collection('usuarios').add({
-                  nome: usuario.nome,
-                  email: usuario.email || '',
-                  matricula: usuario.matricula,
-                  status: usuario.status || 'Ativo',
-                  funcao: usuario.funcao || 'ALUNO',
-                  telefone: usuario.telefone || '',
-                  serie: usuario.serie || '',
-                  periodo: usuario.periodo || '',
-                  turma: usuario.turma || '',
-                  turno: usuario.turno || '',
-                  endereco: {
-                    logradouro: usuario.endereco || '',
-                    numero: usuario.numero || '',
-                    cep: usuario.cep || '',
-                    bairro: usuario.bairro || '',
-                    cidade: usuario.cidade || '',
-                    uf: usuario.uf || ''
-                  },
-                  livrosEmprestados: 0,
-                  dataCadastro: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                updateProgress(Math.round(((i + 1) / usuarios.length) * 100));
-                await new Promise(resolve => setTimeout(resolve, 100));
-              } catch (error) {
-                showAlert('danger', `Erro ao importar usuário ${usuario.nome}.`);
-              }
-            }
+            criarModalConfirmacaoImportacao(usuariosValidos, async (modal, usuarios) => {
+              const updateProgress = (percent) => {
+                const progressBar = document.querySelector('.progress-bar');
+                const progressText = document.getElementById('importProgressText');
+                progressBar.style.width = `${percent}%`;
+                progressText.textContent = `${percent}% concluído`;
+              };
 
-            showAlert('success', 'Importação concluída com sucesso!');
-            modal.hide();
-            loadUsers();
-          });
-        } catch (error) {
-          alert('Erro ao ler arquivo. Por favor, tente novamente.');
-        }
-      };
-      reader.readAsBinaryString(file);
-    });
+              // Limpa usuários existentes (exceto admin)
+              try {
+                const snapshot = await db.collection('usuarios').get();
+                const deletarUsuarios = snapshot.docs.filter(doc => doc.data().matricula !== 'admin');
+                for (const doc of deletarUsuarios) {
+                  await db.collection('usuarios').doc(doc.id).delete();
+                }
+              } catch (error) {
+                showAlert('danger', 'Erro ao remover usuários existentes. Importação cancelada.');
+                modal.hide();
+                return;
+              }
+
+              // Importa usuários válidos
+              for (let i = 0; i < usuarios.length; i++) {
+                const usuario = usuarios[i];
+                try {
+                  await db.collection('usuarios').add({
+                    nome: usuario.nome,
+                    email: usuario.email || '',
+                    matricula: usuario.matricula,
+                    status: usuario.status || 'Ativo',
+                    funcao: usuario.funcao || 'ALUNO',
+                    telefone: usuario.telefone || '',
+                    serie: usuario.serie || '',
+                    periodo: usuario.periodo || '',
+                    turma: usuario.turma || '',
+                    turno: usuario.turno || '',
+                    endereco: {
+                      logradouro: usuario.endereco || '',
+                      numero: usuario.numero || '',
+                      cep: usuario.cep || '',
+                      bairro: usuario.bairro || '',
+                      cidade: usuario.cidade || '',
+                      uf: usuario.uf || ''
+                    },
+                    livrosEmprestados: 0,
+                    dataCadastro: firebase.firestore.FieldValue.serverTimestamp()
+                  });
+                  updateProgress(Math.round(((i + 1) / usuarios.length) * 100));
+                  await new Promise(resolve => setTimeout(resolve, 100));
+                } catch (error) {
+                  showAlert('danger', `Erro ao importar usuário ${usuario.nome}.`);
+                }
+              }
+
+              showAlert('success', 'Importação concluída com sucesso!');
+              modal.hide();
+              loadUsers();
+            });
+          } catch (error) {
+            alert('Erro ao ler arquivo. Por favor, tente novamente.');
+          }
+        };
+        reader.readAsBinaryString(file);
+      });
+    }
+
 
     // Função para converter CSV para array de objetos
     function csvToArray(strData, strDelimiter) {

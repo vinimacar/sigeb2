@@ -2509,13 +2509,16 @@
     }
 
     // Checkbox "Selecionar Todos"
-    document.getElementById('selectAll').addEventListener('change', function() {
-      const checkboxes = document.querySelectorAll('.user-checkbox');
-      checkboxes.forEach(checkbox => {
-        checkbox.checked = this.checked;
+    const selectAllCheckbox = document.getElementById('selectAll');
+    if (selectAllCheckbox) {
+      selectAllCheckbox.addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.user-checkbox');
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = this.checked;
+        });
+        updateCartaoButton();
       });
-      updateCartaoButton();
-    });
+    }
 
     // Event listeners para checkboxes individuais
     document.addEventListener('change', function(e) {

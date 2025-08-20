@@ -755,42 +755,7 @@
             <input type="text" class="form-control" id="filterISBN" placeholder="Filtrar por ISBN...">
             <div id="isbnNotFoundMsg" class="text-danger small mt-1" style="display:none;">ISBN não localizado.</div>
           </div>
-  // Função para filtrar por ISBN diretamente no Firestore
-  async function filterByISBN() {
-    const isbnInput = document.getElementById('filterISBN');
-    const isbn = isbnInput.value.trim();
-    const notFoundMsg = document.getElementById('isbnNotFoundMsg');
-    const bookGrid = document.getElementById('bookGrid');
-    if (!isbn) {
-      // Se o campo está vazio, recarrega todos os livros
-      notFoundMsg.style.display = 'none';
-      loadBooks();
-      return;
-    }
-    try {
-      bookGrid.innerHTML = '<p class="text-center p-4">Buscando livro por ISBN...</p>';
-      const q = query(collection(db, 'livros'), where('isbn', '==', isbn));
-      const snapshot = await getDocs(q);
-      bookGrid.innerHTML = '';
-      if (snapshot.empty) {
-        notFoundMsg.style.display = 'block';
-        return;
-      }
-      notFoundMsg.style.display = 'none';
-      snapshot.forEach(doc => {
-        const bookData = doc.data();
-        const card = createBookCard(doc.id, bookData);
-        bookGrid.appendChild(card);
-      });
-    } catch (error) {
-      notFoundMsg.style.display = 'block';
-    }
-  }
-    // Event listener para filtro de ISBN
-    const filterISBNInput = document.getElementById('filterISBN');
-    if (filterISBNInput) {
-      filterISBNInput.addEventListener('input', filterByISBN);
-    }
+          <!-- ...existing code... -->
           <div class="col-md-3">
             <input type="text" class="form-control" id="filterTitulo" placeholder="Filtrar por Título...">
           </div>

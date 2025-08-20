@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <!-- Meta tags de segurança para prevenir conflitos com extensões -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>SIGEB - Usuários</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
@@ -1477,7 +1476,10 @@
       }
 
       // Adicione o evento ao campo de busca
-      document.querySelector('.search-box input').addEventListener('input', filterUsers);
+      const searchInput = document.querySelector('.search-box input');
+      if (searchInput) {
+        searchInput.addEventListener('input', filterUsers);
+      }
 
       // Carrega os usuários ao iniciar
       document.addEventListener('DOMContentLoaded', function() {
@@ -1495,6 +1497,15 @@
         addActionButtonListeners();
       });      // Limpa o formulário e o campo usuarioId ao fechar o modal
       document.getElementById('addUserModal').addEventListener('hidden.bs.modal', function () {
+      // Protege contra erro se o elemento não existir
+      const addUserModal = document.getElementById('addUserModal');
+      if (addUserModal) {
+        addUserModal.addEventListener('hidden.bs.modal', function () {
+          document.getElementById('addUserForm').reset();
+          document.getElementById('usuarioId').value = '';
+          document.getElementById('addUserForm').classList.remove('was-validated');
+        });
+      }
         document.getElementById('addUserForm').reset();
         document.getElementById('usuarioId').value = '';
         document.getElementById('addUserForm').classList.remove('was-validated');
@@ -1886,10 +1897,14 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
     // Importar usuários via XLS/XLSX
-    document.getElementById('importXlsBtn').addEventListener('click', function() {
-      // Não solicita mais email/senha, apenas abre o seletor de arquivo
-      document.getElementById('xlsInput').click();
-    });
+    const importXlsBtn = document.getElementById('importXlsBtn');
+    if (importXlsBtn) {
+      importXlsBtn.addEventListener('click', function() {
+        // Não solicita mais email/senha, apenas abre o seletor de arquivo
+        const xlsInput = document.getElementById('xlsInput');
+        if (xlsInput) xlsInput.click();
+      });
+    }
 
     // Crie um modal para confirmação visual dos dados importados
     function criarModalConfirmacaoImportacao(usuarios, onConfirm) {

@@ -163,14 +163,14 @@
 
     .main-content {
       width: 100%;
-      max-width: 400px;
-      margin: 0 auto 2rem;
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 2rem;
-      box-shadow: var(--shadow-xl);
+      max-width: 340px;
+      margin: 0 auto 1.2rem;
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(8px);
+      border-radius: var(--radius);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 1.1rem 1.2rem 1.2rem 1.2rem;
+      box-shadow: var(--shadow-lg);
       transition: var(--transition);
     }
 
@@ -549,60 +549,34 @@
   <div class="main-content shadow-lg">
       <div id="login-container">
         <form id="loginForm">
-          <h5>🔐 Acesso ao Sistema</h5>
-          <div class="mb-3">
-            <label for="loginEmail" class="form-label">E-mail</label>
-            <input type="text" class="form-control" id="loginEmail" required autocomplete="username" placeholder="Digite seu e-mail. ">
-            <small class="text-muted">Você pode usar seu e-mail ou nome de usuário para fazer login</small>
+          <h5 class="mb-2" style="font-size:1.1rem;">Acesso</h5>
+          <div class="mb-2">
+            <input type="text" class="form-control" id="loginEmail" required autocomplete="username" placeholder="E-mail ou usuário" style="font-size:0.97rem;">
           </div>
-          <div class="mb-3 position-relative">
-            <label for="loginPassword" class="form-label">Senha</label>
-            <input type="password" class="form-control" id="loginPassword" required autocomplete="current-password" style="padding-right: 3rem;">
-            <span class="toggle-password" toggle="#loginPassword">
+          <div class="mb-2 position-relative">
+            <input type="password" class="form-control" id="loginPassword" required autocomplete="current-password" placeholder="Senha" style="padding-right:2.2rem;font-size:0.97rem;">
+            <span class="toggle-password" toggle="#loginPassword" style="right:0.6rem;">
               <i class="bx bx-show"></i>
             </span>
           </div>
-          <button type="submit" class="btn btn-primary w-100 mb-3">
-            <i class="bx bx-log-in"></i>
-            Entrar no Sistema
+          <button type="submit" class="btn btn-primary w-100 mb-2" style="font-size:0.97rem;">
+            Entrar
           </button>
-          <div id="loginError" class="alert alert-danger text-center" style="display:none;"></div>
-          <div class="text-center">
-            <button type="button" id="forgotPasswordBtn" class="btn btn-link">
-              <i class="bx bx-help-circle"></i>
-              Esqueceu a senha?
-            </button>
+          <div id="loginError" class="alert alert-danger text-center py-1" style="display:none;font-size:0.93rem;"></div>
+          <div class="text-center mb-1">
+            <button type="button" id="forgotPasswordBtn" class="btn btn-link p-0" style="font-size:0.93rem;">Esqueceu a senha?</button>
           </div>
         </form>
         
-        <!-- Divisor -->
-        <div class="d-flex align-items-center my-4">
-          <hr class="flex-grow-1" style="border-color: rgba(255, 255, 255, 0.2); height: 1px;">
-          <span class="px-3 text-muted">ou</span>
-          <hr class="flex-grow-1" style="border-color: rgba(255, 255, 255, 0.2); height: 1px;">
-        </div>
-        
         <!-- Google Login Button -->
-        <div class="text-center">
-          <button type="button" id="googleLoginBtn" class="btn btn-light w-100 mb-3">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width:20px; margin-right:8px;">
-            Entrar com Google
+        <div class="text-center mb-2">
+          <button type="button" id="googleLoginBtn" class="btn btn-light w-100" style="font-size:0.97rem;">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width:18px; margin-right:6px;"> Google
           </button>
         </div>
-        
-        <!-- Links úteis -->
-        <div class="text-center mb-3">
-          <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#usuariosExemplo">
-            <i class="bx bx-info-circle"></i> Ver usuários de exemplo
-          </button>
-        </div>
-        
-        <!-- WhatsApp Support Button -->
-        <div class="text-center">
-          <a href="https://wa.me/5534999188660" target="_blank" class="btn btn-whatsapp w-100">
-            <i class="bx bxl-whatsapp"></i>
-            Suporte via WhatsApp
-          </a>
+        <!-- Link usuários de exemplo -->
+        <div class="text-center mb-1">
+          <button type="button" class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#usuariosExemplo" style="font-size:0.93rem;">Usuários de exemplo</button>
         </div>
       </div>
     </div>

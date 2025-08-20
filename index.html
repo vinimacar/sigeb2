@@ -9,6 +9,44 @@
   <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
   <link rel="icon" type="image/png" href="SISTEMA DE GERENCIAMENTO DE BIBLIOTECA.png" />
   <style>
+  /* Navbar moderno */
+  .navbar-custom {
+    background: rgba(30, 41, 59, 0.95);
+    box-shadow: var(--shadow-md);
+    padding: 0.75rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .navbar-custom .navbar-brand {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .navbar-custom .navbar-brand img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    border-radius: var(--radius);
+    background: var(--white);
+    padding: 0.25rem;
+  }
+  .navbar-custom .nav-link {
+    color: var(--white);
+    font-weight: 500;
+    margin-right: 1rem;
+    transition: var(--transition);
+  }
+  .navbar-custom .nav-link:hover {
+    color: var(--accent-light);
+  }
+  .navbar-custom .btn {
+    margin-left: 0.5rem;
+  }
   :root {
     /* Design System Moderno - SIGEB */
     --primary: #1e293b;          /* Slate-800 - Azul escuro moderno */
@@ -474,21 +512,41 @@
   </style>
 </head>
 <body>
-  <div class="hero-container">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand" href="#">
+        <img src="SISTEMA DE GERENCIAMENTO DE BIBLIOTECA.png" alt="SIGEB Logo">
+        SIGEB
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#acesso">Acesso</a></li>
+          <li class="nav-item"><a class="nav-link" href="#recursos">Recursos</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contato">Contato</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="hero-container" id="acesso">
     <div class="logo-container">
       <div class="logos-row">
-        <img src="logobias.png" alt="Logo da Escola Bias Fortes" class="school-logo">
+        <img src="logobias.png" alt="Logo da Escola Bias Fortes" class="school-logo d-none d-md-block">
         <img src="SISTEMA DE GERENCIAMENTO DE BIBLIOTECA.png" alt="Logo do SIGEB" class="sigeb-logo">
-        <img src="logobias.png" alt="Logo da Escola Bias Fortes" class="school-logo">
+        <img src="logobias.png" alt="Logo da Escola Bias Fortes" class="school-logo d-none d-md-block">
       </div>
       <h1 class="hero-title">SIGEB</h1>
       <p class="hero-subtitle">
         Sistema de Gestão de Biblioteca<br>
-        Escola Estadual Governador Bias Fortes
+        <span class="d-block">Escola Estadual Governador Bias Fortes</span>
       </p>
     </div>
     
-    <div class="main-content">
+  <div class="main-content shadow-lg">
       <div id="login-container">
         <form id="loginForm">
           <h5>🔐 Acesso ao Sistema</h5>
@@ -549,29 +607,47 @@
       </div>
     </div>
     
-    <div class="feature-section">
+    <section class="feature-section" id="recursos">
       <div class="feature-card">
         <i class="bx bx-book-reader feature-icon"></i>
         <h6>Gestão de Acervo</h6>
-        <p>Controle completo dos livros e materiais.</p>
+        <p>Controle completo dos livros e materiais, com busca rápida e relatórios.</p>
       </div>
       <div class="feature-card">
         <i class="bx bx-user-check feature-icon"></i>
         <h6>Controle de Usuários</h6>
-        <p>Gerenciamento eficiente de membros.</p>
+        <p>Gerenciamento eficiente de membros, permissões e histórico de atividades.</p>
       </div>
       <div class="feature-card">
         <i class="bx bx-transfer-alt feature-icon"></i>
         <h6>Empréstimos</h6>
-        <p>Sistema inteligente de empréstimos.</p>
+        <p>Sistema inteligente de empréstimos e devoluções, com notificações automáticas.</p>
       </div>
-    </div>
+      <div class="feature-card d-none d-md-block">
+        <i class="bx bx-bar-chart-alt-2 feature-icon"></i>
+        <h6>Relatórios</h6>
+        <p>Geração de relatórios detalhados para tomada de decisão.</p>
+      </div>
+      <div class="feature-card d-none d-md-block">
+        <i class="bx bx-support feature-icon"></i>
+        <h6>Suporte</h6>
+        <p>Atendimento rápido via WhatsApp e tutoriais integrados.</p>
+      </div>
+    </section>
   </div>
-  <footer>
-    <div>
-      Sistema licenciado para: <strong>Escola Estadual Governador Bias Fortes</strong><br>
-      Desenvolvido por: Curso Técnico em Informática<br>
-      © 2025 SIGEB - Todos os direitos reservados
+  <footer id="contato">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-6 text-md-start text-center mb-2 mb-md-0">
+          Sistema licenciado para: <strong>Escola Estadual Governador Bias Fortes</strong><br>
+          Desenvolvido por: Curso Técnico em Informática
+        </div>
+        <div class="col-md-6 text-md-end text-center">
+          <a href="mailto:contato@sigeb.com" class="me-2">contato@sigeb.com</a>
+          <a href="https://wa.me/5534999188660" target="_blank" class="btn btn-whatsapp btn-sm"><i class="bx bxl-whatsapp"></i> WhatsApp</a>
+        </div>
+      </div>
+      <div class="text-center mt-2" style="font-size:0.85rem; color:var(--gray-100);">© 2025 SIGEB - Todos os direitos reservados</div>
     </div>
   </footer>
   <!-- Modal com usuários de exemplo -->

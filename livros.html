@@ -15,49 +15,99 @@
   <!-- Firebase SDK (modular) -->
   <!-- Removido script duplicado de inicialização do Firebase para evitar erro de variável redeclarada -->
   <style>
-    @media (max-width: 1100px) {
-      .main-content {
-        margin-left: 0;
-        padding: 16px 4vw 16px 4vw;
-      }
-      .sidebar {
-        position: static;
-        width: 100vw;
-        min-width: unset;
-        height: auto;
-        flex-direction: row;
-        align-items: center;
-        justify-content: flex-start;
-        box-shadow: none;
-        border-radius: 0 0 12px 12px;
-        padding: 0 0 0 0;
-      }
-      .sidebar-header {
-        padding: 16px 0 10px 0;
-        font-size: 1.1rem;
-      }
-      .menu-items {
-        flex-direction: row;
-        gap: 0.5rem;
-        padding: 0 0 0 10px;
-      }
-      .menu-item {
-        margin-bottom: 0;
-        padding: 10px 10px;
-        font-size: 0.98rem;
-      }
+    :root {
+      --primary-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      --accent-gradient: linear-gradient(90deg, #00f2fe, #4facfe);
+      --text-light: #e0e0e0;
+      --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.1);
+      --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.2);
+      --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.3);
+      --transition: all 0.3s ease;
     }
-    @media (max-width: 700px) {
-      .main-content {
-        padding: 8px 2vw 8px 2vw;
-      }
-      .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 12px 6px 10px 6px;
-        margin-bottom: 12px;
-        border-radius: 10px;
-      }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 250px;
+      background: var(--primary-gradient);
+      color: white;
+      padding: 20px;
+      transition: var(--transition);
+      z-index: 1000;
+    }
+
+    .sidebar-header {
+      padding: 20px 0;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-header h3 {
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .menu-items {
+      padding: 20px 0;
+    }
+
+    .menu-item {
+      padding: 12px 20px;
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      transition: var(--transition);
+      border-radius: 8px;
+      margin-bottom: 5px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .menu-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      transition: var(--transition);
+    }
+
+    .menu-item:hover::before {
+      left: 0;
+    }
+
+    .menu-item.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #4facfe;
+    }
+
+    .menu-item i {
+      margin-right: 10px;
+      font-size: 1.2rem;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+      transition: var(--transition);
+    }
+    /* ...demais estilos existentes... */
       .card-body.d-flex {
         flex-direction: column !important;
         align-items: flex-start !important;
@@ -82,7 +132,6 @@
         min-width: 0;
         font-size: 1rem;
       }
-    }
     /* Botão adicionar livro fixo */
     .add-book-fixed {
       position: fixed;
@@ -615,37 +664,37 @@
   </style>
 </head>
 <body>
-  <!-- Botão flutuante removido, botão ficará apenas no cabeçalho -->
   <div class="sidebar">
     <div class="sidebar-header">
+      <img src="logobias.png" alt="Logo da Escola" style="width:90px; height:90px; object-fit:contain; border-radius:50%; margin-bottom:10px; box-shadow:0 2px 12px #0002;">
       <h3>SIGEB</h3>
     </div>
     <div class="menu-items">
-      <a href="dashboard.html" class="menu-item">
+      <a href="dashboard.html" class="menu-item" title="Visão geral do sistema">
         <i class='bx bxs-dashboard'></i>
         Dashboard
       </a>
-      <a href="livros.html" class="menu-item active">
+      <a href="livros.html" class="menu-item active" title="Gerenciar acervo">
         <i class='bx bxs-book'></i>
         Livros
       </a>
-      <a href="usuarios.html" class="menu-item">
+      <a href="usuarios.html" class="menu-item" title="Gerenciar usuários">
         <i class='bx bxs-user'></i>
         Usuários
       </a>
-      <a href="emprestimos.html" class="menu-item">
+      <a href="emprestimos.html" class="menu-item" title="Controlar empréstimos">
         <i class='bx bxs-bookmark'></i>
         Empréstimos
       </a>
-       <a href="relatorios.html" class="menu-item" title="Relatórios do sistema">
+      <a href="relatorios.html" class="menu-item" title="Relatórios do sistema">
         <i class='bx bxs-report'></i>
         Relatórios
       </a>
-      <a href="configuracoes.html" class="menu-item">
+      <a href="configuracoes.html" class="menu-item" title="Ajustar configurações">
         <i class='bx bxs-cog'></i>
         Configurações
       </a>
-      <a href="index.html" class="menu-item">
+      <a href="index.html" class="menu-item" title="Sair do sistema">
         <i class='bx bxs-log-out'></i>
         Sair
       </a>
@@ -653,6 +702,29 @@
   </div>
 
   <div class="main-content container py-4">
+  <script>
+    // Sidebar responsivo igual ao dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleSidebar = () => {
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        if (window.innerWidth <= 768) {
+          sidebar.classList.toggle('active');
+          mainContent.style.marginLeft = sidebar.classList.contains('active') ? '250px' : '0';
+        }
+      };
+      if (window.innerWidth <= 768) {
+        const header = document.querySelector('.card .card-body');
+        if (header) {
+          const hamburger = document.createElement('button');
+          hamburger.className = 'btn btn-primary d-md-none mb-3';
+          hamburger.innerHTML = '<i class="bx bx-menu"></i>';
+          hamburger.onclick = toggleSidebar;
+          header.prepend(hamburger);
+        }
+      }
+    });
+  </script>
     <div class="card shadow-sm border-0 mb-4" style="border-radius: var(--radius-lg);">
       <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
         <div>
@@ -1111,12 +1183,14 @@
   } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyDidYV8Fsv77qlg16UyofbbHZ3IGSAdCKQ",
-    authDomain: "sigeb2-397a1.firebaseapp.com",
-    projectId: "sigeb2-397a1",
-    storageBucket: "sigeb2-397a1.firebasestorage.app",
-    messagingSenderId: "1073423701447",
-    appId: "1:1073423701447:web:f3e23c19fab1f299a5b5e2"
+    apiKey: "AIzaSyC558ddNk5dGkB-GgTxbnNVfcciiCwEQP8",
+    authDomain: "biblitech-35d1c.firebaseapp.com",
+    databaseURL: "https://biblitech-35d1c-default-rtdb.firebaseio.com",
+    projectId: "biblitech-35d1c",
+    storageBucket: "biblitech-35d1c.firebasestorage.app",
+    messagingSenderId: "972405171947",
+    appId: "1:972405171947:web:acbc479d1410dff21480ae",
+    measurementId: "G-4WQTEHF4DS"
   };
   // Inicialize o Firebase apenas uma vez
   const app = initializeApp(firebaseConfig);

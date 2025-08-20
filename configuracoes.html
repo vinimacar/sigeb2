@@ -55,6 +55,15 @@
         font-weight: 600;
       }
 
+      .sidebar-header img {
+        width: 90px;
+        height: 90px;
+        object-fit: contain;
+        border-radius: 50%;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 12px #0002;
+      }
+
       .menu-items {
         padding: 20px 0;
       }
@@ -774,41 +783,42 @@
     });
   </script>
 
-  <div class="main-content">
-    <div class="page-header">
-      <h2><i class='bx bxs-cog'></i> Configurações do Sistema</h2>
-      <p>Personalize as configurações da biblioteca e gerencie o sistema</p>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <img src="logobias.png" alt="Logo da Escola">
+      <h3>SIGEB</h3>
     </div>
-
-    <div class="settings-card">
-      <h5><i class='bx bxs-edit'></i> Configurações Gerais</h5>
-      <form>
-        <div class="mb-3">
-          <label class="form-label"><i class='bx bx-building'></i> Nome da Biblioteca</label>
-          <input type="text" class="form-control" value="Biblioteca Central" placeholder="Digite o nome da biblioteca">
-        </div>
-        <div class="mb-3">
-          <label class="form-label"><i class='bx bx-envelope'></i> Email de Contato</label>
-          <input type="email" class="form-control" value="biblioteca@email.com" placeholder="Digite o email de contato">
-        </div>
-        <div class="mb-3">
-          <label class="form-label"><i class='bx bx-calendar'></i> Prazo Padrão de Empréstimo (dias)</label>
-          <input type="number" class="form-control" value="14" min="1" max="90">
-        </div>
-        <div class="mb-3">
-          <label class="form-label"><i class='bx bx-book-bookmark'></i> Limite de Livros por Usuário</label>
-          <input type="number" class="form-control" value="5" min="1" max="20">
-        </div>
-      </form>
+    <div class="menu-items">
+      <a href="dashboard.html" class="menu-item" title="Visão geral do sistema">
+        <i class='bx bxs-dashboard'></i>
+        Dashboard
+      </a>
+      <a href="livros.html" class="menu-item" title="Gerenciar acervo">
+        <i class='bx bxs-book'></i>
+        Livros
+      </a>
+      <a href="usuarios.html" class="menu-item" title="Gerenciar usuários">
+        <i class='bx bxs-user'></i>
+        Usuários
+      </a>
+      <a href="emprestimos.html" class="menu-item" title="Controlar empréstimos">
+        <i class='bx bxs-bookmark'></i>
+        Empréstimos
+      </a>
+      <a href="relatorios.html" class="menu-item" title="Relatórios do sistema">
+        <i class='bx bxs-report'></i>
+        Relatórios
+      </a>
+      <a href="configuracoes.html" class="menu-item active" title="Ajustar configurações">
+        <i class='bx bxs-cog'></i>
+        Configurações
+      </a>
+      <a href="index.html" class="menu-item" title="Sair do sistema">
+        <i class='bx bxs-log-out'></i>
+        Sair
+      </a>
     </div>
-
-    <div class="settings-card">
-      <h5><i class='bx bxs-bell'></i> Notificações</h5>
-      <form>
-        <div class="mb-3">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" checked id="emailReminder">
-            <label class="form-check-label" for="emailReminder">
+  </div>
               <i class='bx bx-mail-send'></i> Enviar email de lembrete antes do vencimento
             </label>
           </div>
@@ -847,29 +857,29 @@
         <button class="save-button" id="btnBackup" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
           <i class='bx bx-download'></i>
           Backup Completo + Apagar Dados
-        </button>
-        <small class="text-muted">
-          ⚠️ <strong>ATENÇÃO:</strong> Exporta todos os dados e <span style="color: #dc3545; font-weight: bold;">APAGA TUDO</span> do Firestore
-        </small>
-      </div>
-      
-      <div class="row">
-        <div class="col-md-4 mb-3">
-          <button class="save-button w-100" id="btnBackupLivros" style="background: linear-gradient(135deg, #10b981, #059669);">
-            <i class='bx bx-book'></i>
-            Backup Livros
-          </button>
-        </div>
-        <div class="col-md-4 mb-3">
-          <button class="save-button w-100" id="btnBackupUsuarios" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-            <i class='bx bx-user'></i>
-            Backup Usuários
-          </button>
-        </div>
-        <div class="col-md-4 mb-3">
-          <button class="save-button w-100" id="btnBackupEmprestimos" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
-            <i class='bx bx-bookmark'></i>
-            Backup Empréstimos
+        <script>
+          // Sidebar responsivo igual ao dashboard
+          document.addEventListener('DOMContentLoaded', function() {
+            const toggleSidebar = () => {
+              const sidebar = document.querySelector('.sidebar');
+              const mainContent = document.querySelector('.main-content');
+              if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('active');
+                mainContent.style.marginLeft = sidebar.classList.contains('active') ? '250px' : '0';
+              }
+            };
+            if (window.innerWidth <= 768) {
+              const header = document.querySelector('.page-header');
+              if (header) {
+                const hamburger = document.createElement('button');
+                hamburger.className = 'btn btn-primary d-md-none mb-3';
+                hamburger.innerHTML = '<i class="bx bx-menu"></i>';
+                hamburger.onclick = toggleSidebar;
+                header.prepend(hamburger);
+              }
+            }
+          });
+        </script>
           </button>
         </div>
       </div>

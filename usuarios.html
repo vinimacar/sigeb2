@@ -85,50 +85,6 @@
     .search-box input {
       flex: 1;
       padding: 10px 15px;
-      <body>
-        <!-- SIDEBAR FIXA ESCURA PADRÃO DASHBOARD -->
-        <div class="sidebar" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e0e0e0; min-height: 100vh;">
-          <div class="sidebar-header text-center py-4">
-            <img src="logobias.png" alt="Logo da Escola" style="width:90px; height:90px; object-fit:contain; border-radius:50%; margin-bottom:10px; box-shadow:0 2px 12px #0002;">
-            <h3 class="mt-2" style="color:#fff; letter-spacing:1px;">SIGEB</h3>
-          </div>
-          <div class="menu-items d-flex flex-column gap-1 px-2">
-            <a href="dashboard.html" class="menu-item" title="Visão geral do sistema"><i class='bx bxs-dashboard'></i> Dashboard</a>
-            <a href="livros.html" class="menu-item" title="Gerenciar acervo"><i class='bx bxs-book'></i> Livros</a>
-            <a href="usuarios.html" class="menu-item active" title="Gerenciar usuários"><i class='bx bxs-user'></i> Usuários</a>
-            <a href="emprestimos.html" class="menu-item" title="Controlar empréstimos"><i class='bx bxs-bookmark'></i> Empréstimos</a>
-            <a href="relatorios.html" class="menu-item" title="Relatórios do sistema"><i class='bx bxs-report'></i> Relatórios</a>
-            <a href="configuracoes.html" class="menu-item" title="Ajustar configurações"><i class='bx bxs-cog'></i> Configurações</a>
-            <a href="index.html" class="menu-item" title="Sair do sistema"><i class='bx bxs-log-out'></i> Sair</a>
-          </div>
-        </div>
-
-        <!-- CONTEÚDO PRINCIPAL -->
-        <div class="main-content" style="margin-left:250px; min-height:100vh; background:#f0f2f5; padding:32px 24px 24px 24px;">
-          <!-- Cabeçalho branco padrão dashboard -->
-          <div class="dashboard-header" style="background: #fff; padding: 24px 32px; border-radius: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 28px;">
-            <h2 class="fw-bold mb-1" style="color:#16213e;">Gerenciamento de Usuários</h2>
-            <p class="mb-0" style="color:#4facfe; font-weight:500;">Cadastre, edite e gerencie os usuários da biblioteca</p>
-            <p id="nomeEscola" class="mb-0 mt-2" style="font-weight:600;color:#4facfe">Escola Estadual Governador Bias Fortes</p>
-          </div>
-          <!-- Barra de ações em card -->
-          <div class="card shadow-sm border-0 mb-4" style="border-radius: 16px;">
-            <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
-              <div class="d-flex gap-2">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                  <i class="bx bx-plus"></i> Adicionar Usuário
-                </button>
-                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importUsersModal">
-                  <i class="bx bx-upload"></i> Importar Usuários
-                </button>
-              </div>
-              <button id="gerarCartaoBtn" class="btn btn-warning" disabled>
-                <i class="bx bx-id-card"></i> Cartão de Leitor
-              </button>
-            </div>
-          </div>
-      height: 4px;
-      background: linear-gradient(90deg, #00bcd4, #2196f3, #3f51b5);
     }
     
     .cartao-preview::after {
@@ -1366,10 +1322,10 @@
         searchInput.addEventListener('input', filterUsers);
       }
 
-      // Carrega os usuários ao iniciar
+      // Carrega os usuários ao iniciar e configura eventos principais
       document.addEventListener('DOMContentLoaded', function() {
         loadUsers(); // Carrega usuários do Firestore
-        
+
         const addUserForm = document.getElementById('addUserForm');
         if (addUserForm) {
           addUserForm.addEventListener('submit', function(event) {
@@ -1377,32 +1333,21 @@
             handleUserSubmission(event);
           });
         }
-        
-        // Adiciona event listeners para os botões de ação
-        addActionButtonListeners();
-      });      // Limpa o formulário e o campo usuarioId ao fechar o modal
-      document.getElementById('addUserModal').addEventListener('hidden.bs.modal', function () {
-      // Protege contra erro se o elemento não existir
-      const addUserModal = document.getElementById('addUserModal');
-      if (addUserModal) {
-        addUserModal.addEventListener('hidden.bs.modal', function () {
-          document.getElementById('addUserForm').reset();
-          document.getElementById('usuarioId').value = '';
-          document.getElementById('addUserForm').classList.remove('was-validated');
-        });
-      }
-        document.getElementById('addUserForm').reset();
-        document.getElementById('usuarioId').value = '';
-        document.getElementById('addUserForm').classList.remove('was-validated');
-        
-        // Resetar estado do modal
-        document.getElementById('addUserModalLabel').textContent = 'Adicionar Novo Usuário';
-        document.getElementById('btnSalvarUsuario').style.display = 'inline-block';
-        document.getElementById('btnImprimirFicha').style.display = 'none';
-        
-        // Remove o foco de qualquer elemento dentro do modal ao fechar
-        if (document.activeElement && document.getElementById('addUserModal').contains(document.activeElement)) {
-          document.activeElement.blur();
+
+        // Limpa o formulário e o campo usuarioId ao fechar o modal
+        const addUserModal = document.getElementById('addUserModal');
+        if (addUserModal) {
+          addUserModal.addEventListener('hidden.bs.modal', function () {
+            document.getElementById('addUserForm').reset();
+            document.getElementById('usuarioId').value = '';
+            document.getElementById('addUserForm').classList.remove('was-validated');
+            document.getElementById('addUserModalLabel').textContent = 'Adicionar Novo Usuário';
+            document.getElementById('btnSalvarUsuario').style.display = 'inline-block';
+            document.getElementById('btnImprimirFicha').style.display = 'none';
+            if (document.activeElement && addUserModal.contains(document.activeElement)) {
+              document.activeElement.blur();
+            }
+          });
         }
       });
 
@@ -1750,6 +1695,7 @@
       .modal-footer .btn {
         min-width: 120px;
       }
+    }
     </style>
   </div>
 
@@ -3142,4 +3088,5 @@
     }
   </script>
 </body>
+
 </html>

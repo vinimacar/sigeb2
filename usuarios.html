@@ -85,69 +85,48 @@
     .search-box input {
       flex: 1;
       padding: 10px 15px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 0.9rem;
-    }
-    .action-buttons {
-      display: flex;
-      gap: 10px;
-    }
-    .action-button {
-      background: none;
-      border: none;
-      padding: 5px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .action-button:hover {
-      transform: translateY(-2px);
-    }
-    .print-button {
-      color: #28a745;
-    }
-    .print-button:hover {
-      color: #1e7e34;
-    }
-    .history-button {
-      color: #fd7e14;
-    }
-    .history-button:hover {
-      color: #e55a00;
-    }
-    .edit-button {
-      color: #4facfe;
-    }    .delete-button {
-      color: #c62828;
-    }
-    .user-checkbox {
-      cursor: pointer;
-    }
-    #selectAll {
-      cursor: pointer;
-    }
-    #gerarCartaoBtn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-    .cartao-preview {
-      background: linear-gradient(135deg, #1a237e 0%, #2d5aa0 50%, #00bcd4 100%);
-      color: white;
-      border-radius: 12px;
-      padding: 20px;
-      margin: 15px 0;
-      box-shadow: 0 8px 25px rgba(26, 35, 126, 0.3);
-      position: relative;
-      overflow: hidden;
-      border: 2px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .cartao-preview::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
+      <body>
+        <!-- SIDEBAR FIXA ESCURA PADRÃO DASHBOARD -->
+        <div class="sidebar" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e0e0e0; min-height: 100vh;">
+          <div class="sidebar-header text-center py-4">
+            <img src="logobias.png" alt="Logo da Escola" style="width:90px; height:90px; object-fit:contain; border-radius:50%; margin-bottom:10px; box-shadow:0 2px 12px #0002;">
+            <h3 class="mt-2" style="color:#fff; letter-spacing:1px;">SIGEB</h3>
+          </div>
+          <div class="menu-items d-flex flex-column gap-1 px-2">
+            <a href="dashboard.html" class="menu-item" title="Visão geral do sistema"><i class='bx bxs-dashboard'></i> Dashboard</a>
+            <a href="livros.html" class="menu-item" title="Gerenciar acervo"><i class='bx bxs-book'></i> Livros</a>
+            <a href="usuarios.html" class="menu-item active" title="Gerenciar usuários"><i class='bx bxs-user'></i> Usuários</a>
+            <a href="emprestimos.html" class="menu-item" title="Controlar empréstimos"><i class='bx bxs-bookmark'></i> Empréstimos</a>
+            <a href="relatorios.html" class="menu-item" title="Relatórios do sistema"><i class='bx bxs-report'></i> Relatórios</a>
+            <a href="configuracoes.html" class="menu-item" title="Ajustar configurações"><i class='bx bxs-cog'></i> Configurações</a>
+            <a href="index.html" class="menu-item" title="Sair do sistema"><i class='bx bxs-log-out'></i> Sair</a>
+          </div>
+        </div>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <div class="main-content" style="margin-left:250px; min-height:100vh; background:#f0f2f5; padding:32px 24px 24px 24px;">
+          <!-- Cabeçalho branco padrão dashboard -->
+          <div class="dashboard-header" style="background: #fff; padding: 24px 32px; border-radius: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 28px;">
+            <h2 class="fw-bold mb-1" style="color:#16213e;">Gerenciamento de Usuários</h2>
+            <p class="mb-0" style="color:#4facfe; font-weight:500;">Cadastre, edite e gerencie os usuários da biblioteca</p>
+            <p id="nomeEscola" class="mb-0 mt-2" style="font-weight:600;color:#4facfe">Escola Estadual Governador Bias Fortes</p>
+          </div>
+          <!-- Barra de ações em card -->
+          <div class="card shadow-sm border-0 mb-4" style="border-radius: 16px;">
+            <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+              <div class="d-flex gap-2">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                  <i class="bx bx-plus"></i> Adicionar Usuário
+                </button>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importUsersModal">
+                  <i class="bx bx-upload"></i> Importar Usuários
+                </button>
+              </div>
+              <button id="gerarCartaoBtn" class="btn btn-warning" disabled>
+                <i class="bx bx-id-card"></i> Cartão de Leitor
+              </button>
+            </div>
+          </div>
       height: 4px;
       background: linear-gradient(90deg, #00bcd4, #2196f3, #3f51b5);
     }

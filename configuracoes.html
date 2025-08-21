@@ -722,111 +722,33 @@
   </style>
   </style>
 </head>
-<body>
-  <nav class="navbar navbar-dark" style="background: linear-gradient(90deg, #16213e 60%, #4facfe 100%); box-shadow: 0 2px 12px #0002;">
-    <div class="container-fluid justify-content-end">
-      <span id="userLogInfo" class="navbar-text" style="color:#fff; font-size:1rem; font-weight:500;"></span>
-      <button id="logoutBtn" class="btn btn-sm btn-outline-light ms-3">Sair</button>
+  <body>
+    <!-- SIDEBAR FIXA PADRÃO DASHBOARD -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <img src="logobias.png" alt="Logo da Escola" style="width:90px; height:90px; object-fit:contain; border-radius:50%; margin-bottom:10px; box-shadow:0 2px 12px #0002;">
+        <h3>SIGEB</h3>
+      </div>
+      <div class="menu-items">
+        <a href="dashboard.html" class="menu-item" title="Visão geral do sistema"><i class='bx bxs-dashboard'></i> Dashboard</a>
+        <a href="livros.html" class="menu-item" title="Gerenciar acervo"><i class='bx bxs-book'></i> Livros</a>
+        <a href="usuarios.html" class="menu-item" title="Gerenciar usuários"><i class='bx bxs-user'></i> Usuários</a>
+        <a href="emprestimos.html" class="menu-item" title="Controlar empréstimos"><i class='bx bxs-bookmark'></i> Empréstimos</a>
+        <a href="relatorios.html" class="menu-item" title="Relatórios do sistema"><i class='bx bxs-report'></i> Relatórios</a>
+        <a href="configuracoes.html" class="menu-item active" title="Ajustar configurações"><i class='bx bxs-cog'></i> Configurações</a>
+        <a href="index.html" class="menu-item" title="Sair do sistema"><i class='bx bxs-log-out'></i> Sair</a>
+      </div>
     </div>
-  </nav>
 
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <img src="logobias.png" alt="Logo da Escola" style="width:90px; height:90px; object-fit:contain; border-radius:50%; margin-bottom:10px; box-shadow:0 2px 12px #0002;">
-      <h3>SIGEB</h3>
-    </div>
-    <div class="menu-items">
-      <a href="dashboard.html" class="menu-item" title="Visão geral do sistema">
-        <i class='bx bxs-dashboard'></i>
-        Dashboard
-      </a>
-      <a href="livros.html" class="menu-item" title="Gerenciar acervo">
-        <i class='bx bxs-book'></i>
-        Livros
-      </a>
-      <a href="usuarios.html" class="menu-item" title="Gerenciar usuários">
-        <i class='bx bxs-user'></i>
-        Usuários
-      </a>
-      <a href="emprestimos.html" class="menu-item" title="Controlar empréstimos">
-        <i class='bx bxs-bookmark'></i>
-        Empréstimos
-      </a>
-      <a href="relatorios.html" class="menu-item" title="Relatórios do sistema">
-        <i class='bx bxs-report'></i>
-        Relatórios
-      </a>
-      <a href="configuracoes.html" class="menu-item active" title="Ajustar configurações">
-        <i class='bx bxs-cog'></i>
-        Configurações
-      </a>
-      <a href="index.html" class="menu-item" title="Sair do sistema">
-        <i class='bx bxs-log-out'></i>
-        Sair
-      </a>
-    </div>
-  </div>
-
-  <!-- Sidebar responsivo igual ao dashboard -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const toggleSidebar = () => {
-        const sidebar = document.querySelector('.sidebar');
-        const mainContent = document.querySelector('.main-content');
-        if (window.innerWidth <= 768) {
-          sidebar.classList.toggle('active');
-          mainContent.style.marginLeft = sidebar.classList.contains('active') ? '250px' : '0';
-        }
-      };
-      if (window.innerWidth <= 768) {
-        const header = document.querySelector('.page-header');
-        if (header) {
-          const hamburger = document.createElement('button');
-          hamburger.className = 'btn btn-primary d-md-none mb-3';
-          hamburger.innerHTML = '<i class="bx bx-menu"></i>';
-          hamburger.onclick = toggleSidebar;
-          header.prepend(hamburger);
-        }
-      }
-    });
-  </script>
-
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <img src="logobias.png" alt="Logo da Escola">
-      <h3>SIGEB</h3>
-    </div>
-    <div class="menu-items">
-      <a href="dashboard.html" class="menu-item" title="Visão geral do sistema">
-        <i class='bx bxs-dashboard'></i>
-        Dashboard
-      </a>
-      <a href="livros.html" class="menu-item" title="Gerenciar acervo">
-        <i class='bx bxs-book'></i>
-        Livros
-      </a>
-      <a href="usuarios.html" class="menu-item" title="Gerenciar usuários">
-        <i class='bx bxs-user'></i>
-        Usuários
-      </a>
-      <a href="emprestimos.html" class="menu-item" title="Controlar empréstimos">
-        <i class='bx bxs-bookmark'></i>
-        Empréstimos
-      </a>
-      <a href="relatorios.html" class="menu-item" title="Relatórios do sistema">
-        <i class='bx bxs-report'></i>
-        Relatórios
-      </a>
-      <a href="configuracoes.html" class="menu-item active" title="Ajustar configurações">
-        <i class='bx bxs-cog'></i>
-        Configurações
-      </a>
-      <a href="index.html" class="menu-item" title="Sair do sistema">
-        <i class='bx bxs-log-out'></i>
-        Sair
-      </a>
-    </div>
-  </div>
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div class="main-content" style="margin-left:250px; min-height:100vh; background:#f0f2f5; padding:32px 24px 24px 24px;">
+      <!-- Cabeçalho branco padrão dashboard -->
+      <div class="page-header" style="background: #fff; padding: 24px 32px; border-radius: 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 28px;">
+        <h2 class="fw-bold mb-1" style="color:#16213e;">Configurações do Sistema</h2>
+        <p class="mb-0" style="color:#4facfe; font-weight:500;">Gerencie preferências, backup, escolas e usuários administrativos</p>
+        <p id="nomeEscola" class="mb-0 mt-2" style="font-weight:600;color:#4facfe">Escola Estadual Governador Bias Fortes</p>
+      </div>
+      <!-- ...restante do conteúdo de configurações permanece igual, dentro de .main-content ... -->
               <i class='bx bx-mail-send'></i> Enviar email de lembrete antes do vencimento
             </label>
           </div>

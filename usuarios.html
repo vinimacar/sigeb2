@@ -475,11 +475,38 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <div class="d-flex justify-content-end mb-3">
+          <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+            <div class="d-flex gap-2">
+              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                <i class="bx bx-plus"></i> Adicionar Usuário
+              </button>
+              <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importUsersModal">
+                <i class="bx bx-upload"></i> Importar Usuários
+              </button>
+            </div>
             <button id="gerarCartaoBtn" class="btn btn-warning" disabled>
               <i class="bx bx-id-card"></i> Cartão de Leitor
             </button>
           </div>
+    <!-- Modal Importar Usuários -->
+    <div class="modal fade" id="importUsersModal" tabindex="-1" aria-labelledby="importUsersModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="importUsersModalLabel">Importar Usuários</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <p>Selecione um arquivo CSV para importar usuários em lote.</p>
+            <input type="file" class="form-control" id="importUsersFile" accept=".csv">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-success" id="btnConfirmarImportacao">Confirmar Importação</button>
+          </div>
+        </div>
+      </div>
+    </div>
           <tbody id="usuariosTableBody">
             <!-- Os usuários serão carregados dinamicamente do Firebase -->
           </tbody>

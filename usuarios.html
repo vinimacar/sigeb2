@@ -34,9 +34,14 @@
 
     // Tratamento de erros não capturados (Promises)
     window.addEventListener('unhandledrejection', function(event) {
-      if (event.reason && event.reason.message && 
-          (event.reason.message.includes('extension://') || 
-           event.reason.message.includes('contentscript'))) {
+      if (
+        event.reason &&
+        event.reason.message &&
+        (
+          event.reason.message.includes('extension://') ||
+          event.reason.message.includes('contentscript')
+        )
+      ) {
         console.warn('Promise rejeitada por extensão ignorada:', event.reason);
         event.preventDefault();
       }
@@ -2764,7 +2769,10 @@
     }
 
     // Event listener para o botão de gerar cartão
-    document.getElementById('gerarCartaoBtn').addEventListener('click', gerarCartoesLeitor);
+    const gerarCartaoBtn = document.getElementById('gerarCartaoBtn');
+    if (gerarCartaoBtn) {
+      gerarCartaoBtn.addEventListener('click', gerarCartoesLeitor);
+    }
 
     // Proteção contra interferências de extensões do navegador
     function protegerContraExtensoes() {

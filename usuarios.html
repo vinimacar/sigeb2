@@ -475,6 +475,7 @@
               <th>Ações</th>
             </tr>
           </thead>
+
           <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
             <div class="d-flex gap-2">
               <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
@@ -488,6 +489,23 @@
               <i class="bx bx-id-card"></i> Cartão de Leitor
             </button>
           </div>
+
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th></th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Matrícula</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="usuariosTableBody">
+              <!-- Os usuários serão carregados dinamicamente do Firebase -->
+            </tbody>
+          </table>
+
     <!-- Modal Importar Usuários -->
     <div class="modal fade" id="importUsersModal" tabindex="-1" aria-labelledby="importUsersModalLabel" aria-hidden="true">
       <div class="modal-dialog">
@@ -505,12 +523,6 @@
             <button type="button" class="btn btn-success" id="btnConfirmarImportacao">Confirmar Importação</button>
           </div>
         </div>
-      </div>
-    </div>
-          <tbody id="usuariosTableBody">
-            <!-- Os usuários serão carregados dinamicamente do Firebase -->
-          </tbody>
-        </table>
       </div>
     </div>
 

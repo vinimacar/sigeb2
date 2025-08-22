@@ -17,100 +17,65 @@
       font-family: 'Poppins', sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       background-attachment: fixed;
-      :root {
-        --primary-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-        --accent-gradient: linear-gradient(90deg, #00f2fe, #4facfe);
-        --text-light: #e0e0e0;
-        --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.1);
-        --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.2);
-        --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.3);
-        --transition: all 0.3s ease;
-      }
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
 
-      .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100%;
-        width: 250px;
-        background: var(--primary-gradient);
-        color: white;
-        padding: 20px;
-        transition: var(--transition);
-        z-index: 1000;
-      }
-
-      .sidebar-header {
-        padding: 20px 0;
-        text-align: center;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .sidebar-header h3 {
-        background: var(--accent-gradient);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin: 0;
-        font-weight: 600;
-      }
-
-      .sidebar-header img {
-        width: 90px;
-        height: 90px;
-        object-fit: contain;
-        border-radius: 50%;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 12px #0002;
-      }
-
-      .menu-items {
-        padding: 20px 0;
-      }
-
-      .menu-item {
-        padding: 12px 20px;
-        color: white;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        transition: var(--transition);
-        border-radius: 8px;
-        margin-bottom: 5px;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .menu-item::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: rgba(255, 255, 255, 0.1);
-        transition: var(--transition);
-      }
-
-      .menu-item:hover::before {
-        left: 0;
-      }
-
-      .menu-item.active {
-        background: rgba(255, 255, 255, 0.1);
-        color: #4facfe;
-      }
-
-      .menu-item i {
-        margin-right: 10px;
-        font-size: 1.2rem;
-      }
-
-      .main-content {
-        margin-left: 250px;
-        padding: 20px;
-        transition: var(--transition);
-      }
+    /* Overlay para melhor contraste */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at top, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.2));
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    /* Sidebar melhorada */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 260px;
+      background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 25px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1000;
+      box-shadow: 5px 0 25px rgba(0, 0, 0, 0.2);
+    }
+    
+    .sidebar-header {
+      padding: 25px 0;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      margin-bottom: 25px;
+    }
+    
+    .sidebar-header h3 {
+      background: linear-gradient(135deg, #00f2fe, #4facfe, #00c9ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+      font-weight: 700;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      text-shadow: 0 0 20px rgba(79, 172, 254, 0.3);
+    }
+    
+    .menu-items {
+      padding: 0;
+    }
+    
+    .menu-item {
       padding: 15px 20px;
       color: rgba(255, 255, 255, 0.8);
       text-decoration: none;
@@ -722,38 +687,78 @@
   </style>
   </style>
 </head>
-  <body>
-    <!-- SIDEBAR FIXA PADRÃO DASHBOARD -->
-    <!-- SIDEBAR ESCURA FIXA PADRÃO DASHBOARD -->
-    <div class="sidebar" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e0e0e0; min-height: 100vh;">
-      <div class="sidebar-header text-center py-4">
-        <img src="logobias.png" alt="Logo da Escola" style="width:90px; height:90px; object-fit:contain; border-radius:50%; margin-bottom:10px; box-shadow:0 2px 12px #0002;">
-  <h3 class="mt-2" style="color:#4facfe; letter-spacing:1px;">SIGEB</h3>
-      </div>
-      <div class="menu-items d-flex flex-column gap-1 px-2">
-        <a href="dashboard.html" class="menu-item" title="Visão geral do sistema"><i class='bx bxs-dashboard'></i> Dashboard</a>
-        <a href="livros.html" class="menu-item" title="Gerenciar acervo"><i class='bx bxs-book'></i> Livros</a>
-        <a href="usuarios.html" class="menu-item" title="Gerenciar usuários"><i class='bx bxs-user'></i> Usuários</a>
-        <a href="emprestimos.html" class="menu-item" title="Controlar empréstimos"><i class='bx bxs-bookmark'></i> Empréstimos</a>
-        <a href="relatorios.html" class="menu-item" title="Relatórios do sistema"><i class='bx bxs-report'></i> Relatórios</a>
-        <a href="configuracoes.html" class="menu-item active" title="Ajustar configurações"><i class='bx bxs-cog'></i> Configurações</a>
-        <a href="index.html" class="menu-item" title="Sair do sistema"><i class='bx bxs-log-out'></i> Sair</a>
-      </div>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h3>SIGEB</h3>
+    </div>
+    <div class="menu-items">
+      <a href="dashboard.html" class="menu-item">
+        <i class='bx bxs-dashboard'></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="livros.html" class="menu-item">
+        <i class='bx bxs-book'></i>
+        <span>Livros</span>
+      </a>
+      <a href="usuarios.html" class="menu-item">
+        <i class='bx bxs-user'></i>
+        <span>Usuários</span>
+      </a>
+      <a href="emprestimos.html" class="menu-item">
+        <i class='bx bxs-bookmark'></i>
+        <span>Empréstimos</span>
+      </a>
+       <a href="relatorios.html" class="menu-item" title="Relatórios do sistema">
+        <i class='bx bxs-report'></i>
+        <span>Relatórios</span>
+      </a>
+      <a href="configuracoes.html" class="menu-item active">
+        <i class='bx bxs-cog'></i>
+        <span>Configurações</span>
+      </a>
+      <a href="index.html" class="menu-item">
+        <i class='bx bxs-log-out'></i>
+        <span>Sair</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="page-header">
+      <h2><i class='bx bxs-cog'></i> Configurações do Sistema</h2>
+      <p>Personalize as configurações da biblioteca e gerencie o sistema</p>
     </div>
 
-    <!-- CONTEÚDO PRINCIPAL -->
-    <div class="main-content" style="margin-left:250px; min-height:100vh; background:#f0f2f5; padding:48px 0 32px 0; display:flex; flex-direction:column; align-items:center;">
-      <!-- Cabeçalho branco centralizado -->
-      <div class="page-header" style="background: #fff; padding: 36px 48px; border-radius: 22px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); margin-bottom: 40px; max-width: 720px; width: 100%; text-align:center;">
-        <h2 class="fw-bold mb-2" style="color:#16213e; font-size:2.4rem;">Configurações do Sistema</h2>
-        <p class="mb-0" style="color:#4facfe; font-weight:500; font-size:1.18rem;">Gerencie preferências, backup, escolas e usuários administrativos</p>
-        <p id="nomeEscola" class="mb-0 mt-2" style="font-weight:600;color:#4facfe">Escola Estadual Governador Bias Fortes</p>
-      </div>
-      <!-- Cards de configuração centralizados -->
-      <div style="width:100%; max-width:950px; display:flex; flex-direction:column; gap:36px; align-items:center;">
-        <!-- ...os cards de configuração já existentes permanecem aqui, centralizados... -->
-        <!-- ...existing code... -->
-      </div>
+    <div class="settings-card">
+      <h5><i class='bx bxs-edit'></i> Configurações Gerais</h5>
+      <form>
+        <div class="mb-3">
+          <label class="form-label"><i class='bx bx-building'></i> Nome da Biblioteca</label>
+          <input type="text" class="form-control" value="Biblioteca Central" placeholder="Digite o nome da biblioteca">
+        </div>
+        <div class="mb-3">
+          <label class="form-label"><i class='bx bx-envelope'></i> Email de Contato</label>
+          <input type="email" class="form-control" value="biblioteca@email.com" placeholder="Digite o email de contato">
+        </div>
+        <div class="mb-3">
+          <label class="form-label"><i class='bx bx-calendar'></i> Prazo Padrão de Empréstimo (dias)</label>
+          <input type="number" class="form-control" value="14" min="1" max="90">
+        </div>
+        <div class="mb-3">
+          <label class="form-label"><i class='bx bx-book-bookmark'></i> Limite de Livros por Usuário</label>
+          <input type="number" class="form-control" value="5" min="1" max="20">
+        </div>
+      </form>
+    </div>
+
+    <div class="settings-card">
+      <h5><i class='bx bxs-bell'></i> Notificações</h5>
+      <form>
+        <div class="mb-3">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" checked id="emailReminder">
+            <label class="form-check-label" for="emailReminder">
               <i class='bx bx-mail-send'></i> Enviar email de lembrete antes do vencimento
             </label>
           </div>
@@ -792,29 +797,29 @@
         <button class="save-button" id="btnBackup" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
           <i class='bx bx-download'></i>
           Backup Completo + Apagar Dados
-        <script>
-          // Sidebar responsivo igual ao dashboard
-          document.addEventListener('DOMContentLoaded', function() {
-            const toggleSidebar = () => {
-              const sidebar = document.querySelector('.sidebar');
-              const mainContent = document.querySelector('.main-content');
-              if (window.innerWidth <= 768) {
-                sidebar.classList.toggle('active');
-                mainContent.style.marginLeft = sidebar.classList.contains('active') ? '250px' : '0';
-              }
-            };
-            if (window.innerWidth <= 768) {
-              const header = document.querySelector('.page-header');
-              if (header) {
-                const hamburger = document.createElement('button');
-                hamburger.className = 'btn btn-primary d-md-none mb-3';
-                hamburger.innerHTML = '<i class="bx bx-menu"></i>';
-                hamburger.onclick = toggleSidebar;
-                header.prepend(hamburger);
-              }
-            }
-          });
-        </script>
+        </button>
+        <small class="text-muted">
+          ⚠️ <strong>ATENÇÃO:</strong> Exporta todos os dados e <span style="color: #dc3545; font-weight: bold;">APAGA TUDO</span> do Firestore
+        </small>
+      </div>
+      
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <button class="save-button w-100" id="btnBackupLivros" style="background: linear-gradient(135deg, #10b981, #059669);">
+            <i class='bx bx-book'></i>
+            Backup Livros
+          </button>
+        </div>
+        <div class="col-md-4 mb-3">
+          <button class="save-button w-100" id="btnBackupUsuarios" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+            <i class='bx bx-user'></i>
+            Backup Usuários
+          </button>
+        </div>
+        <div class="col-md-4 mb-3">
+          <button class="save-button w-100" id="btnBackupEmprestimos" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+            <i class='bx bx-bookmark'></i>
+            Backup Empréstimos
           </button>
         </div>
       </div>
@@ -863,10 +868,8 @@
           <h6><i class='bx bx-info-circle'></i> Escolas Cadastradas</h6>
           <p class="mb-0">Lista de todas as escolas registradas no sistema:</p>
         </div>
-        <div style="overflow-x:auto; border-radius:14px; background:#fff; box-shadow:0 2px 10px #0001; padding:0; margin-bottom:16px;">
-          <div id="escolasContainer">
-            <!-- Conteúdo carregado dinamicamente -->
-          </div>
+        <div id="escolasContainer">
+          <!-- Conteúdo carregado dinamicamente -->
         </div>
       </div>
       
@@ -981,10 +984,8 @@
           <h6><i class='bx bx-info-circle'></i> Usuários do Sistema</h6>
           <p class="mb-0">Lista de todos os usuários administrativos do sistema:</p>
         </div>
-        <div style="overflow-x:auto; border-radius:14px; background:#fff; box-shadow:0 2px 10px #0001; padding:0; margin-bottom:16px;">
-          <div id="usuariosContainerSistema">
-            <!-- Conteúdo carregado dinamicamente -->
-          </div>
+        <div id="usuariosContainerSistema">
+          <!-- Conteúdo carregado dinamicamente -->
         </div>
       </div>
       
@@ -1476,32 +1477,27 @@
     }
 
     // Event listeners para os botões de backup
-    const btnBackup = document.getElementById('btnBackup');
-    if (btnBackup) btnBackup.addEventListener('click', fazerBackupCompleto);
-
-    const btnBackupLivros = document.getElementById('btnBackupLivros');
-    if (btnBackupLivros) btnBackupLivros.addEventListener('click', () => {
+    document.getElementById('btnBackup').addEventListener('click', fazerBackupCompleto);
+    
+    document.getElementById('btnBackupLivros').addEventListener('click', () => {
       const agora = new Date();
       const timestamp = agora.toISOString().slice(0, 19).replace(/:/g, '-');
       exportarDados('livros', `SIGEB_Backup_Livros_${timestamp}.json`);
     });
-
-    const btnBackupUsuarios = document.getElementById('btnBackupUsuarios');
-    if (btnBackupUsuarios) btnBackupUsuarios.addEventListener('click', () => {
+    
+    document.getElementById('btnBackupUsuarios').addEventListener('click', () => {
       const agora = new Date();
       const timestamp = agora.toISOString().slice(0, 19).replace(/:/g, '-');
       exportarDados('usuarios', `SIGEB_Backup_Usuarios_${timestamp}.json`);
     });
-
-    const btnBackupEmprestimos = document.getElementById('btnBackupEmprestimos');
-    if (btnBackupEmprestimos) btnBackupEmprestimos.addEventListener('click', () => {
+    
+    document.getElementById('btnBackupEmprestimos').addEventListener('click', () => {
       const agora = new Date();
       const timestamp = agora.toISOString().slice(0, 19).replace(/:/g, '-');
       exportarDados('emprestimos', `SIGEB_Backup_Emprestimos_${timestamp}.json`);
     });
-
-    const btnRestoreBackup = document.getElementById('btnRestoreBackup');
-    if (btnRestoreBackup) btnRestoreBackup.addEventListener('click', restaurarBackup);
+    
+    document.getElementById('btnRestoreBackup').addEventListener('click', restaurarBackup);
 
     // Função para listar escolas cadastradas
     async function listarEscolas() {

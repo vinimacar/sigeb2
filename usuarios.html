@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <!-- Meta tags de segurança para prevenir conflitos com extensões -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>SIGEB - Usuários</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
@@ -34,14 +35,9 @@
 
     // Tratamento de erros não capturados (Promises)
     window.addEventListener('unhandledrejection', function(event) {
-      if (
-        event.reason &&
-        event.reason.message &&
-        (
-          event.reason.message.includes('extension://') ||
-          event.reason.message.includes('contentscript')
-        )
-      ) {
+      if (event.reason && event.reason.message && 
+          (event.reason.message.includes('extension://') || 
+           event.reason.message.includes('contentscript'))) {
         console.warn('Promise rejeitada por extensão ignorada:', event.reason);
         event.preventDefault();
       }
@@ -70,13 +66,110 @@
       margin: 0;
       padding: 0;
     }
-    :root {
-      --primary-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-      --accent-gradient: linear-gradient(90deg, #00f2fe, #4facfe);
-      --text-light: #e0e0e0;
-      --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.1);
-      --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.3);
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 250px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      padding: 20px;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    .sidebar-header {
+      padding: 20px 0;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .sidebar-header h3 {
+      background: linear-gradient(90deg, #00f2fe, #4facfe);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+      font-weight: 600;
+    }
+    .menu-items {
+      padding: 20px 0;
+    }
+    .menu-item {
+      padding: 12px 20px;
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+      margin-bottom: 5px;
+    }
+    .menu-item:hover, .menu-item.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #4facfe;
+    }
+    .menu-item i {
+      margin-right: 10px;
+      font-size: 1.2rem;
+    }
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+    .page-header {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .users-table {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .table {
+      margin-bottom: 0;
+    }
+    .table th {
+      border-top: none;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+    .user-status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+    }
+    .status-ativo {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    .status-inativo {
+      background: #ffebee;
+      color: #c62828;
+    }
+    .add-button {
+      background: linear-gradient(90deg, #00f2fe, #4facfe);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+    .add-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
     .search-box {
       display: flex;
       gap: 10px;
@@ -85,6 +178,71 @@
     .search-box input {
       flex: 1;
       padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .action-button {
+      background: none;
+      border: none;
+      padding: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .action-button:hover {
+      transform: translateY(-2px);
+    }
+    .print-button {
+      color: #28a745;
+    }
+    .print-button:hover {
+      color: #1e7e34;
+    }
+    .history-button {
+      color: #fd7e14;
+    }
+    .history-button:hover {
+      color: #e55a00;
+    }
+    .edit-button {
+      color: #4facfe;
+    }    .delete-button {
+      color: #c62828;
+    }
+    .user-checkbox {
+      cursor: pointer;
+    }
+    #selectAll {
+      cursor: pointer;
+    }
+    #gerarCartaoBtn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .cartao-preview {
+      background: linear-gradient(135deg, #1a237e 0%, #2d5aa0 50%, #00bcd4 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 15px 0;
+      box-shadow: 0 8px 25px rgba(26, 35, 126, 0.3);
+      position: relative;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .cartao-preview::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #00bcd4, #2196f3, #3f51b5);
     }
     
     .cartao-preview::after {
@@ -212,63 +370,41 @@
     </div>
   </div>
 
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <img src="logobias.png" alt="Logo da Escola" style="width:90px; height:90px; object-fit:contain; border-radius:50%; margin-bottom:10px; box-shadow:0 2px 12px #0002;">
-      <h3>SIGEB</h3>
-    </div>
-    <div class="menu-items">
-      <a href="dashboard.html" class="menu-item" title="Visão geral do sistema">
-        <i class='bx bxs-dashboard'></i>
-        Dashboard
-      </a>
-      <a href="livros.html" class="menu-item" title="Gerenciar acervo">
-        <i class='bx bxs-book'></i>
-        Livros
-      </a>
-      <a href="usuarios.html" class="menu-item active" title="Gerenciar usuários">
-        <i class='bx bxs-user'></i>
-        Usuários
-      </a>
-      <a href="emprestimos.html" class="menu-item" title="Controlar empréstimos">
-        <i class='bx bxs-bookmark'></i>
-        Empréstimos
-      </a>
-      <a href="relatorios.html" class="menu-item" title="Relatórios do sistema">
-        <i class='bx bxs-report'></i>
-        Relatórios
-      </a>
-      <a href="configuracoes.html" class="menu-item" title="Ajustar configurações">
-        <i class='bx bxs-cog'></i>
-        Configurações
-      </a>
-      <a href="index.html" class="menu-item" title="Sair do sistema">
-        <i class='bx bxs-log-out'></i>
-        Sair
-      </a>
-    </div>
-  </div>
-  <!-- BARRA DE AÇÕES E CABEÇALHO -->
   <div class="main-content">
-    <div class="dashboard-header" style="background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; position: relative; overflow: hidden;">
-      <h2>Gerenciamento de Usuários</h2>
-      <p>Cadastre, edite e gerencie os usuários da biblioteca</p>
-      <p id="nomeEscola" style="font-weight:600;color:#4facfe">Escola Estadual Governador Bias Fortes</p>
-    </div>
-    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-      <div class="d-flex gap-2">
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
-          <i class="bx bx-plus"></i> Adicionar Usuário
-        </button>
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importUsersModal">
-          <i class="bx bx-upload"></i> Importar Usuários
-        </button>
+    <!-- Título e descrição -->
+    <div class="page-header">
+      <div>
+        <h2>Gerenciamento de Usuários</h2>
+        <p>Gerencie os usuários da biblioteca</p>
       </div>
-      <button id="gerarCartaoBtn" class="btn btn-warning" disabled>
-        <i class="bx bx-id-card"></i> Cartão de Leitor
+      <button class="add-button" data-bs-toggle="modal" data-bs-target="#addUserModal">
+        <i class='bx bx-plus'></i>
+        Cadastro de Usuários
       </button>
     </div>
-    <!-- ...restante do conteúdo da página permanece igual, agora dentro de .main-content ... -->
+
+    <div class="search-box">
+      <input type="text" placeholder="Pesquisar por nome, email ou matrícula...">
+      <button class="add-button">
+        <i class='bx bx-search'></i>
+      </button>
+    </div>    <!-- Adicione o botão de importação acima da tabela de usuários -->
+    <div class="d-flex justify-content-end mb-3">
+      <input type="file" id="xlsInput" accept=".xls,.xlsx" style="display:none" />
+      <button class="btn btn-success me-2" id="importXlsBtn" type="button">
+        <i class='bx bx-upload'></i> Importar Usuários XLS
+      </button>
+      <button class="btn btn-primary me-2" id="gerarCartaoBtn" type="button" disabled>
+        <i class='bx bx-id-card'></i> Cartão de Leitor
+      </button>
+    </div>
+
+    <div class="users-table">
+      <div class="table-responsive">        <table class="table" id="usuariosTable">
+          <thead>
+            <tr>
+              <th>
+                <input type="checkbox" id="selectAll" class="form-check-input">
               </th>
               <th>Nome</th>
               <th>Email</th>
@@ -277,38 +413,6 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
-            <div class="d-flex gap-2">
-              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                <i class="bx bx-plus"></i> Adicionar Usuário
-              </button>
-              <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importUsersModal">
-                <i class="bx bx-upload"></i> Importar Usuários
-              </button>
-            </div>
-            <button id="gerarCartaoBtn" class="btn btn-warning" disabled>
-              <i class="bx bx-id-card"></i> Cartão de Leitor
-            </button>
-          </div>
-    <!-- Modal Importar Usuários -->
-    <div class="modal fade" id="importUsersModal" tabindex="-1" aria-labelledby="importUsersModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="importUsersModalLabel">Importar Usuários</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-          </div>
-          <div class="modal-body">
-            <p>Selecione um arquivo CSV para importar usuários em lote.</p>
-            <input type="file" class="form-control" id="importUsersFile" accept=".csv">
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="button" class="btn btn-success" id="btnConfirmarImportacao">Confirmar Importação</button>
-          </div>
-        </div>
-      </div>
-    </div>
           <tbody id="usuariosTableBody">
             <!-- Os usuários serão carregados dinamicamente do Firebase -->
           </tbody>
@@ -654,25 +758,23 @@
 
             <div class="tab-content" id="historyTabContent">
               <div class="tab-pane fade show active" id="completed" role="tabpanel">
-                <div class="container-fluid px-0">
-                  <div class="table-responsive rounded shadow-sm" style="background: #fff; padding: 0.5rem 1rem;">
-                    <table class="table table-hover align-middle mb-0">
-                      <thead class="table-light">
-                        <tr>
-                          <th style="width:40px;"><input type="checkbox" id="selectAll"></th>
-                          <th>Nome</th>
-                          <th>Email</th>
-                          <th>Matrícula</th>
-                          <th>Status</th>
-                          <th>Ações</th>
-                        </tr>
-                      </thead>
-                      <tbody id="usuariosTableBody">
-                        <!-- Os usuários serão carregados dinamicamente do Firebase -->
-                      </tbody>
-                    </table>
-                  </div>
+                <div class="table-responsive mt-3">
+                  <table class="table table-hover">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Livro</th>
+                        <th>Data Empréstimo</th>
+                        <th>Data Devolução</th>
+                        <th>Dias de Leitura</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="completedLoansTable">
+                      <!-- Preenchido dinamicamente -->
+                    </tbody>
+                  </table>
                 </div>
+              </div>
               
               <div class="tab-pane fade" id="active" role="tabpanel">
                 <div class="table-responsive mt-3">
@@ -1317,15 +1419,12 @@
       }
 
       // Adicione o evento ao campo de busca
-      const searchInput = document.querySelector('.search-box input');
-      if (searchInput) {
-        searchInput.addEventListener('input', filterUsers);
-      }
+      document.querySelector('.search-box input').addEventListener('input', filterUsers);
 
-      // Carrega os usuários ao iniciar e configura eventos principais
+      // Carrega os usuários ao iniciar
       document.addEventListener('DOMContentLoaded', function() {
         loadUsers(); // Carrega usuários do Firestore
-
+        
         const addUserForm = document.getElementById('addUserForm');
         if (addUserForm) {
           addUserForm.addEventListener('submit', function(event) {
@@ -1333,21 +1432,23 @@
             handleUserSubmission(event);
           });
         }
-
-        // Limpa o formulário e o campo usuarioId ao fechar o modal
-        const addUserModal = document.getElementById('addUserModal');
-        if (addUserModal) {
-          addUserModal.addEventListener('hidden.bs.modal', function () {
-            document.getElementById('addUserForm').reset();
-            document.getElementById('usuarioId').value = '';
-            document.getElementById('addUserForm').classList.remove('was-validated');
-            document.getElementById('addUserModalLabel').textContent = 'Adicionar Novo Usuário';
-            document.getElementById('btnSalvarUsuario').style.display = 'inline-block';
-            document.getElementById('btnImprimirFicha').style.display = 'none';
-            if (document.activeElement && addUserModal.contains(document.activeElement)) {
-              document.activeElement.blur();
-            }
-          });
+        
+        // Adiciona event listeners para os botões de ação
+        addActionButtonListeners();
+      });      // Limpa o formulário e o campo usuarioId ao fechar o modal
+      document.getElementById('addUserModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('addUserForm').reset();
+        document.getElementById('usuarioId').value = '';
+        document.getElementById('addUserForm').classList.remove('was-validated');
+        
+        // Resetar estado do modal
+        document.getElementById('addUserModalLabel').textContent = 'Adicionar Novo Usuário';
+        document.getElementById('btnSalvarUsuario').style.display = 'inline-block';
+        document.getElementById('btnImprimirFicha').style.display = 'none';
+        
+        // Remove o foco de qualquer elemento dentro do modal ao fechar
+        if (document.activeElement && document.getElementById('addUserModal').contains(document.activeElement)) {
+          document.activeElement.blur();
         }
       });
 
@@ -1383,10 +1484,7 @@
       // Carrega usuários apenas do Firebase (sem dados estáticos)
       async function loadUsers() {
         const tbody = document.querySelector('#usuariosTableBody');
-        if (!tbody) {
-          console.warn('Elemento #usuariosTableBody não encontrado.');
-          return;
-        }
+        
         try {
           // Mostra indicador de carregamento
           tbody.innerHTML = `
@@ -1402,9 +1500,12 @@
               </td>
             </tr>
           `;
+          
           const snapshot = await db.collection('usuarios').get();
+          
           // Limpa a tabela após carregamento
           tbody.innerHTML = '';
+          
           if (snapshot.empty) {
             // Se não há usuários no banco, mostra mensagem informativa
             tbody.innerHTML = `
@@ -1423,6 +1524,7 @@
             `;
             return;
           }
+          
           // Carrega usuários do Firebase e organiza em ordem alfabética
           const users = [];
           snapshot.forEach(doc => {
@@ -1695,7 +1797,6 @@
       .modal-footer .btn {
         min-width: 120px;
       }
-    }
     </style>
   </div>
 
@@ -1727,14 +1828,10 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
     // Importar usuários via XLS/XLSX
-    const importXlsBtn = document.getElementById('importXlsBtn');
-    if (importXlsBtn) {
-      importXlsBtn.addEventListener('click', function() {
-        // Não solicita mais email/senha, apenas abre o seletor de arquivo
-        const xlsInput = document.getElementById('xlsInput');
-        if (xlsInput) xlsInput.click();
-      });
-    }
+    document.getElementById('importXlsBtn').addEventListener('click', function() {
+      // Não solicita mais email/senha, apenas abre o seletor de arquivo
+      document.getElementById('xlsInput').click();
+    });
 
     // Crie um modal para confirmação visual dos dados importados
     function criarModalConfirmacaoImportacao(usuarios, onConfirm) {
@@ -1893,139 +1990,134 @@
       };
     }
 
-    // Adiciona event listener apenas se o elemento existir
-    const xlsInput = document.getElementById('xlsInput');
-    if (xlsInput) {
-      xlsInput.addEventListener('change', async function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const fileName = file.name.toLowerCase();
-        const reader = new FileReader();
-        reader.onload = async function(e) {
-          try {
-            let usuariosRaw = [];
-            if (fileName.endsWith('.csv')) {
-              // CSV com tabulação (Excel exporta assim para colunas)
-              usuariosRaw = csvToArray(e.target.result, "\t");
-              // Se não encontrar, tenta ponto e vírgula
-              if (usuariosRaw.length === 0 || (Array.isArray(usuariosRaw[0]) && usuariosRaw[0].length < 2)) {
-                usuariosRaw = csvToArray(e.target.result, ";");
-              }
-              // Se não encontrar, tenta vírgula
-              if (usuariosRaw.length === 0 || (Array.isArray(usuariosRaw[0]) && usuariosRaw[0].length < 2)) {
-                usuariosRaw = csvToArray(e.target.result, ",");
-              }
-              // Se for array de arrays, converte para objetos
-              if (Array.isArray(usuariosRaw[0])) {
-                const cabecalhos = usuariosRaw[0].map(c => c.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s/g, '').toLowerCase());
-                usuariosRaw = usuariosRaw.slice(1).map(linha => {
-                  const obj = {};
-                  linha.forEach((valor, idx) => {
-                    obj[cabecalhos[idx]] = valor;
-                  });
-                  return obj;
+    document.getElementById('xlsInput').addEventListener('change', async function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const fileName = file.name.toLowerCase();
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          let usuariosRaw = [];
+          if (fileName.endsWith('.csv')) {
+            // CSV com tabulação (Excel exporta assim para colunas)
+            usuariosRaw = csvToArray(e.target.result, "\t");
+            // Se não encontrar, tenta ponto e vírgula
+            if (usuariosRaw.length === 0 || (Array.isArray(usuariosRaw[0]) && usuariosRaw[0].length < 2)) {
+              usuariosRaw = csvToArray(e.target.result, ";");
+            }
+            // Se não encontrar, tenta vírgula
+            if (usuariosRaw.length === 0 || (Array.isArray(usuariosRaw[0]) && usuariosRaw[0].length < 2)) {
+              usuariosRaw = csvToArray(e.target.result, ",");
+            }
+            // Se for array de arrays, converte para objetos
+            if (Array.isArray(usuariosRaw[0])) {
+              const cabecalhos = usuariosRaw[0].map(c => c.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s/g, '').toLowerCase());
+              usuariosRaw = usuariosRaw.slice(1).map(linha => {
+                const obj = {};
+                linha.forEach((valor, idx) => {
+                  obj[cabecalhos[idx]] = valor;
                 });
-              }
-            } else {
-              const data = e.target.result;
-              const workbook = XLSX.read(data, { type: 'binary' });
-              const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-              const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-              // Remove as linhas em branco
-              for (let i = json.length - 1; i >= 0; i--) {
-                if (json[i].every(cell => cell === null || cell === '')) {
-                  json.splice(i, 1);
-                }
-              }
-              // Converte para objeto com chaves normalizadas
-              const cabecalhos = json[0].map(cabecalho =>
-                cabecalho
-                  ? cabecalho.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s/g, '').toLowerCase()
-                  : ''
-              );
-              usuariosRaw = json.slice(1).map(linha => {
-                const usuario = {};
-                linha.forEach((valor, index) => {
-                  usuario[cabecalhos[index]] = valor;
-                });
-                return usuario;
+                return obj;
               });
             }
+          } else {
+            const data = e.target.result;
+            const workbook = XLSX.read(data, { type: 'binary' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            // Remove as linhas em branco
+            for (let i = json.length - 1; i >= 0; i--) {
+              if (json[i].every(cell => cell === null || cell === '')) {
+                json.splice(i, 1);
+              }
+            }
+            // Converte para objeto com chaves normalizadas
+            const cabecalhos = json[0].map(cabecalho =>
+              cabecalho
+                ? cabecalho.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s/g, '').toLowerCase()
+                : ''
+            );
+            usuariosRaw = json.slice(1).map(linha => {
+              const usuario = {};
+              linha.forEach((valor, index) => {
+                usuario[cabecalhos[index]] = valor;
+              });
+              return usuario;
+            });
+          }
 
-            // Aceita usuário se tiver nome e matrícula (email não é obrigatório)
-            const usuariosValidos = usuariosRaw.filter(u => u.nome && u.matricula);
+          // Aceita usuário se tiver nome e matrícula (email não é obrigatório)
+          const usuariosValidos = usuariosRaw.filter(u => u.nome && u.matricula);
 
-            if (usuariosValidos.length === 0) {
-              alert('Nenhum usuário válido encontrado no arquivo.\n\nVerifique se os cabeçalhos estão como "Nome" e "Matrícula" (ou "nome" e "matricula").');
+          if (usuariosValidos.length === 0) {
+            alert('Nenhum usuário válido encontrado no arquivo.\n\nVerifique se os cabeçalhos estão como "Nome" e "Matrícula" (ou "nome" e "matricula").');
+            return;
+          }
+
+          criarModalConfirmacaoImportacao(usuariosValidos, async (modal, usuarios) => {
+            const updateProgress = (percent) => {
+              const progressBar = document.querySelector('.progress-bar');
+              const progressText = document.getElementById('importProgressText');
+              progressBar.style.width = `${percent}%`;
+              progressText.textContent = `${percent}% concluído`;
+            };
+
+            // Limpa usuários existentes (exceto admin)
+            try {
+              const snapshot = await db.collection('usuarios').get();
+              const deletarUsuarios = snapshot.docs.filter(doc => doc.data().matricula !== 'admin');
+              for (const doc of deletarUsuarios) {
+                await db.collection('usuarios').doc(doc.id).delete();
+              }
+            } catch (error) {
+              showAlert('danger', 'Erro ao remover usuários existentes. Importação cancelada.');
+              modal.hide();
               return;
             }
 
-            criarModalConfirmacaoImportacao(usuariosValidos, async (modal, usuarios) => {
-              const updateProgress = (percent) => {
-                const progressBar = document.querySelector('.progress-bar');
-                const progressText = document.getElementById('importProgressText');
-                progressBar.style.width = `${percent}%`;
-                progressText.textContent = `${percent}% concluído`;
-              };
-
-              // Limpa usuários existentes (exceto admin)
+            // Importa usuários válidos
+            for (let i = 0; i < usuarios.length; i++) {
+              const usuario = usuarios[i];
               try {
-                const snapshot = await db.collection('usuarios').get();
-                const deletarUsuarios = snapshot.docs.filter(doc => doc.data().matricula !== 'admin');
-                for (const doc of deletarUsuarios) {
-                  await db.collection('usuarios').doc(doc.id).delete();
-                }
+                await db.collection('usuarios').add({
+                  nome: usuario.nome,
+                  email: usuario.email || '',
+                  matricula: usuario.matricula,
+                  status: usuario.status || 'Ativo',
+                  funcao: usuario.funcao || 'ALUNO',
+                  telefone: usuario.telefone || '',
+                  serie: usuario.serie || '',
+                  periodo: usuario.periodo || '',
+                  turma: usuario.turma || '',
+                  turno: usuario.turno || '',
+                  endereco: {
+                    logradouro: usuario.endereco || '',
+                    numero: usuario.numero || '',
+                    cep: usuario.cep || '',
+                    bairro: usuario.bairro || '',
+                    cidade: usuario.cidade || '',
+                    uf: usuario.uf || ''
+                  },
+                  livrosEmprestados: 0,
+                  dataCadastro: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                updateProgress(Math.round(((i + 1) / usuarios.length) * 100));
+                await new Promise(resolve => setTimeout(resolve, 100));
               } catch (error) {
-                showAlert('danger', 'Erro ao remover usuários existentes. Importação cancelada.');
-                modal.hide();
-                return;
+                showAlert('danger', `Erro ao importar usuário ${usuario.nome}.`);
               }
+            }
 
-              // Importa usuários válidos
-              for (let i = 0; i < usuarios.length; i++) {
-                const usuario = usuarios[i];
-                try {
-                  await db.collection('usuarios').add({
-                    nome: usuario.nome,
-                    email: usuario.email || '',
-                    matricula: usuario.matricula,
-                    status: usuario.status || 'Ativo',
-                    funcao: usuario.funcao || 'ALUNO',
-                    telefone: usuario.telefone || '',
-                    serie: usuario.serie || '',
-                    periodo: usuario.periodo || '',
-                    turma: usuario.turma || '',
-                    turno: usuario.turno || '',
-                    endereco: {
-                      logradouro: usuario.endereco || '',
-                      numero: usuario.numero || '',
-                      cep: usuario.cep || '',
-                      bairro: usuario.bairro || '',
-                      cidade: usuario.cidade || '',
-                      uf: usuario.uf || ''
-                    },
-                    livrosEmprestados: 0,
-                    dataCadastro: firebase.firestore.FieldValue.serverTimestamp()
-                  });
-                  updateProgress(Math.round(((i + 1) / usuarios.length) * 100));
-                  await new Promise(resolve => setTimeout(resolve, 100));
-                } catch (error) {
-                  showAlert('danger', `Erro ao importar usuário ${usuario.nome}.`);
-                }
-              }
-
-              showAlert('success', 'Importação concluída com sucesso!');
-              modal.hide();
-              loadUsers();
-            });
-          } catch (error) {
-            alert('Erro ao ler arquivo. Por favor, tente novamente.');
-          }
-        };
-        reader.readAsBinaryString(file);
-      });
-    }
-
+            showAlert('success', 'Importação concluída com sucesso!');
+            modal.hide();
+            loadUsers();
+          });
+        } catch (error) {
+          alert('Erro ao ler arquivo. Por favor, tente novamente.');
+        }
+      };
+      reader.readAsBinaryString(file);
+    });
 
     // Função para converter CSV para array de objetos
     function csvToArray(strData, strDelimiter) {
@@ -2340,16 +2432,13 @@
     }
 
     // Checkbox "Selecionar Todos"
-    const selectAllCheckbox = document.getElementById('selectAll');
-    if (selectAllCheckbox) {
-      selectAllCheckbox.addEventListener('change', function() {
-        const checkboxes = document.querySelectorAll('.user-checkbox');
-        checkboxes.forEach(checkbox => {
-          checkbox.checked = this.checked;
-        });
-        updateCartaoButton();
+    document.getElementById('selectAll').addEventListener('change', function() {
+      const checkboxes = document.querySelectorAll('.user-checkbox');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
       });
-    }
+      updateCartaoButton();
+    });
 
     // Event listeners para checkboxes individuais
     document.addEventListener('change', function(e) {
@@ -2595,10 +2684,7 @@
     }
 
     // Event listener para o botão de gerar cartão
-    const gerarCartaoBtn = document.getElementById('gerarCartaoBtn');
-    if (gerarCartaoBtn) {
-      gerarCartaoBtn.addEventListener('click', gerarCartoesLeitor);
-    }
+    document.getElementById('gerarCartaoBtn').addEventListener('click', gerarCartoesLeitor);
 
     // Proteção contra interferências de extensões do navegador
     function protegerContraExtensoes() {
@@ -3088,5 +3174,4 @@
     }
   </script>
 </body>
-
 </html>
